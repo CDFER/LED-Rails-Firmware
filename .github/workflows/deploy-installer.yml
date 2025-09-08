@@ -31,15 +31,12 @@ jobs:
         run: pip install --upgrade platformio
 
       - name: Build and merge AKL_V1_0_0
-        working-directory: ./Firmware
         run: pio run -e AKL_V1_0_0 --target mergebin
 
       - name: Build and merge AKL_V1_1_0
-        working-directory: ./Firmware
         run: pio run -e AKL_V1_1_0 --target mergebin
 
       - name: Build and merge WLG_V1_0_0
-        working-directory: ./Firmware
         run: pio run -e WLG_V1_0_0 --target mergebin
 
       - name: Setup Pages
@@ -55,9 +52,9 @@ jobs:
           cp -r "Web Installer/bin/WLG_V1_0_0/." _site/bin/WLG_V1_0_0/
           cp "Web Installer/led-rails.html" _site/
           cp "Web Installer/favicon.png" _site/
-          cp Firmware/.pio/build/AKL_V1_0_0/firmware-merged.bin _site/bin/AKL_V1_0_0/firmware.bin
-          cp Firmware/.pio/build/AKL_V1_1_0/firmware-merged.bin _site/bin/AKL_V1_1_0/firmware.bin
-          cp Firmware/.pio/build/WLG_V1_0_0/firmware-merged.bin _site/bin/WLG_V1_0_0/firmware.bin
+          cp .pio/build/AKL_V1_0_0/firmware-merged.bin _site/bin/AKL_V1_0_0/firmware.bin
+          cp .pio/build/AKL_V1_1_0/firmware-merged.bin _site/bin/AKL_V1_1_0/firmware.bin
+          cp .pio/build/WLG_V1_0_0/firmware-merged.bin _site/bin/WLG_V1_0_0/firmware.bin
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

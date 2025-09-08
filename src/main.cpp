@@ -10,7 +10,10 @@
 #include <vector>
 
 #include "WiFiConfig.h"
-#include "secrets.h"
+
+#if defined(FACTORY_TEST)
+	#include "secrets.h"
+#endif
 
 // Array of server URLs for failover
 String serverURLs[] = {

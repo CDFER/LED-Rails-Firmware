@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED-Rails - Installer</title>
+    <meta name="description" content="Easily update and configure Wi-Fi for your Auckland LED Rail Map">
+    <meta property="og:title" content="LED Rails - Web Installer" />
+    <meta property="og:site_name" content="LED Rails" />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="Easily update and configure Wi-Fi for your Auckland LED Rail Map" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="LED Rails - Web Installer" />
+    <meta name="twitter:description" content="Easily update and configure Wi-Fi for your Auckland LED Rail Map" />
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+    <style>
+        :root {
+            --esp-tools-button-color: #09f;
+            --esp-tools-button-text-color: #fff;
+            --esp-tools-button-border-radius: 25px;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
+            background: #222;
+            margin: 0;
+            padding: 0;
+            color: #fff;
+        }
+
+        .content {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 24px 12px 0 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            margin-top: 32px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        main {
+            width: 100%;
+            background: #222;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .instructions {
+            margin: 0 0 24px 0;
+            padding: 0;
+            text-align: left;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 510px;
+            margin: 0 auto 24px auto;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #222;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            outline: none;
+            cursor: pointer;
+            padding: 8px 0;
+            margin: 10px 0;
+            width: 230px;
+            font-family: Verdana, Helvetica, sans-serif;
+            font-size: 19px;
+            background-color: #09f;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            text-align: center;
+        }
+
+        esp-web-install-button {
+            margin-top: 24px;
+        }
+
+        ol {
+            margin: auto;
+            text-align: left;
+            display: inline-block;
+        }
+
+        li::marker {
+            color: #09f;
+        }
+
+        li {
+            margin: 5px;
+        }
+
+        a {
+            color: #09f;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 32px;
+            border-top: 1px solid #444;
+            padding-top: 16px;
+            text-align: center;
+            color: #aaa;
+            font-size: 0.95em;
+        }
+
+        .version-btn-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .version-btn {
+            flex: 1;
+            padding: 12px 0;
+            font-size: 18px;
+            border: 2px solid transparent;
+            border-radius: 25px;
+            background-color: #09f;
+            color: #fff;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .version-btn.selected {
+            background-color: #0c3;
+            color: #fff;
+            border: 2px solid #fff;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 8px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body onload="checkSupported()">
+    <div class="content">
+        <header>
+            <h1>LED-Rails Installer</h1>
+            <p>Update your device and/or set up Wi-Fi for your Auckland LED Rail Map.</p>
+        </header>
+        <main>
+            <div id="flasher">
+                <ol class="instructions">
+                    <li>Plug in your board's data port to a USB port on your computer.</li>
+                    <li id="coms">Hit "Connect Device" and select the correct COM port (USB JTAG/serial debug unit).
+                    </li>
+                </ol>
+                <div class="container">
+                    <label style="margin-bottom:8px;">Choose the version of your map:</label>
+                    <div class="version-btn-group" style="display:flex; gap:12px; margin-bottom:32px;">
+                        <button type="button" class="btn version-btn" id="btn-akl-v1-0-0"
+                            onclick="selectVersion('AKL_V1_0_0')">Auckland
+                            V1.0.0</button>
+                        <button type="button" class="btn version-btn selected" id="btn-akl-v1-1-0"
+                            onclick="selectVersion('AKL_V1_1_0')">Auckland
+                            V1.1.0</button>
+                        <button type="button" class="btn version-btn" id="btn-wlg-v1-0-0"
+                            onclick="selectVersion('WLG_V1_0_0')">Wellington
+                            V1.0.0</button>
+                    </div>
+                    <esp-web-install-button id="inst" manifest="bin/AKL_V1_1_0/manifest.json" improv-wifi>
+                        <button class="btn" id="install-btn" slot="activate">Connect to device</button>
+                        <span slot="unsupported">Sorry, your browser does not support Web Serial. Please use Chrome or
+                            Edge.</span>
+                        <span slot="not-allowed">This tool requires HTTPS. Please use a secure connection.</span>
+                    </esp-web-install-button>
+                </div>
+            </div>
+            <!-- <p style="margin-top:24px; color:#888; font-size:0.95em;">Need help? Visit <a
+                    href="https://keastudios.co.nz/" target="_blank">Kea Studios</a></p> -->
+        </main>
+        <div class="footer">
+            This project is powered by <a href="https://esphome.github.io/esp-web-tools/">ESP Web
+                Tools</a><br>
+        </div>
+    </div>
+    <script>
+        async function getManifestVersion(manifestPath) {
+            const response = await fetch(manifestPath);
+            if (!response.ok) throw new Error('Network response was not ok');
+            const manifest = await response.json();
+        }
+
+        function selectVersion(version) {
+            // Remove selected from all
+            document.getElementById('btn-akl-v1-0-0').classList.remove('selected');
+            document.getElementById('btn-akl-v1-1-0').classList.remove('selected');
+            document.getElementById('btn-wlg-v1-0-0').classList.remove('selected');
+            let manifestPath = '';
+            if (version === 'AKL_V1_0_0') {
+                manifestPath = 'bin/AKL_V1_0_0/manifest.json';
+                document.getElementById('btn-akl-v1-0-0').classList.add('selected');
+            } else if (version === 'WLG_V1_0_0') {
+                manifestPath = 'bin/WLG_V1_0_0/manifest.json';
+                document.getElementById('btn-wlg-v1-0-0').classList.add('selected');
+            } else {
+                manifestPath = 'bin/AKL_V1_1_0/manifest.json';
+                document.getElementById('btn-akl-v1-1-0').classList.add('selected');
+            }
+            document.getElementById('inst').setAttribute('manifest', manifestPath);
+            document.getElementById('install-btn').textContent = 'Connect to device';
+            getManifestVersion(manifestPath);
+        }
+
+        function checkSupported() {
+            if (document.getElementById('inst').hasAttribute('install-unsupported')) unsupported();
+            else selectVersion('AKL_V1_1_0');
+        }
+
+        function unsupported() {
+            document.getElementById('flasher').innerHTML = "Sorry, your browser is not yet supported!<br>Please try on Chrome or Edge.<br>";
+        }
+
+        console.log('LED-Rails Installer loaded successfully!');
+    </script>
+</body>
+
+</html>

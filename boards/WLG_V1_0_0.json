@@ -12,15 +12,21 @@
       "-DBRIGHTNESS_DOWN_BUTTON=10",
       "-DBRIGHTNESS_UP_BUTTON=1",
       "-DPOWER_BUTTON=9",
+      "-DMODE_BUTTON=8",
       "-DLED_5V_EN=6",
       "-DLED_1_PIN=7",
       "-DLED_1_PIXELS=235",
-      "-DDEBOUNCE_DELAY=50",
+      "-DMIN_BRIGHTNESS=50",
+      "-DMAX_BRIGHTNESS=254",
+      "-DBRIGHTNESS_STEP=20",
+      "-DDEBOUNCE_MS=50",
       "-DLIGHT_SENSOR=1",
       "-DSCL_PIN=3",
       "-DSDA_PIN=2",
+      "-DTIMETABLE_MODE=1",
       "-DBACKEND_VERSION=\\\"100\\\"",
-      "-DCITY_CODE=\\\"wlg\\\""
+      "-DCITY_CODE=\\\"wlg\\\"",
+      "-DWLG_V1_0_0"
     ],
     "f_cpu": "160000000L",
     "f_flash": "80000000L",
@@ -34,7 +40,7 @@
     "openocd_target": "esp32c3.cfg"
   },
   "frameworks": ["arduino", "espidf"],
-  "name": "Auckland Rail Network V1.1.0",
+  "name": "Wellington V1.0.0",
   "upload": {
     "flash_size": "4MB",
     "maximum_ram_size": 327680,

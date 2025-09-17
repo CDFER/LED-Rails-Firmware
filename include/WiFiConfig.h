@@ -4,8 +4,10 @@
 #include <Preferences.h>
 #include <WiFi.h>
 
+// Preferences is in main.cpp
+extern Preferences preferences;
+
 ImprovWiFi improvSerial(&Serial);
-Preferences preferences;
 AsyncWebServer server(80);
 
 #define MAX_SSID_LEN 32
@@ -17,8 +19,9 @@ struct savedWiFiNetwork {
 	char password[MAX_PASS_LEN];
 };
 
-bool wifiConnected = false;
-int wifiNetworkIndex = 0;  // Index of the current WiFi network
+int wifiNetworkIndex = 0;				   // Index of the current WiFi network
+unsigned long lastWiFiConnectAttempt = 0;  // Timestamp of the last WiFi connect attempt
+uint8_t wifiConnectAttempts = 0;		   // Number of attempts for the current network
 
 savedWiFiNetwork savedWiFi[MAX_WIFI_NETWORKS];	// Array to hold saved WiFi networks
 
@@ -27,6 +30,7 @@ void setUpWebserver(AsyncWebServer &server);
 void onImprovWiFiErrorCb(ImprovTypes::Error err) {
 	Serial.printf("Improv WiFi Error: %d\n", err);
 	server.end();
+	server.begin();
 }
 
 // Save WiFi credentials to Preferences (NVS Flash Partition)
@@ -62,18 +66,6 @@ void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
 	server.begin();
 }
 
-bool attemptConnectToSavedWiFi(int index) {
-	Serial.printf("Attempting to connect to saved network %i: %s\n", index, savedWiFi[index].ssid);
-	if (improvSerial.tryConnectToWifi(savedWiFi[index].ssid, savedWiFi[index].password, 500, 2)) {
-		Serial.println("WiFi connected successfully!");
-		server.begin();	 // Start the web server
-		return true;
-	} else {
-		Serial.printf("Failed to connect to %s.\n", savedWiFi[index].ssid);
-		return false;
-	}
-}
-
 void WiFiImprovSetup() {
 	importWiFi();
 	improvSerial.setDeviceInfo(
@@ -81,19 +73,6 @@ void WiFiImprovSetup() {
 	improvSerial.onImprovError(onImprovWiFiErrorCb);
 	improvSerial.onImprovConnected(onImprovWiFiConnectedCb);
 	setUpWebserver(server);
-
-	while (wifiNetworkIndex < MAX_WIFI_NETWORKS) {
-		if (strlen(savedWiFi[wifiNetworkIndex].ssid) > 0) {
-			wifiConnected = attemptConnectToSavedWiFi(wifiNetworkIndex);
-			if (wifiConnected)
-				break;	// Exit loop if connected
-		}
-		wifiNetworkIndex++;
-	}
-
-	if (!wifiConnected) {
-		Serial.println("Failed to connect to any saved WiFi networks");
-	}
 }
 
 const char index_html[] PROGMEM = R"=====(
@@ -169,23 +148,39 @@ void setUpWebserver(AsyncWebServer &server) {
 	});
 }
 
-void handleWiFiImprov() {
-	improvSerial.handleSerial();  // Handle Improv communication regardless of WiFi state
+void improvSerialTask(void *param) {
+	while (true) {
+		while (Serial.available() > 0) {
+			improvSerial.handleSerial();
+		}
+		vTaskDelay(pdMS_TO_TICKS(20));
+	}
+}
 
-	if (WiFi.status() != WL_CONNECTED) {
+void manageWiFiConnection() {
+	const unsigned long attemptTimeout = 5000;	// 5 seconds for each attempt
+	const uint8_t maxAttempts = 3;				// Max attempts per network
 
-		if (wifiNetworkIndex >= MAX_WIFI_NETWORKS) {
-			wifiNetworkIndex = 0;
+	if (millis() - lastWiFiConnectAttempt > attemptTimeout || lastWiFiConnectAttempt == 0) {
+		if (wifiConnectAttempts < maxAttempts) {
+			wifiConnectAttempts++;
+		} else {
+			wifiConnectAttempts = 0;
+
+			while (strlen(savedWiFi[wifiNetworkIndex].ssid) == 0 && wifiNetworkIndex < MAX_WIFI_NETWORKS) {
+				wifiNetworkIndex++;	 // Skip empty SSIDs
+			}
+
+			if (wifiNetworkIndex >= MAX_WIFI_NETWORKS) {
+				wifiNetworkIndex = 0;
+			}
 		}
 
-		while (strlen(savedWiFi[wifiNetworkIndex].ssid) == 0 && wifiNetworkIndex < MAX_WIFI_NETWORKS) {
-			wifiNetworkIndex++;	 // Skip empty SSIDs
+		if (strlen(savedWiFi[wifiNetworkIndex].ssid) != 0) {
+			// Attempt to connect to the current network
+			Serial.printf("Attempting to connect to saved network %i: %s\n", wifiNetworkIndex, savedWiFi[wifiNetworkIndex].ssid);
+			WiFi.begin(savedWiFi[wifiNetworkIndex].ssid, savedWiFi[wifiNetworkIndex].password);
+			lastWiFiConnectAttempt = millis();
 		}
-
-		if (wifiNetworkIndex >= MAX_WIFI_NETWORKS) {
-			return;	 // No saved WiFi networks available
-		}
-
-		wifiConnected = attemptConnectToSavedWiFi(wifiNetworkIndex);
 	}
 }

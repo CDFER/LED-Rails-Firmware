@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LED-Rails - Installer</title>
-    <meta name="description" content="Easily update and configure Wi-Fi for your Auckland LED Rail Map">
-    <meta property="og:title" content="LED Rails - Web Installer" />
-    <meta property="og:site_name" content="LED Rails" />
+    <title>Kea Studios LED-Rails</title>
+    <meta name="description" content="Easily update and configure Wi-Fi for your Live Train Map">
+    <meta property="og:title" content="Kea Studios LED Rails" />
+    <meta property="og:site_name" content="Kea Studios LED Rails" />
     <meta property="og:type" content="website" />
-    <meta property="og:description" content="Easily update and configure Wi-Fi for your Auckland LED Rail Map" />
+    <meta property="og:description" content="Easily update and configure Wi-Fi for your Live Train Map" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="LED Rails - Web Installer" />
-    <meta name="twitter:description" content="Easily update and configure Wi-Fi for your Auckland LED Rail Map" />
+    <meta name="twitter:title" content="Kea Studios LED Rails" />
+    <meta name="twitter:description" content="Easily update and configure Wi-Fi for your Live Train Map" />
     <link rel="icon" type="image/png" href="favicon.png">
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
     <style>
@@ -63,7 +63,7 @@
 
         .container {
             width: 100%;
-            max-width: 510px;
+            max-width: 600px;
             margin: 0 auto 24px auto;
             border-radius: 5px;
             box-sizing: border-box;
@@ -126,10 +126,11 @@
             display: flex;
             gap: 12px;
             margin-bottom: 32px;
+            flex-wrap: wrap;
         }
 
         .version-btn {
-            flex: 1;
+            width: 180px;
             padding: 12px 0;
             font-size: 18px;
             border: 2px solid transparent;
@@ -161,28 +162,30 @@
 <body onload="checkSupported()">
     <div class="content">
         <header>
-            <h1>LED-Rails Installer</h1>
-            <p>Update your device and/or set up Wi-Fi for your Auckland LED Rail Map.</p>
+            <h1>Kea Studios LED-Rails</h1>
+            <p>Wi-Fi setup and feature updates for your Live Train Map.</p>
         </header>
         <main>
             <div id="flasher">
                 <ol class="instructions">
                     <li>Plug in your board's data port to a USB port on your computer.</li>
-                    <li id="coms">Hit "Connect Device" and select the correct COM port (USB JTAG/serial debug unit).
+                    <li>Make sure you have selected the correct city and version of your map below.</li>
+                    <li>Click "Connect Device" and select the correct COM port (USB JTAG/serial debug unit).
+                    </li>
+                    <li>Select "Connect to Wi-Fi" and follow the prompts (Installing the latest Firmware is optional).
                     </li>
                 </ol>
                 <div class="container">
-                    <label style="margin-bottom:8px;">Choose the version of your map:</label>
-                    <div class="version-btn-group" style="display:flex; gap:12px; margin-bottom:32px;">
+                    <div class="version-btn-group">
                         <button type="button" class="btn version-btn" id="btn-akl-v1-0-0"
                             onclick="selectVersion('AKL_V1_0_0')">Auckland
-                            V1.0.0</button>
+                            V1.0</button>
                         <button type="button" class="btn version-btn selected" id="btn-akl-v1-1-0"
                             onclick="selectVersion('AKL_V1_1_0')">Auckland
-                            V1.1.0</button>
+                            V1.1</button>
                         <button type="button" class="btn version-btn" id="btn-wlg-v1-0-0"
                             onclick="selectVersion('WLG_V1_0_0')">Wellington
-                            V1.0.0</button>
+                            V1.0</button>
                     </div>
                     <esp-web-install-button id="inst" manifest="bin/AKL_V1_1_0/manifest.json" improv-wifi>
                         <button class="btn" id="install-btn" slot="activate">Connect to device</button>
@@ -192,12 +195,15 @@
                     </esp-web-install-button>
                 </div>
             </div>
-            <!-- <p style="margin-top:24px; color:#888; font-size:0.95em;">Need help? Visit <a
-                    href="https://keastudios.co.nz/" target="_blank">Kea Studios</a></p> -->
+            <p style="margin-top:24px; color:#888; font-size:0.95em;">Need help? Quick start
+                guides are available for
+                <a href="https://keastudios.co.nz/akl-ltm-quick-start/" target="_blank">Auckland</a> and
+                <a href="https://keastudios.co.nz/wlg-ltm-quick-start/" target="_blank">Wellington</a>
+            </p>
         </main>
         <div class="footer">
-            This project is powered by <a href="https://esphome.github.io/esp-web-tools/">ESP Web
-                Tools</a><br>
+            Powered by the <a href="https://esphome.github.io/esp-web-tools/">ESP Web
+                Tools Project</a><br>
         </div>
     </div>
     <script>

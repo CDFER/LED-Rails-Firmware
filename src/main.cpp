@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <FastLED.h>
 #include <HTTPClient.h>
-#include <NeoPixelBus.h>
-#include <NeoPixelBusLg.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <esp_sntp.h>
@@ -12,8 +11,24 @@
 #include "WiFiConfig.h"
 
 #if defined(FACTORY_TEST)
-	#include "secrets.h"
+	#include "factory.h"
 #endif
+
+#if defined(TIMETABLE_MODE)
+	#include "timetable.h"
+#endif
+
+#if defined(LIGHT_SENSOR)
+	#include "autoBrightness.h"
+#else
+	#include "manualBrightness.h"
+#endif
+
+#include "buttons.h"
+
+Preferences preferences;
+BrightnessManager brightness;
+ButtonManager buttons;
 
 // Array of server URLs for failover
 String serverURLs[] = {
@@ -25,27 +40,31 @@ const int numServers = sizeof(serverURLs) / sizeof(serverURLs[0]);
 int currentServerIndex = 0;
 
 const char* ntpServers[] = { "nz.pool.ntp.org", "pool.msltime.measurement.govt.nz", "pool.ntp.org" };
-
 const char* time_zone = "NZST-12NZDT,M9.5.0,M4.1.0/3";
 
-time_t lastMapDrawTime = 0;	 // Tracks the last time the map was drawn
-time_t nextFetchTime = 0;	 // Tracks when the next update should occur
-time_t baseTimestamp = 0;
-uint16_t fetchOffset = 0;	   // Random time ms to fetch (reduces server load)
-uint16_t updateInterval = 30;  // Default update interval in seconds
+time_t lastMapDrawTime = 0;	  // Tracks the last time the map was drawn
+time_t nextFetchTime = 0;	  // Tracks when the next update should occur
+uint32_t modeStartTime = 0;	  // Tracks when the current mode started (for fast forward mode timing)
+uint8_t fetchOffset = 0;	  // Random time ms to fetch (reduces server load)
+uint8_t updateInterval = 30;  // Default update interval in seconds
 
-// Pins and pixel counts defined in the board file (./boards/)
-
-// I am useing WS2811 timing =>   0:{0.3, 0.95} 1:{0.9, 0.35} Reset:300us
-// XL-1615RGBC-WS2812B-S requires 0:{>0.3, >0.9} 1:{>0.9, >0.3} Reset:>200us
-NeoPixelBusLg<NeoGrbFeature, NeoEsp32BitBangWs2811Method> neoPixel1(LED_1_PIXELS, LED_1_PIN);
-#if defined(LED_2_PIN)
-NeoPixelBusLg<NeoGrbFeature, NeoEsp32BitBangWs2811Method > neoPixel2(LED_2_PIXELS, LED_2_PIN);
+#if defined(TIMETABLE_MODE)
+enum Mode { REALTIME, ONE_X_TIMETABLE, FAST_FORWARD_TIMETABLE };
+Mode mode = REALTIME;
+const auto& routes = getAllRoutes();
+#else
+enum Mode { REALTIME };
+Mode mode = REALTIME;
 #endif
 
-RgbColor black(0, 0, 0);
-std::vector<RgbColor> colorTable;
-int blockColorIds[512];	 // Array to hold block colors
+// Pins and pixel counts defined in the board file (./boards/)
+CRGB leds1[LED_1_PIXELS];
+#if defined(LED_2_PIN)
+CRGB leds2[LED_2_PIXELS];
+#endif
+
+CRGB black = CRGB::Black;
+std::vector<CRGB> colorTable;
 
 // --- Data structure for scheduled LED updates ---
 struct LedUpdate {
@@ -58,16 +77,14 @@ struct LedUpdate {
 std::vector<LedUpdate> ledUpdateSchedule;
 
 enum statusLedCommand {
-	LED_OFF,
-	LED_ON_GREEN,
-	LED_ON_RED,
-	LED_BLINK_GREEN_SLOW,  // 1Hz
-	LED_BLINK_GREEN_FAST,  // 5Hz
-	LED_BLINK_RED_SLOW,	   // 1Hz
-	LED_BLINK_RED_FAST	   // 5Hz
+	LED_OFF = 0,
+	LED_ON_GREEN = 1,
+	LED_ON_RED = 2,
+	LED_BLINK_GREEN_SLOW = 3,  // 1Hz
+	LED_BLINK_GREEN_FAST = 4,  // 5Hz
+	LED_BLINK_RED_SLOW = 5,	   // 1Hz
+	LED_BLINK_RED_FAST = 6	   // 5Hz
 };
-
-enum charlieplexedLedState { GREEN, RED, OFF };
 
 typedef struct {
 	uint8_t pin;
@@ -77,85 +94,13 @@ typedef struct {
 } statusLed;
 
 TaskHandle_t statusLedTaskHandle;
+TaskHandle_t fastLEDDitheringTaskHandle;
 
-static unsigned long lastUpdate = 0;
-int16_t brightness = 52;
-bool powerOn = true;
-bool ledUpdatePending = false;
-
-struct Button {
-	uint8_t pin;
-	volatile unsigned long lastChangeTime;
-	volatile bool pendingCheck;
-	bool lastState;
-};
-
-// Initialize button structures
-Button brightnessDownButton = { BRIGHTNESS_DOWN_BUTTON, 0, false, HIGH };
-Button brightnessUpButton = { BRIGHTNESS_UP_BUTTON, 0, false, HIGH };
-Button powerButton = { POWER_BUTTON, 0, false, HIGH };
-
-// --- (Existing ISR, button check, time, and LED functions) ---
-// IRAM_ATTR ensures the ISR is placed in IRAM
-void IRAM_ATTR buttonISR(void* arg) {
-	Button* button = (Button*)arg;
-	button->lastChangeTime = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
-	button->pendingCheck = true;
-}
-
-void checkButton(Button* button) {
-	if (button->pendingCheck && (millis() - button->lastChangeTime) >= DEBOUNCE_DELAY) {
-		bool currentState = digitalRead(button->pin);
-		if (currentState != button->lastState) {
-			button->lastState = currentState;
-			if (currentState == LOW) {	// Assuming active-low configuration
-				// Handle button press
-				switch (button->pin) {
-					case BRIGHTNESS_DOWN_BUTTON:
-						Serial.print("Brightness Down pressed ");
-						brightness -= 20;
-						break;
-					case BRIGHTNESS_UP_BUTTON:
-						Serial.print("Brightness Up pressed ");
-						brightness += 20;
-						break;
-					case POWER_BUTTON:
-						Serial.print("Power button pressed ");
-						powerOn = !powerOn;
-						break;
-					default:
-						Serial.printf("Unknown button pressed on pin %d\n", button->pin);
-						return;	 // Exit if an unknown button is pressed
-				}
-
-				// Ensure brightness stays within bounds
-				brightness = constrain(brightness, 32, 252);
-
-				// Save brightness to preferences
-				preferences.begin("brightness");
-				if (preferences.getInt("brightness") != brightness) {
-					preferences.putInt("brightness", brightness);
-				}
-				preferences.end();
-
-				// Update the LEDs
-				if (powerOn) {
-					neoPixel1.SetLuminance(brightness);
-#if defined(LED_2_PIN)
-					neoPixel2.SetLuminance(brightness);
-#endif
-				} else {
-					neoPixel1.SetLuminance(0);
-#if defined(LED_2_PIN)
-					neoPixel2.SetLuminance(0);
-#endif
-				}
-
-				Serial.printf("brightness now at: %i/255\n", brightness);
-				ledUpdatePending = true;
-			}
-		}
-		button->pendingCheck = false;
+void fastLEDDitheringTask(void* pvParameters) {
+	const TickType_t delay = pdMS_TO_TICKS(20);	 // 50fps = 20ms interval
+	while (true) {
+		FastLED.show();
+		vTaskDelay(delay);
 	}
 }
 
@@ -181,19 +126,19 @@ void timeavailable(struct timeval* t) {
 	Serial.println("NTP Synced");
 }
 
-void setCharlieplexedLED(uint8_t pin, charlieplexedLedState state) {
+void setCharlieplexedLED(uint8_t pin, statusLedCommand state) {
 	switch (state) {
-		case GREEN:
+		case LED_ON_GREEN:
 			pinMode(pin, OUTPUT);
 			digitalWrite(pin, HIGH);
 			break;
 
-		case RED:
+		case LED_ON_RED:
 			pinMode(pin, OUTPUT);
 			digitalWrite(pin, LOW);
 			break;
 
-		case OFF:
+		case LED_OFF:
 			// Set as input (High Resistance) to disable output driver
 			pinMode(pin, INPUT);
 			break;
@@ -208,17 +153,23 @@ void statusLedManagerTask(void* pvParameters) {
 		// Check for notifications
 		uint32_t notification;
 		if (xTaskNotifyWait(0, ULONG_MAX, &notification, 0) == pdTRUE) {
-			uint8_t pin = notification >> 24;
-			statusLedCommand cmd = statusLedCommand((notification >> 16) & 0xFF);
+			// Process up to two commands
+			for (int cmdIdx = 0; cmdIdx < 2; cmdIdx++) {
+				uint8_t pin = (notification >> (24 - (cmdIdx * 16))) & 0xFF;
+				statusLedCommand cmd = statusLedCommand((notification >> (16 - (cmdIdx * 16))) & 0xFF);
 
-			for (int i = 0; i < numLeds; i++) {
-				if (leds[i].pin == pin) {
-					leds[i].command = cmd;
-					// Immediate response for non-blinking states
-					if (cmd == LED_ON_GREEN || cmd == LED_ON_RED || cmd == LED_OFF) {
-						setCharlieplexedLED(pin, (cmd == LED_ON_GREEN) ? GREEN : (cmd == LED_ON_RED) ? RED : OFF);
+				// Skip invalid pins (0 means no command)
+				if (pin == 0)
+					continue;
+
+				for (int i = 0; i < numLeds; i++) {
+					if (leds[i].pin == pin) {
+						leds[i].command = cmd;
+						if (cmd == LED_ON_GREEN || cmd == LED_ON_RED || cmd == LED_OFF) {
+							setCharlieplexedLED(pin, cmd);
+						}
+						break;
 					}
-					break;
 				}
 			}
 		}
@@ -226,19 +177,18 @@ void statusLedManagerTask(void* pvParameters) {
 		// Handle blinking
 		unsigned long now = millis();
 		for (int i = 0; i < numLeds; i++) {
-			if (leds[i].command >= LED_BLINK_GREEN_SLOW) {	// All blink commands
-				// Extract blink parameters from command
+			if (leds[i].command >= LED_BLINK_GREEN_SLOW) {
 				const bool isGreen = (leds[i].command == LED_BLINK_GREEN_SLOW || leds[i].command == LED_BLINK_GREEN_FAST);
 				const bool isRed = (leds[i].command == LED_BLINK_RED_SLOW || leds[i].command == LED_BLINK_RED_FAST);
 				const bool isSlow = (leds[i].command == LED_BLINK_GREEN_SLOW || leds[i].command == LED_BLINK_RED_SLOW);
 
 				if (isGreen || isRed) {
-					const int interval = isSlow ? 500 : 100;  // 1Hz or 5Hz
-					const charlieplexedLedState color = isGreen ? GREEN : RED;
+					const int interval = isSlow ? 500 : 100;
+					const statusLedCommand color = isGreen ? LED_ON_GREEN : LED_ON_RED;
 
 					if (now - leds[i].lastToggle >= interval) {
 						leds[i].currentState = !leds[i].currentState;
-						setCharlieplexedLED(leds[i].pin, leds[i].currentState ? color : OFF);
+						setCharlieplexedLED(leds[i].pin, leds[i].currentState ? color : LED_OFF);
 						leds[i].lastToggle = now;
 					}
 				}
@@ -249,9 +199,13 @@ void statusLedManagerTask(void* pvParameters) {
 	}
 }
 
-void setStatusLedState(uint8_t pin, statusLedCommand command) {
-	uint32_t notification = (pin << 24) | (command << 16);
+void setStatusLedState(uint8_t pin1, statusLedCommand cmd1, uint8_t pin2, statusLedCommand cmd2) {
+	uint32_t notification = (pin1 << 24) | (cmd1 << 16) | (pin2 << 8) | cmd2;
 	xTaskNotify(statusLedTaskHandle, notification, eSetValueWithOverwrite);
+}
+
+void setStatusLedState(uint8_t pin, statusLedCommand command) {
+	setStatusLedState(pin, command, 0, LED_OFF);
 }
 
 const char* getSystemInfo() {
@@ -298,88 +252,132 @@ String downloadJSON() {
 	HTTPClient http;
 	String payload;
 
-	for (int i = 0; i < numServers; i++) {
-		int serverIndex = (currentServerIndex + i) % numServers;
-		String url = serverURLs[serverIndex];
-		http.setTimeout(10000);	 // Set timeout to 10 seconds per server
-		http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
-		http.begin(url);
+	String url = serverURLs[currentServerIndex];
+	http.setConnectTimeout(1000);  // Set timeout to 1 second per attempt
+	http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
 
-		int httpCode = http.GET();
-		if (httpCode == HTTP_CODE_OK) {
-			payload = http.getString();
-			http.end();
-			currentServerIndex = serverIndex;  // Update to the successful server
-			return payload;
+	http.begin(url);
+
+	int httpCode = http.GET();
+	if (httpCode == HTTP_CODE_OK) {
+		payload = http.getString();
+		http.end();
+		if (payload.length() == 0) {
+			Serial.printf("Fetch from %s returned too little data (%d bytes)\n", url.c_str(), payload.length());
 		} else {
-			Serial.printf("Fetch from %s returned: %i\n", url.c_str(), httpCode);
-			http.end();
+			return payload;
 		}
+	} else {
+		Serial.printf("Fetch from %s returned: %i\n", url.c_str(), httpCode);
+		http.end();
+		currentServerIndex++;  // Try the next server on the next attempt
+		currentServerIndex = currentServerIndex % numServers;
 	}
+
 	return String();
 }
 
-void setBlockColor(uint16_t block, int colorId) {
-	if (colorId < blockColorIds[block]) {
-		return;	 // Do not update if the block if it is low priority
-	}
+void setBlockColorRGB(uint16_t block, CRGB color) {
 
-	blockColorIds[block] = colorId;	 // Update the color ID for the block if it's higher
+	// Apply gamma correction (γ = 2.0)
+	auto gammaCorrect = [](float value) -> uint8_t {
+		return static_cast<uint8_t>(pow(value / 255.0f, 2.0) * 255.0f);
+	};
+
+	color.r = gammaCorrect(color.r);
+	color.g = gammaCorrect(color.g);
+	color.b = gammaCorrect(color.b);
 
 	// Set the color on the appropriate strand based on the block number
 	if (block >= 100 && block < 100 + LED_1_PIXELS) {
-		neoPixel1.SetPixelColor(block - 100, colorTable[blockColorIds[block]]);
+		leds1[block - 100] = color;
 #if defined(LED_2_PIN)
 	} else if (block >= 300 && block < 300 + LED_2_PIXELS) {
-		neoPixel2.SetPixelColor(block - 300, colorTable[blockColorIds[block]]);
+		leds2[block - 300] = color;
 #endif
 	} else if (block != 0) {  // Ignore block 0 (used for trains appearing and disappearing)
 		Serial.printf("Block %d is out of range for both strands.\n", block);
 	}
 }
 
-void drawMap(time_t epoch) {
-// Clear both strands
-#if defined(LED_2_PIN)
-	neoPixel2.ClearTo(black);
-#endif
-	neoPixel1.ClearTo(black);
-	// Reset the blocks array
-	for (int i = 0; i < 512; i++) {
-		blockColorIds[i] = 0;  // Reset all blocks to black
+void setBlockColorId(uint8_t* blockColorIds, uint16_t block, int colorId) {
+	if (colorId < blockColorIds[block]) {
+		return;	 // Do not update if the new color is lower priority
 	}
+
+	blockColorIds[block] = colorId;	 // Update the color ID for the block
+
+	// Get the actual color from the color table, defaulting to black if out of range
+	CRGB color = (colorId >= 0 && colorId < static_cast<int>(colorTable.size())) ? colorTable[colorId] : black;
+
+	setBlockColorRGB(block, color);
+}
+
+void clearLEDs() {
+	// Clear both strands
+#if defined(LED_2_PIN)
+	fill_solid(leds2, LED_2_PIXELS, black);
+#endif
+	fill_solid(leds1, LED_1_PIXELS, black);
+}
+
+void drawRealtimeMap(time_t epoch) {
+	vTaskSuspend(fastLEDDitheringTaskHandle);
+	clearLEDs();
+
+	uint8_t blockColorIds[512] = { 0 };	 // Initialize all elements to 0
 
 	// Draw the map based on the current LED update schedule
 	for (const auto& update : ledUpdateSchedule) {
 		if (epoch >= update.timestamp) {
-			setBlockColor(update.postBlock, update.colorId);
+			setBlockColorId(blockColorIds, update.postBlock, update.colorId);
 		} else {
-			setBlockColor(update.preBlock, update.colorId);
+			setBlockColorId(blockColorIds, update.preBlock, update.colorId);
 		}
 	}
 
-	// vTaskDelay(pdMS_TO_TICKS(10));
-
-	// Show the updates on both strands
-	neoPixel1.Show();
-#if defined(LED_2_PIN)
-	neoPixel2.Show();
-#endif
-
-	lastMapDrawTime = epoch;  // Update the last draw time
+	vTaskResume(fastLEDDitheringTaskHandle);
 }
 
-void parseLEDMap(const String& downloadedJson) {
+#if defined(TIMETABLE_MODE)
+void drawTimetableMap(uint32_t second, const std::vector<const TrainRoute*>& routes) {
+	vTaskSuspend(fastLEDDitheringTaskHandle);
+	clearLEDs();
+
+	for (size_t routeIndex = 0; routeIndex < routes.size(); routeIndex++) {
+		const TrainRoute* route = routes[routeIndex];
+		auto trains = createTrainsForRoute(route);
+		for (size_t trainIndex = 0; trainIndex < trains.size(); trainIndex++) {
+			if (trains[trainIndex].isVisible(second)) {
+				uint16_t block = trains[trainIndex].getCurrentBlock(second);
+				setBlockColorRGB(block, route->getColor());
+			}
+		}
+	}
+
+	vTaskResume(fastLEDDitheringTaskHandle);
+}
+
+void drawFastForwardTimetable(const std::vector<const TrainRoute*>& routes, uint32_t start_time, float xSpeed = 1000.0f) {
+	// Calculate the current simulated time in seconds since midnight
+	// Start at 5:45 AM ((60*5 + 45) * 60 seconds) @ start_time (millis() at mode start)
+	uint32_t seconds = ((millis() - start_time) / 1000.0f * xSpeed) + ((60 * 5 + 45) * 60);
+	seconds = seconds % 86400;	// Wrap around at 24 hours (86400 seconds)
+	drawTimetableMap(seconds, routes);
+}
+#endif
+
+time_t parseLEDMap(const String& downloadedJson) {
 	JsonDocument doc;
 	DeserializationError error = deserializeJson(doc, downloadedJson);
 
 	if (error) {
 		Serial.printf("JSON parse error: %s\n", error.c_str());
-		return;
+		return 0;
 	}
 
 	String version = doc["version"] | "";
-	baseTimestamp = doc["timestamp"] | 0;
+	time_t baseTimestamp = doc["timestamp"] | 0;
 	updateInterval = doc["update"] | updateInterval;
 	JsonObject colors = doc["colors"];
 	JsonArray updates = doc["updates"];
@@ -388,7 +386,7 @@ void parseLEDMap(const String& downloadedJson) {
 		nextFetchTime = baseTimestamp + updateInterval;
 	} else {
 		Serial.println("Fetched the same data twice");
-		return;	 // No need to update if the data is the same
+		return baseTimestamp;  // No need to update if the data is the same
 	}
 
 	if (String(BACKEND_VERSION) != version) {
@@ -405,7 +403,7 @@ void parseLEDMap(const String& downloadedJson) {
 	colorTable.clear();
 	for (JsonPair kv : colors) {
 		JsonArray rgb = kv.value().as<JsonArray>();
-		colorTable.push_back(RgbColor(rgb[0] | 0, rgb[1] | 0, rgb[2] | 0));
+		colorTable.push_back(CRGB(rgb[0] | 0, rgb[1] | 0, rgb[2] | 0));
 	}
 
 	ledUpdateSchedule.clear();
@@ -427,98 +425,79 @@ void parseLEDMap(const String& downloadedJson) {
 		ledUpdateSchedule.push_back(ledUpdate);
 	}
 
-	ledUpdatePending = true;  // Mark that an update is pending
+	return baseTimestamp;
 }
 
-void onCdcRxEvent(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
-	improvSerial.handleSerial();
+void onBrightnessDown() {
+	brightness.decrease();
 }
 
-void factorySetColor(RgbColor color, int durationMs = 1000) {
-	const int pollingInterval = 25;	 // Polling interval in milliseconds
-	for (int i = 0; i < durationMs / pollingInterval; i++) {
-		neoPixel1.ClearTo(color);
-		neoPixel1.Show();
-#if defined(LED_2_PIN)
-		neoPixel2.ClearTo(color);
-		neoPixel2.Show();
+void onBrightnessUp() {
+	brightness.increase();
+}
+
+void onPower() {
+	brightness.toggle();
+}
+
+#if defined(MODE_BUTTON)
+void onMode() {
+	// Cycle through modes
+	mode = Mode((mode + 1) % 3);
+	modeStartTime = millis();	// Reset start time for fast forward mode
+	lastMapDrawTime = 0;		// Force immediate redraw
+	brightness.setPower(true);	// Ensure brightness is on when changing modes
+	Serial.printf("Mode button pressed, mode changed to %s\n",
+				  (mode == REALTIME)		  ? "REALTIME"
+				  : (mode == ONE_X_TIMETABLE) ? "1x TIMETABLE"
+											  : "FAST FORWARD TIMETABLE");
+}
 #endif
 
-		if (powerButton.pendingCheck || brightnessUpButton.pendingCheck || brightnessDownButton.pendingCheck) {
-			preferences.begin("factory_test");
-			bool passed = preferences.getBool("passed", false);
-			preferences.putBool("passed", !passed);	 // Toggle factory test mode pass/fail state
-			Serial.printf("Factory test mode saved as %s\n", passed ? "failed" : "passed");
-			preferences.end();
-			break;
-		}
-
-		// handleWiFiImprov();
-
-		if (WiFi.status() == WL_CONNECTED) {
-			setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN);
-		} else {
-			setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
-		}
-		vTaskDelay(pdMS_TO_TICKS(pollingInterval));
-	}
-}
-
 void setup() {
-	xTaskCreate(statusLedManagerTask, "Status LED Manager", 1024, NULL, 1, &statusLedTaskHandle);
-
-	// Hardware Serial
-	Serial0.begin(115200);
-
 	// USB Serial
 	Serial.begin();
 	Serial.setDebugOutput(true);
-	Serial.onEvent(ARDUINO_HW_CDC_RX_EVENT, onCdcRxEvent);
+	xTaskCreate(improvSerialTask, "Improv Serial Task", 4096, nullptr, 2, nullptr);
 
+	// --- Setup Addressable LEDs ---
 #if defined(LVL_Shifter_EN)
 	pinMode(LVL_Shifter_EN, OUTPUT);
-	digitalWrite(LVL_Shifter_EN, HIGH);	 //Disable LVL Shifter
+	digitalWrite(LVL_Shifter_EN, HIGH);	 // Disable LVL Shifter
 #endif
 	pinMode(LED_5V_EN, OUTPUT);
-	digitalWrite(LED_5V_EN, LOW);  //Disable 5V Power
+	digitalWrite(LED_5V_EN, LOW);  // Disable 5V Power
 
-	neoPixel1.Begin();
-	neoPixel1.ClearTo(black);
+	// FastLED initialization
+	FastLED.addLeds<WS2811, LED_1_PIN, GRB>(leds1, LED_1_PIXELS);
 #if defined(LED_2_PIN)
-	neoPixel2.Begin();
-	neoPixel2.ClearTo(black);
+	FastLED.addLeds<WS2811, LED_2_PIN, GRB>(leds2, LED_2_PIXELS);
 #endif
+	FastLED.clear(true);  // Clear all pixels on both strands
+	FastLED.setDither(BINARY_DITHER);
+
+	xTaskCreate(fastLEDDitheringTask, "FastLED Dithering", 1024, NULL, 2, &fastLEDDitheringTaskHandle);
 
 #if defined(LVL_Shifter_EN)
 	digitalWrite(LVL_Shifter_EN, LOW);	//Enable LVL Shifter
 #endif
 	digitalWrite(LED_5V_EN, HIGH);	//Enable 5V Power
 
-#if defined(LED_2_PIN)
-	neoPixel2.Show();
+	// --- Setup Buttons ---
+	buttons.add(BRIGHTNESS_DOWN_BUTTON, onBrightnessDown);
+	buttons.add(BRIGHTNESS_UP_BUTTON, onBrightnessUp);
+	buttons.add(POWER_BUTTON, onPower);
+#if defined(MODE_BUTTON)
+	buttons.add(MODE_BUTTON, onMode);
 #endif
-	neoPixel1.Show();
-
-	// Set initial brightness
-	preferences.begin("brightness");
-	brightness = preferences.getInt("brightness", brightness);
-	preferences.end();
-	neoPixel1.SetLuminance(brightness);
-#if defined(LED_2_PIN)
-	neoPixel2.SetLuminance(brightness);
-#endif
-
-	// Button initialization
-	pinMode(brightnessDownButton.pin, INPUT_PULLUP);
-	pinMode(brightnessUpButton.pin, INPUT_PULLUP);
-	pinMode(powerButton.pin, INPUT_PULLUP);
-
-	// Attach interrupts with debouncing
-	attachInterruptArg(digitalPinToInterrupt(BRIGHTNESS_DOWN_BUTTON), buttonISR, &brightnessDownButton, CHANGE);
-	attachInterruptArg(digitalPinToInterrupt(BRIGHTNESS_UP_BUTTON), buttonISR, &brightnessUpButton, CHANGE);
-	attachInterruptArg(digitalPinToInterrupt(POWER_BUTTON), buttonISR, &powerButton, CHANGE);
+	buttons.begin();
 
 	Serial.println(getSystemInfo());
+
+#if defined(FACTORY_TEST)
+	factoryTestMode();
+	buttons.setCallback(POWER_BUTTON, onPower);
+#endif
 
 	// --- Time Setup ---
 	sntp_set_time_sync_notification_cb(timeavailable);
@@ -527,84 +506,106 @@ void setup() {
 	configTzTime(time_zone, ntpServers[0], ntpServers[1], ntpServers[2]);
 
 	// --- WiFi Setup ---
-	setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
-	// WiFi.mode(WIFI_STA);
+	xTaskCreate(statusLedManagerTask, "Status LED Manager", 1024, NULL, 1, &statusLedTaskHandle);
+	setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
 	WiFi.setTxPower(WIFI_POWER_15dBm);	// Set WiFi power to avoid interference
 
-	// Factory test mode
-#if defined(FACTORY_TEST)
-	preferences.begin("factory_test");
-	// preferences.putBool("passed", false);				  // Reset factory test mode
-	if (preferences.getBool("passed", false) == false) {  // Check if factory test mode has been passed
-		preferences.end();
+	fetchOffset = random(0, 999);  // Random delay between 0 and 999 ms to reduce server load
 
-		WiFi.begin(factory_ssid, factory_password);
-
-		while (!(powerButton.pendingCheck || brightnessUpButton.pendingCheck || brightnessDownButton.pendingCheck)) {
-			Serial.println("Factory test mode enabled");
-			factorySetColor(RgbColor(255, 0, 0), 2000);	 // Red
-			factorySetColor(RgbColor(0, 255, 0), 2000);	 // Green
-			factorySetColor(RgbColor(0, 0, 255), 2000);	 // Blue
-		}
-	} else {
-		Serial.println("Factory test passed, skipping.");
-		preferences.end();
-	}
-#endif
 	WiFiImprovSetup();
 
-	Serial.println(getSystemInfo());
-
-	fetchOffset = random(0, 999);  // Random delay between 0 and 999 ms to reduce server load
+#if defined(TIMETABLE_MODE)
+	printTimetableSize(routes);
+#endif
+	brightness.begin();
 }
 
 void loop() {
-	handleWiFiImprov();	 // Handle WiFi credentials setup via WebSerial
+	time_t epoch = time(nullptr);  // Get current time
+	bool wiFiConnected = (WiFi.status() == WL_CONNECTED);
+	if (!wiFiConnected)
+		manageWiFiConnection();
 
-	if (WiFi.status() == WL_CONNECTED) {
-		setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN);
+	switch (mode) {
+		// Run the realtime mode using the LED-Rails backend server (default)
+		case REALTIME:
+			if (wiFiConnected) {
+				// --- Fetch new data periodically ---
+				if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
+					if (epoch > nextFetchTime + updateInterval) {
+						setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
+					}
 
-		time_t epoch = time(nullptr);  // Get current time
+					time_t timeOffset = 0;
+					String downloadedJson = downloadJSON();
+					if (downloadedJson.length() > 0) {
+						setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+						time_t timeOffset = epoch - parseLEDMap(downloadedJson);
+					} else {
+						Serial.println("All servers failed to provide data.");
+						setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
+					}
 
-		// --- Fetch new data periodically ---
-		if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
+					nextFetchTime = constrain(nextFetchTime, epoch + 6, epoch + updateInterval);
 
-			String downloadedJson = downloadJSON();
-			if (downloadedJson.length() > 0) {
-				setStatusLedState(SERVER_LED_PIN, LED_ON_GREEN);
-				parseLEDMap(downloadedJson);  // This populates/updates the schedule
+					Serial.printf("%s fetchDelay:%is MCU:%2.0f°C WiFi:%idBm\n",
+								  getLocalTime(epoch),
+								  timeOffset,
+								  temperatureRead(),
+								  WiFi.RSSI());
+					Serial.flush();
+				}
+
+				// --- Push updates to the LED strips only if changes were made ---
+				if (lastMapDrawTime < epoch) {
+					drawRealtimeMap(epoch);	 // Draw the map with the current updates
+					lastMapDrawTime = epoch;
+				}
+
 			} else {
-				Serial.println("All servers failed to provide data.");
-				setStatusLedState(SERVER_LED_PIN, LED_ON_RED);
+				if (millis() < 60 * 1000) {
+					setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
+				} else {
+					setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+				}
+			}
+			break;
+
+#if defined(TIMETABLE_MODE)
+		// Run the timetable mode at 1x speed (uses wiFi for time sync if available)
+		case ONE_X_TIMETABLE:
+			if (epoch > lastMapDrawTime) {
+				struct tm timeinfo;
+				localtime_r(&epoch, &timeinfo);
+				uint32_t secondsSinceMidnight = timeinfo.tm_hour * 3600 + timeinfo.tm_min * 60 + timeinfo.tm_sec;
+				drawTimetableMap(secondsSinceMidnight, routes);
+				lastMapDrawTime = epoch;
 			}
 
-			nextFetchTime = constrain(nextFetchTime, epoch + 6, epoch + updateInterval);
+			if (wiFiConnected) {
+				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
+			} else if (millis() < 60 * 1000) {
+				setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
+			} else {
+				setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+			}
+			break;
 
-			Serial.printf("%s fetchDelay:%is MCU:%2.0f°C WiFi:%idBm\n",
-						  getLocalTime(epoch),
-						  epoch - baseTimestamp,
-						  temperatureRead(),
-						  WiFi.RSSI());
-			Serial.flush();
-		}
+		// Run the timetable mode at 1000x speed (no wiFi required)
+		case FAST_FORWARD_TIMETABLE:
+			drawFastForwardTimetable(routes, modeStartTime, 1000.0f);  // 1000x speed
+			setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
+			nextFetchTime = 0;
+			break;
+#endif
 
-		// --- Handle button presses ---
-		checkButton(&brightnessDownButton);
-		checkButton(&brightnessUpButton);
-		checkButton(&powerButton);
-
-		// --- Push updates to the LED strips only if changes were made ---
-		if (ledUpdatePending || lastMapDrawTime < epoch) {
-			vTaskDelay(pdMS_TO_TICKS(30));
-			drawMap(epoch);	 // Draw the map with the current updates
-			ledUpdatePending = false;
-		} else {
-			vTaskDelay(pdMS_TO_TICKS(10));
-		}
-
-	} else {
-		setStatusLedState(WIFI_LED_PIN, LED_ON_RED);
-		setStatusLedState(SERVER_LED_PIN, LED_OFF);
-		vTaskDelay(pdMS_TO_TICKS(10));
+		default:
+			Serial.println("Unknown mode, reverting to REALTIME");
+			mode = REALTIME;
+			break;
 	}
+
+	brightness.update();
+
+	vTaskDelay(pdMS_TO_TICKS(30));
 }

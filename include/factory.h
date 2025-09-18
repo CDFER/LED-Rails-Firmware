@@ -52,6 +52,8 @@ void factoryTestMode() {
 			colorIndex = (colorIndex + 1) % (sizeof(testColors) / sizeof(testColors[0]));
 		}
 
+		factorySetColor(CRGB::Black);
+
 	} else {
 		Serial.println("Factory test passed, skipping.");
 		preferences.end();

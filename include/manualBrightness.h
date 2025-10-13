@@ -32,6 +32,11 @@ class BrightnessManager {
 		setBrightness();
 	}
 
+	void setPower(bool on) {
+		powerOn = on;
+		setBrightness();
+	}
+
 	void save(Preferences &preferences) {
 		preferences.begin("brightness");
 		preferences.putInt("brightness", int(brightness));
@@ -40,7 +45,7 @@ class BrightnessManager {
 
 	void load(Preferences &preferences) {
 		preferences.begin("brightness");
-		brightness = float(preferences.getInt("brightness", brightness));
+		brightness = float(preferences.getInt("brightness", int(brightness)));
 		preferences.end();
 	}
 

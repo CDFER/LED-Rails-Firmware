@@ -1,0 +1,1496 @@
+{
+    "Other-55": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-55",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-55",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-10": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-10",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-10",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Sunday-10": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-10",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-10",
+                "start_date": "2025-09-20",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-13": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-13",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-13",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Sunday-11": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-11",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-11",
+                "start_date": "2025-09-20",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Saturday-5": {
+        "data": {
+            "type": "calendar",
+            "id": "Saturday-5",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 1,
+                "service_id": "Saturday-5",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "WkExMon-2": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExMon-2",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "WkExMon-2",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Saturday-3": {
+        "data": {
+            "type": "calendar",
+            "id": "Saturday-3",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 1,
+                "service_id": "Saturday-3",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Monday-1": {
+        "data": {
+            "type": "calendar",
+            "id": "Monday-1",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Monday-1",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-83": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-83",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-83",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-14": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-14",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-14",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Saturday-6": {
+        "data": {
+            "type": "calendar",
+            "id": "Saturday-6",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 1,
+                "service_id": "Saturday-6",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Sunday-12": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-12",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-12",
+                "start_date": "2025-09-20",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Daily-2": {
+        "data": {
+            "type": "calendar",
+            "id": "Daily-2",
+            "attributes": {
+                "end_date": "2025-09-20",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 1,
+                "service_id": "Daily-2",
+                "start_date": "2025-09-20",
+                "sunday": 1,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Weekday-15": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-15",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-15",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Friday-3": {
+        "data": {
+            "type": "calendar",
+            "id": "Friday-3",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Friday-3",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-30": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-30",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-30",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-47": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-47",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-47",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-3": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-3",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-3",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Saturday-8": {
+        "data": {
+            "type": "calendar",
+            "id": "Saturday-8",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 1,
+                "service_id": "Saturday-8",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Sunday-7": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-7",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-7",
+                "start_date": "2025-09-21",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-66": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-66",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-66",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-4": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-4",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-4",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Weekday-11": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-11",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-11",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Friday-2": {
+        "data": {
+            "type": "calendar",
+            "id": "Friday-2",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Friday-2",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-57": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-57",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-57",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-14": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-14",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-14",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-79": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-79",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-79",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-71": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-71",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-71",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-76": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-76",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-76",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-75": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-75",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-75",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-73": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-73",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-73",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-72": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-72",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-72",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-80": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-80",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-80",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-12": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-12",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-12",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Other-81": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-81",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-81",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-82": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-82",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-82",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-54": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-54",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-54",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-19": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-19",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-19",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-28": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-28",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-28",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "WkExMon-1": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExMon-1",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 1,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "WkExMon-1",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Weekday-6": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-6",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-6",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "WkExFri-3": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExFri-3",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "WkExFri-3",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Other-62": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-62",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-62",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "WkExFri-4": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExFri-4",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "WkExFri-4",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "WkExMon-3": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExMon-3",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "WkExMon-3",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "WkExFri-5": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExFri-5",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "WkExFri-5",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Other-78": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-78",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-78",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-16": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-16",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-16",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "WkExMon-4": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExMon-4",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "WkExMon-4",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "WkExMon-5": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExMon-5",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "WkExMon-5",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Other-40": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-40",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-40",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-41": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-41",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-41",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-84": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-84",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-84",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-85": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-85",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-85",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-45": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-45",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-45",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekend-2": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekend-2",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 1,
+                "service_id": "Weekend-2",
+                "start_date": "2025-09-21",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-60": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-60",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-60",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-86": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-86",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-86",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-87": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-87",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-87",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-88": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-88",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-88",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-68": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-68",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-68",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Sunday-4": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-4",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-4",
+                "start_date": "2025-09-21",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Saturday-4": {
+        "data": {
+            "type": "calendar",
+            "id": "Saturday-4",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 1,
+                "service_id": "Saturday-4",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Sunday-5": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-5",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-5",
+                "start_date": "2025-09-21",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Sunday-6": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-6",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-6",
+                "start_date": "2025-09-21",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-67": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-67",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-67",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Sunday-3": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-3",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-3",
+                "start_date": "2025-09-20",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-69": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-69",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-69",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-5": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-5",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-5",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Other-70": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-70",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-70",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-7": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-7",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-7",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Weekday-8": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-8",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-8",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Sunday-8": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-8",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-8",
+                "start_date": "2025-09-21",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Weekday-9": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-9",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-9",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Weekday-10": {
+        "data": {
+            "type": "calendar",
+            "id": "Weekday-10",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 1,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "Weekday-10",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Saturday-7": {
+        "data": {
+            "type": "calendar",
+            "id": "Saturday-7",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 1,
+                "service_id": "Saturday-7",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-37": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-37",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-37",
+                "start_date": "2025-09-20",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Sunday-9": {
+        "data": {
+            "type": "calendar",
+            "id": "Sunday-9",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Sunday-9",
+                "start_date": "2025-09-21",
+                "sunday": 1,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "Other-74": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-74",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-74",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    },
+    "WkExFri-1": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExFri-1",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "WkExFri-1",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "WkExFri-2": {
+        "data": {
+            "type": "calendar",
+            "id": "WkExFri-2",
+            "attributes": {
+                "end_date": "2025-09-30",
+                "friday": 0,
+                "monday": 1,
+                "saturday": 0,
+                "service_id": "WkExFri-2",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 1,
+                "tuesday": 1,
+                "wednesday": 1
+            }
+        }
+    },
+    "Other-77": {
+        "data": {
+            "type": "calendar",
+            "id": "Other-77",
+            "attributes": {
+                "end_date": "2025-12-01",
+                "friday": 0,
+                "monday": 0,
+                "saturday": 0,
+                "service_id": "Other-77",
+                "start_date": "2025-09-21",
+                "sunday": 0,
+                "thursday": 0,
+                "tuesday": 0,
+                "wednesday": 0
+            }
+        }
+    }
+}

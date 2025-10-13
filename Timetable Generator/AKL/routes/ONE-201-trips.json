@@ -1,0 +1,4540 @@
+{
+    "data": [
+        {
+            "type": "trip",
+            "id": "248-840018-75420-2-Q759800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-75420-2-Q759800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-30420-2-6709820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-30420-2-6709820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-23220-2-Q501810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-23220-2-Q501810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-25020-2-Q503800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-25020-2-Q503800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-32220-2-6113400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-32220-2-6113400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-50220-2-6731810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-50220-2-6731810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-70020-2-6553800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-70020-2-6553800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-80820-2-6167400-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "WkExMon-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-80820-2-6167400-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-21420-2-6101400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-21420-2-6101400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-23220-2-6103420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-23220-2-6103420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-23220-2-6501810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-23220-2-6501810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-23220-2-6701810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-23220-2-6701810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-25020-2-6105410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-25020-2-6105410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-25020-2-6503820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-25020-2-6503820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-25020-2-6703820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-25020-2-6703820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-26820-2-6107400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-26820-2-6107400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-26820-2-6505800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-26820-2-6505800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-26820-2-6705800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-26820-2-6705800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-28620-2-6109420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-28620-2-6109420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-28620-2-6507810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-28620-2-6507810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-28620-2-6707810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-28620-2-6707810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-30420-2-6111410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-30420-2-6111410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-30420-2-6509820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-30420-2-6509820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-32220-2-6511800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-32220-2-6511800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-32220-2-6711800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-32220-2-6711800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-34020-2-6115420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-34020-2-6115420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-34020-2-6513810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-34020-2-6513810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-34020-2-6713810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-34020-2-6713810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-35820-2-6117410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-35820-2-6117410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-35820-2-6515820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-35820-2-6515820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-35820-2-6715820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-35820-2-6715820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-37620-2-6119400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-37620-2-6119400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-37620-2-6517800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-37620-2-6517800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-37620-2-6717800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-37620-2-6717800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-39420-2-6121420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-39420-2-6121420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-39420-2-6519810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-39420-2-6519810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-39420-2-6719810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-39420-2-6719810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-41220-2-6123410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-41220-2-6123410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-41220-2-6521820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-41220-2-6521820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-41220-2-6721820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-41220-2-6721820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-43020-2-6125400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-43020-2-6125400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-43020-2-6523800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-43020-2-6523800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-43020-2-6723800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-43020-2-6723800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-44820-2-6127420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-44820-2-6127420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-44820-2-6525810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-44820-2-6525810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-44820-2-6725810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-44820-2-6725810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-46620-2-6129410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-46620-2-6129410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-46620-2-6527820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-46620-2-6527820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-46620-2-6727820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-46620-2-6727820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-48420-2-6131400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-48420-2-6131400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-48420-2-6529800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-48420-2-6529800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-48420-2-6729800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-48420-2-6729800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-50220-2-6133420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-50220-2-6133420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-50220-2-6531810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-50220-2-6531810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-52020-2-6135410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-52020-2-6135410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-52020-2-6533820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-52020-2-6533820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-52020-2-6733820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-52020-2-6733820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-53820-2-6137400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-53820-2-6137400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-53820-2-6535800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-53820-2-6535800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-53820-2-6735800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-53820-2-6735800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-55620-2-6139420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-55620-2-6139420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-55620-2-6537810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-55620-2-6537810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-55620-2-6737810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-55620-2-6737810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-57420-2-6141410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-57420-2-6141410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-57420-2-6539820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-57420-2-6539820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-57420-2-6739820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-57420-2-6739820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-59220-2-6143400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-59220-2-6143400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-59220-2-6541800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-59220-2-6541800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-59220-2-6741800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-59220-2-6741800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-61020-2-6145420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-61020-2-6145420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-61020-2-6543810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-61020-2-6543810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-61020-2-6743810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-61020-2-6743810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-62820-2-6147410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-62820-2-6147410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-62820-2-6545820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-62820-2-6545820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-62820-2-6745820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-62820-2-6745820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-64620-2-6149400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-64620-2-6149400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-64620-2-6547800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-64620-2-6547800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-64620-2-6747800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-64620-2-6747800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-66420-2-6151420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-66420-2-6151420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-66420-2-6549810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-66420-2-6549810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-66420-2-6749810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-66420-2-6749810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-68220-2-6153410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-68220-2-6153410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-68220-2-6551820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-68220-2-6551820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-68220-2-6751820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-68220-2-6751820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-70020-2-6155400-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-70020-2-6155400-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-70020-2-6753800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-70020-2-6753800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-71820-2-6157420-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-71820-2-6157420-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-71820-2-6555810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-71820-2-6555810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-71820-2-6755810-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-71820-2-6755810-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-73620-2-6Q59410-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Monday-1",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-73620-2-6Q59410-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-73620-2-Q557820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-73620-2-Q557820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-73620-2-Q757820-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-73620-2-Q757820-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840018-75420-2-Q559800-d749fee0",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840018-84e47249",
+                "trip_headsign": "Newmarket 4 To Onehunga",
+                "trip_id": "248-840018-75420-2-Q559800-d749fee0",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-26820-2-Q505810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-26820-2-Q505810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-28620-2-Q507800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-28620-2-Q507800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-30420-2-Q509810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-30420-2-Q509810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-32220-2-Q511800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-32220-2-Q511800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-34020-2-Q513810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-34020-2-Q513810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-35820-2-Q515800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-35820-2-Q515800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-37620-2-Q517810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-37620-2-Q517810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-39420-2-Q519800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-39420-2-Q519800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-41220-2-Q521810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-41220-2-Q521810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-43020-2-Q523800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-43020-2-Q523800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-44820-2-Q525810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-44820-2-Q525810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-46620-2-Q527800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-46620-2-Q527800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-48420-2-Q529810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-48420-2-Q529810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-50220-2-Q531800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-50220-2-Q531800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-52020-2-Q533810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-52020-2-Q533810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-53820-2-Q535800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-53820-2-Q535800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-55620-2-Q537810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-55620-2-Q537810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-57420-2-Q539800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-57420-2-Q539800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-59220-2-Q541810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-59220-2-Q541810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-61020-2-Q543800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-61020-2-Q543800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-62820-2-Q545810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-62820-2-Q545810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-64620-2-Q547800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-64620-2-Q547800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-66420-2-Q549810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-66420-2-Q549810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-68220-2-Q551800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-68220-2-Q551800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-70020-2-Q553810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-70020-2-Q553810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-71820-2-Q555800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-71820-2-Q555800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-73620-2-6159400-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-14",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-73620-2-6159400-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-73620-2-6557800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-73620-2-6557800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-73620-2-6757800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-73620-2-6757800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-73620-2-Q557810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-73620-2-Q557810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-75420-2-6161420-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-15",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-75420-2-6161420-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-75420-2-6559810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-75420-2-6559810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-75420-2-6759810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-75420-2-6759810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-75420-2-Q559800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-75420-2-Q559800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-77220-2-6163400-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "WkExMon-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-77220-2-6163400-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-77220-2-6561800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-77220-2-6561800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-77220-2-6561820-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-77220-2-6561820-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-77220-2-6761800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-77220-2-6761800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-77220-2-6761820-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-77220-2-6761820-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-77220-2-Q561810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-77220-2-Q561810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-79020-2-6165420-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "WkExMon-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-79020-2-6165420-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-79020-2-6563800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-79020-2-6563800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-79020-2-6563810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-79020-2-6563810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-79020-2-6763800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-79020-2-6763800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-79020-2-6763810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-79020-2-6763810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-79020-2-Q563800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-79020-2-Q563800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-80820-2-6565800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-80820-2-6565800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-80820-2-6565820-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-80820-2-6565820-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-80820-2-6765800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-80820-2-6765800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-80820-2-6765820-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-80820-2-6765820-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-80820-2-Q565810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-80820-2-Q565810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-82620-2-6169420-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-82620-2-6169420-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-82620-2-6567800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-82620-2-6567800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-82620-2-6567810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-82620-2-6567810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-82620-2-Q567800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-82620-2-Q567800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-84420-2-6171400-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-84420-2-6171400-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-84420-2-6569800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-84420-2-6569800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-84420-2-6569820-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-84420-2-6569820-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-84420-2-Q569810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-84420-2-Q569810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-86220-2-6173420-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-86220-2-6173420-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-86220-2-6571800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-86220-2-6571800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-86220-2-6571810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-86220-2-6571810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-86220-2-Q571800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-86220-2-Q571800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-88020-2-6175400-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-88020-2-6175400-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-88020-2-6573800-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-88020-2-6573800-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-88020-2-6573820-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-88020-2-6573820-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-88020-2-Q573810-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-88020-2-Q573810-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-89820-2-6177420-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-89820-2-6177420-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840042-91620-2-6179400-4030656b",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 1,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840042-f96ed57e",
+                "trip_headsign": "Newmarket 2 To Onehunga",
+                "trip_id": "248-840042-91620-2-6179400-4030656b",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840051-69780-2-6154410-4c7397b1",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-14",
+                "shape_id": "248-840051-b8a25e6e",
+                "trip_headsign": "Onehunga To Newmarket 1",
+                "trip_id": "248-840051-69780-2-6154410-4c7397b1",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840051-69780-2-Q552820-4c7397b1",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-30",
+                "shape_id": "248-840051-b8a25e6e",
+                "trip_headsign": "Onehunga To Newmarket 1",
+                "trip_id": "248-840051-69780-2-Q552820-4c7397b1",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840051-69780-2-Q752820-4c7397b1",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-47",
+                "shape_id": "248-840051-b8a25e6e",
+                "trip_headsign": "Onehunga To Newmarket 1",
+                "trip_id": "248-840051-69780-2-Q752820-4c7397b1",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-21180-2-6100410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-21180-2-6100410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-22980-2-6102400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-22980-2-6102400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-22980-2-6500800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-22980-2-6500800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-22980-2-6700800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-22980-2-6700800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-22980-2-Q500800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-22980-2-Q500800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-24780-2-6104420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-24780-2-6104420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-24780-2-6502810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-24780-2-6502810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-24780-2-6702810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-24780-2-6702810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-24780-2-Q502810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-24780-2-Q502810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-26580-2-6106410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-26580-2-6106410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-26580-2-6504820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-26580-2-6504820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-26580-2-6704820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-26580-2-6704820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-26580-2-Q504800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-26580-2-Q504800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-28380-2-6108400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-28380-2-6108400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-28380-2-6506800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-28380-2-6506800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-28380-2-6706800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-28380-2-6706800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-28380-2-Q506810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-28380-2-Q506810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-30180-2-6110420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-30180-2-6110420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-30180-2-6508810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-30180-2-6508810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-30180-2-6708810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-30180-2-6708810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-30180-2-Q508800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-30180-2-Q508800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-31980-2-6112410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-31980-2-6112410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-31980-2-6510820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-31980-2-6510820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-31980-2-6710820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-31980-2-6710820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-31980-2-Q510810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-31980-2-Q510810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-33780-2-6114400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-33780-2-6114400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-33780-2-6512800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-33780-2-6512800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-33780-2-6712800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-33780-2-6712800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-33780-2-Q512800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-33780-2-Q512800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-35580-2-6116420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-35580-2-6116420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-35580-2-6514810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-35580-2-6514810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-35580-2-6714810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-35580-2-6714810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-35580-2-Q514810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-35580-2-Q514810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-37380-2-6118410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-37380-2-6118410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-37380-2-6516820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-37380-2-6516820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-37380-2-6716820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-37380-2-6716820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-37380-2-Q516800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-37380-2-Q516800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-39180-2-6120400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-39180-2-6120400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-39180-2-6518800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-39180-2-6518800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-39180-2-6718800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-39180-2-6718800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-39180-2-Q518810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-39180-2-Q518810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-40980-2-6122420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-40980-2-6122420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-40980-2-6520810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-40980-2-6520810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-40980-2-6720810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-40980-2-6720810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-40980-2-Q520800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-40980-2-Q520800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-42780-2-6124410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-42780-2-6124410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-42780-2-6522820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-42780-2-6522820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-42780-2-6722820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-42780-2-6722820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-42780-2-Q522810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-42780-2-Q522810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-44580-2-6126400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-44580-2-6126400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-44580-2-6524800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-44580-2-6524800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-44580-2-6724800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-44580-2-6724800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-44580-2-Q524800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-44580-2-Q524800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-46380-2-6128420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-46380-2-6128420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-46380-2-6526810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-46380-2-6526810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-46380-2-6726810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-46380-2-6726810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-46380-2-Q526810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-46380-2-Q526810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-48180-2-6130410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-48180-2-6130410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-48180-2-6528820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-48180-2-6528820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-48180-2-6728820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-48180-2-6728820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-48180-2-Q528800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-48180-2-Q528800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-49980-2-6132400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-49980-2-6132400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-49980-2-6530800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-49980-2-6530800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-49980-2-6730800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-49980-2-6730800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-49980-2-Q530810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-49980-2-Q530810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-51780-2-6134420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-51780-2-6134420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-51780-2-6532810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-51780-2-6532810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-51780-2-6732810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-51780-2-6732810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-51780-2-Q532800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-51780-2-Q532800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-53580-2-6136410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-53580-2-6136410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-53580-2-6534820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-53580-2-6534820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-53580-2-6734820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-53580-2-6734820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-53580-2-Q534810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-53580-2-Q534810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-55380-2-6138400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-55380-2-6138400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-55380-2-6536800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-55380-2-6536800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-55380-2-6736800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-55380-2-6736800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-55380-2-Q536800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-55380-2-Q536800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-57180-2-6140420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-57180-2-6140420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-57180-2-6538810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-57180-2-6538810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-57180-2-6738810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-57180-2-6738810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-57180-2-Q538810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-57180-2-Q538810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-58980-2-6142410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-58980-2-6142410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-58980-2-6540820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-58980-2-6540820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-58980-2-6740820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-58980-2-6740820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-58980-2-Q540800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-58980-2-Q540800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-60780-2-6144400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-60780-2-6144400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-60780-2-6542800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-60780-2-6542800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-60780-2-6742800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-60780-2-6742800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-60780-2-Q542810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-60780-2-Q542810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-62580-2-6146420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-62580-2-6146420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-62580-2-6544810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-62580-2-6544810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-62580-2-6744810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-62580-2-6744810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-62580-2-Q544800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-62580-2-Q544800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-64380-2-6148410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-64380-2-6148410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-64380-2-6546820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-64380-2-6546820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-64380-2-6746820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-64380-2-6746820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-64380-2-Q546810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-64380-2-Q546810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-66180-2-6150400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-66180-2-6150400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-66180-2-6548800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-66180-2-6548800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-66180-2-6748800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-66180-2-6748800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-66180-2-Q548800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-66180-2-Q548800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-67980-2-6152420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-67980-2-6152420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-67980-2-6550810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-67980-2-6550810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-67980-2-6750810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-67980-2-6750810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-67980-2-Q550810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-67980-2-Q550810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-69780-2-6154410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Monday-1",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-69780-2-6154410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-69780-2-6552820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-69780-2-6552820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-69780-2-6752820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-69780-2-6752820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-69780-2-Q552800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-69780-2-Q552800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-71580-2-6156400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-71580-2-6156400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-71580-2-6554800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-71580-2-6554800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-71580-2-6754800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-71580-2-6754800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-71580-2-Q554810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-71580-2-Q554810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-73380-2-6158420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-13",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-73380-2-6158420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-73380-2-6556810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-5",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-73380-2-6556810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-73380-2-6756810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-11",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-73380-2-6756810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-73380-2-Q556800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-55",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-73380-2-Q556800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-75180-2-6160400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Weekday-14",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-75180-2-6160400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-75180-2-6160410-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Monday-1",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-75180-2-6160410-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-75180-2-6558800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-75180-2-6558800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-75180-2-6558820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-75180-2-6558820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-75180-2-6758800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-75180-2-6758800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-75180-2-6758820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-75180-2-6758820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-75180-2-Q558810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-75180-2-Q558810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-76980-2-6162420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "WkExMon-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-76980-2-6162420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-76980-2-6560800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-76980-2-6560800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-76980-2-6560810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-76980-2-6560810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-76980-2-6760800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-76980-2-6760800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-76980-2-6760810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-76980-2-6760810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-76980-2-Q560800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-76980-2-Q560800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-78780-2-6164400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "WkExMon-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-78780-2-6164400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-78780-2-6562800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-78780-2-6562800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-78780-2-6562820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-78780-2-6562820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-78780-2-6762800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-78780-2-6762800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-78780-2-6762820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-78780-2-6762820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-78780-2-Q562810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-78780-2-Q562810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-80580-2-6166420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "WkExMon-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-80580-2-6166420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-80580-2-6564800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-80580-2-6564800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-80580-2-6564810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-80580-2-6564810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-80580-2-6764800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-10",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-80580-2-6764800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-80580-2-6764810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Sunday-12",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-80580-2-6764810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-80580-2-Q564800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-80580-2-Q564800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-82380-2-6168400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-82380-2-6168400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-82380-2-6566800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-82380-2-6566800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-82380-2-6566820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-82380-2-6566820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-82380-2-Q566810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-82380-2-Q566810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-84180-2-6170420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-84180-2-6170420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-84180-2-6568800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-84180-2-6568800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-84180-2-6568810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-84180-2-6568810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-84180-2-Q568800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-84180-2-Q568800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-85980-2-6172400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-85980-2-6172400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-85980-2-6570800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-85980-2-6570800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-85980-2-6570820-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-85980-2-6570820-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-85980-2-Q570810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-85980-2-Q570810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-87780-2-6174420-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-87780-2-6174420-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-87780-2-6572800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Other-83",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-87780-2-6572800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-87780-2-6572810-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Saturday-6",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-87780-2-6572810-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-87780-2-Q572800-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Daily-2",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-87780-2-Q572800-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        },
+        {
+            "type": "trip",
+            "id": "248-840085-89580-2-6176400-fb2a1634",
+            "attributes": {
+                "bikes_allowed": 0,
+                "direction_id": 0,
+                "route_id": "ONE-201",
+                "service_id": "Friday-3",
+                "shape_id": "248-840085-8169f15b",
+                "trip_headsign": "Onehunga To Newmarket 2",
+                "trip_id": "248-840085-89580-2-6176400-fb2a1634",
+                "wheelchair_accessible": 0
+            }
+        }
+    ]
+}

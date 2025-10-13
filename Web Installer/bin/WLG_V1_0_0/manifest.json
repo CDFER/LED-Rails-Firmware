@@ -1,6 +1,6 @@
 {
-  "name": "LED-Rails Firmware",
-  "version": "1.0.0",
+  "name": "Wellington V1.0 Firmware",
+  "version": "",
   "builds": [
     {
       "chipFamily": "ESP32-C3",

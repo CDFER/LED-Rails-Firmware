@@ -80,9 +80,10 @@ class TrainRoute {
 	 * @return uint16_t Total size in bytes
 	 */
 	uint16_t getSize() const {
-		uint16_t timetableBytes = sizeof(TimetableEntry) * getEntries().size();
-		uint16_t startTimesBytes = sizeof(uint32_t) * getStartTimes().size();
-		return timetableBytes + startTimesBytes;
+		// uint16_t timetableBytes = sizeof(TimetableEntry) * getEntries().size();
+		// uint16_t startTimesBytes = sizeof(uint32_t) * getStartTimes().size();
+		// return timetableBytes + startTimesBytes;
+		return sizeof(*this) + sizeof(TimetableEntry) * getEntries().size() + sizeof(uint32_t) * getStartTimes().size();
 	}
 };
 
@@ -212,6 +213,7 @@ inline void printTimetableSize(const std::vector<const TrainRoute*>& routes) {
 	for (const auto& route : routes) {
 		bytes += route->getSize();
 	}
+	bytes += sizeof(TrainRoute*) * routes.size();  // Account for vector of pointers
 	Serial.printf("Loaded %d routes, ~%0.2f KiB\n", routes.size(), bytes / 1024.0);
 }
 

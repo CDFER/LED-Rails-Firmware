@@ -14,7 +14,7 @@
 	#include "factory.h"
 #endif
 
-#if defined(TIMETABLE_MODE)
+#if defined(TIMETABLE_SPEED)
 	#include "timetable.h"
 #endif
 
@@ -48,7 +48,7 @@ uint32_t modeStartTime = 0;	  // Tracks when the current mode started (for fast 
 uint8_t fetchOffset = 0;	  // Random time ms to fetch (reduces server load)
 uint8_t updateInterval = 30;  // Default update interval in seconds
 
-#if defined(TIMETABLE_MODE)
+#if defined(TIMETABLE_SPEED)
 enum Mode { REALTIME, ONE_X_TIMETABLE, FAST_FORWARD_TIMETABLE };
 Mode mode = REALTIME;
 const auto& routes = getAllRoutes();
@@ -339,7 +339,7 @@ void drawRealtimeMap(time_t epoch) {
 	vTaskResume(fastLEDDitheringTaskHandle);
 }
 
-#if defined(TIMETABLE_MODE)
+#if defined(TIMETABLE_SPEED)
 void drawTimetableMap(uint32_t second, const std::vector<const TrainRoute*>& routes) {
 	vTaskSuspend(fastLEDDitheringTaskHandle);
 	clearLEDs();
@@ -360,9 +360,25 @@ void drawTimetableMap(uint32_t second, const std::vector<const TrainRoute*>& rou
 
 void drawFastForwardTimetable(const std::vector<const TrainRoute*>& routes, uint32_t start_time, float xSpeed = 1000.0f) {
 	// Calculate the current simulated time in seconds since midnight
-	// Start at 5:45 AM ((60*5 + 45) * 60 seconds) @ start_time (millis() at mode start)
-	uint32_t seconds = ((millis() - start_time) / 1000.0f * xSpeed) + ((60 * 5 + 45) * 60);
-	seconds = seconds % 86400;	// Wrap around at 24 hours (86400 seconds)
+
+	const uint32_t night_time = 2 * 60 * 60;  // Shrink night time to 2 hours
+
+	uint32_t first_route_start = 24 * 60 * 60;	// Start with max seconds in a day
+	uint32_t last_route_start = 0;
+	for (const auto& route : routes) {
+		auto trains = createTrainsForRoute(route);
+		for (const auto& train : trains) {
+			if (train.getStartTimeSeconds() < first_route_start) {
+				first_route_start = train.getStartTimeSeconds();
+			} else if (train.getStartTimeSeconds() > last_route_start) {
+				last_route_start = train.getStartTimeSeconds();
+			}
+		}
+	}
+
+	uint32_t seconds = ((millis() - start_time) / 1000.0f * xSpeed);
+	seconds = seconds % ((last_route_start - first_route_start) + night_time);	// Wrap around
+	seconds += first_route_start;												// Offset to start from the first train
 	drawTimetableMap(seconds, routes);
 }
 #endif
@@ -440,7 +456,6 @@ void onPower() {
 	brightness.toggle();
 }
 
-#if defined(MODE_BUTTON)
 void onMode() {
 	// Cycle through modes
 	mode = Mode((mode + 1) % 3);
@@ -452,9 +467,11 @@ void onMode() {
 				  : (mode == ONE_X_TIMETABLE) ? "1x TIMETABLE"
 											  : "FAST FORWARD TIMETABLE");
 }
-#endif
 
 void setup() {
+	// Hardware Serial
+	// Serial0.begin(115200);
+
 	// USB Serial
 	Serial.begin();
 	Serial.setDebugOutput(true);
@@ -486,9 +503,11 @@ void setup() {
 	// --- Setup Buttons ---
 	buttons.add(BRIGHTNESS_DOWN_BUTTON, onBrightnessDown);
 	buttons.add(BRIGHTNESS_UP_BUTTON, onBrightnessUp);
-	buttons.add(POWER_BUTTON, onPower);
 #if defined(MODE_BUTTON)
+	buttons.add(POWER_BUTTON, onPower);
 	buttons.add(MODE_BUTTON, onMode);
+#else
+	buttons.add(POWER_BUTTON, onPower, onMode);
 #endif
 	buttons.begin();
 
@@ -571,7 +590,7 @@ void loop() {
 			}
 			break;
 
-#if defined(TIMETABLE_MODE)
+#if defined(TIMETABLE_SPEED)
 		// Run the timetable mode at 1x speed (uses wiFi for time sync if available)
 		case ONE_X_TIMETABLE:
 			if (epoch > lastMapDrawTime) {
@@ -593,7 +612,7 @@ void loop() {
 
 		// Run the timetable mode at 1000x speed (no wiFi required)
 		case FAST_FORWARD_TIMETABLE:
-			drawFastForwardTimetable(routes, modeStartTime, 1000.0f);  // 1000x speed
+			drawFastForwardTimetable(routes, modeStartTime, TIMETABLE_SPEED);  // 1000x speed
 			setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
 			nextFetchTime = 0;
 			break;

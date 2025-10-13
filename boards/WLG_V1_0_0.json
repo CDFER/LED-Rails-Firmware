@@ -23,7 +23,7 @@
       "-DLIGHT_SENSOR=1",
       "-DSCL_PIN=3",
       "-DSDA_PIN=2",
-      "-DTIMETABLE_MODE=1",
+      "-DTIMETABLE_SPEED=1000.0",
       "-DBACKEND_VERSION=\\\"100\\\"",
       "-DCITY_CODE=\\\"wlg\\\"",
       "-DWLG_V1_0_0"

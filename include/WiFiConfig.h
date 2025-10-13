@@ -146,6 +146,12 @@ void setUpWebserver(AsyncWebServer &server) {
 		request->send(response);
 		Serial.println("Served Basic HTML Page");
 	});
+
+	server.onNotFound([](AsyncWebServerRequest *request) {
+		request->send(404);
+	});
+
+	server.begin();
 }
 
 void improvSerialTask(void *param) {

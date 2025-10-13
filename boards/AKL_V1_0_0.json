@@ -22,8 +22,10 @@
       "-DMAX_BRIGHTNESS=254",
       "-DBRIGHTNESS_STEP=20",
       "-DDEBOUNCE_MS=50",
+      "-DTIMETABLE_SPEED=600.0",
       "-DBACKEND_VERSION=\\\"100\\\"",
-      "-DCITY_CODE=\\\"akl\\\""
+      "-DCITY_CODE=\\\"akl\\\"",
+      "-DAKL_V1_0_0"
     ],
     "f_cpu": "160000000L",
     "f_flash": "80000000L",

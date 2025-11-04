@@ -56,3 +56,7 @@ PCB/jlcpcb/
 *secrets*
 !*secrets-blank*
 *env*
+
+# Unfinished or abandoned
+*AKL CRL*
+*AKL CRL Testing*

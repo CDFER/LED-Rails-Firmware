@@ -48,13 +48,22 @@ uint32_t modeStartTime = 0;	  // Tracks when the current mode started (for fast 
 uint8_t fetchOffset = 0;	  // Random time ms to fetch (reduces server load)
 uint8_t updateInterval = 30;  // Default update interval in seconds
 
+enum Mode {
+	REALTIME_MODE,
 #if defined(TIMETABLE_SPEED)
-enum Mode { REALTIME, ONE_X_TIMETABLE, FAST_FORWARD_TIMETABLE };
-Mode mode = REALTIME;
+	ONE_X_TIMETABLE_MODE,
+	HIGH_SPEED_TIMETABLE_MODE,
+#endif
+#if defined(OUT_OF_SERVICE_TRAINS)
+	HIDE_OUT_OF_SERVICE_TRAINS_MODE,
+#endif
+	NUM_MODES  // Sentinel value for the number of modes
+};
+
+Mode trainMapMode = REALTIME_MODE;
+
+#if defined(TIMETABLE_SPEED)
 const auto& routes = getAllRoutes();
-#else
-enum Mode { REALTIME };
-Mode mode = REALTIME;
 #endif
 
 // Pins and pixel counts defined in the board file (./boards/)
@@ -321,7 +330,7 @@ void clearLEDs() {
 	fill_solid(leds1, LED_1_PIXELS, black);
 }
 
-void drawRealtimeMap(time_t epoch) {
+void drawRealtimeMap(time_t epoch, bool skipColorId0 = false) {
 	vTaskSuspend(fastLEDDitheringTaskHandle);
 	clearLEDs();
 
@@ -329,10 +338,14 @@ void drawRealtimeMap(time_t epoch) {
 
 	// Draw the map based on the current LED update schedule
 	for (const auto& update : ledUpdateSchedule) {
-		if (epoch >= update.timestamp) {
-			setBlockColorId(blockColorIds, update.postBlock, update.colorId);
+		if (skipColorId0 && update.colorId == 0) {
+			continue;  // Skip updates with colorId 0 (used for out-of-service trains)
 		} else {
-			setBlockColorId(blockColorIds, update.preBlock, update.colorId);
+			if (epoch >= update.timestamp) {
+				setBlockColorId(blockColorIds, update.postBlock, update.colorId);
+			} else {
+				setBlockColorId(blockColorIds, update.preBlock, update.colorId);
+			}
 		}
 	}
 
@@ -458,14 +471,51 @@ void onPower() {
 
 void onMode() {
 	// Cycle through modes
-	mode = Mode((mode + 1) % 3);
+	trainMapMode = Mode((trainMapMode + 1) % NUM_MODES);
 	modeStartTime = millis();	// Reset start time for fast forward mode
 	lastMapDrawTime = 0;		// Force immediate redraw
 	brightness.setPower(true);	// Ensure brightness is on when changing modes
-	Serial.printf("Mode button pressed, mode changed to %s\n",
-				  (mode == REALTIME)		  ? "REALTIME"
-				  : (mode == ONE_X_TIMETABLE) ? "1x TIMETABLE"
-											  : "FAST FORWARD TIMETABLE");
+	Serial.println("Mode button pressed");
+}
+
+void realtimeMode(time_t epoch, bool wiFiConnected, bool hideOutOfServiceTrains = false) {
+	if (wiFiConnected) {
+		// --- Fetch new data periodically ---
+		if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
+			if (epoch > nextFetchTime + updateInterval) {
+				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
+			}
+
+			time_t timeOffset = 0;
+			String downloadedJson = downloadJSON();
+			if (downloadedJson.length() > 0) {
+				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+				time_t timeOffset = epoch - parseLEDMap(downloadedJson);
+			} else {
+				Serial.println("All servers failed to provide data.");
+				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
+			}
+
+			nextFetchTime = constrain(nextFetchTime, epoch + 6, epoch + updateInterval);
+
+			Serial.printf(
+				"%s fetchDelay:%is MCU:%2.0f°C WiFi:%idBm\n", getLocalTime(epoch), timeOffset, temperatureRead(), WiFi.RSSI());
+			Serial.flush();
+		}
+
+		// --- Push updates to the LED strips only if changes were made ---
+		if (lastMapDrawTime < epoch) {
+			drawRealtimeMap(epoch, hideOutOfServiceTrains);	 // Draw the map with the current updates
+			lastMapDrawTime = epoch;
+		}
+
+	} else {
+		if (millis() < 60 * 1000) {
+			setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
+		} else {
+			setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+		}
+	}
 }
 
 void setup() {
@@ -514,7 +564,9 @@ void setup() {
 	Serial.println(getSystemInfo());
 
 #if defined(FACTORY_TEST)
-	factoryTestMode();
+	if (factoryTestMode()) {
+		trainMapMode = HIGH_SPEED_TIMETABLE_MODE;  // Default to fast forward mode after factory test
+	}
 	buttons.setCallback(POWER_BUTTON, onPower);
 #endif
 
@@ -545,54 +597,13 @@ void loop() {
 	if (!wiFiConnected)
 		manageWiFiConnection();
 
-	switch (mode) {
+	switch (trainMapMode) {
 		// Run the realtime mode using the LED-Rails backend server (default)
-		case REALTIME:
-			if (wiFiConnected) {
-				// --- Fetch new data periodically ---
-				if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
-					if (epoch > nextFetchTime + updateInterval) {
-						setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
-					}
-
-					time_t timeOffset = 0;
-					String downloadedJson = downloadJSON();
-					if (downloadedJson.length() > 0) {
-						setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
-						time_t timeOffset = epoch - parseLEDMap(downloadedJson);
-					} else {
-						Serial.println("All servers failed to provide data.");
-						setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
-					}
-
-					nextFetchTime = constrain(nextFetchTime, epoch + 6, epoch + updateInterval);
-
-					Serial.printf("%s fetchDelay:%is MCU:%2.0f°C WiFi:%idBm\n",
-								  getLocalTime(epoch),
-								  timeOffset,
-								  temperatureRead(),
-								  WiFi.RSSI());
-					Serial.flush();
-				}
-
-				// --- Push updates to the LED strips only if changes were made ---
-				if (lastMapDrawTime < epoch) {
-					drawRealtimeMap(epoch);	 // Draw the map with the current updates
-					lastMapDrawTime = epoch;
-				}
-
-			} else {
-				if (millis() < 60 * 1000) {
-					setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
-				} else {
-					setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
-				}
-			}
-			break;
+		case REALTIME_MODE: realtimeMode(epoch, wiFiConnected); break;
 
 #if defined(TIMETABLE_SPEED)
 		// Run the timetable mode at 1x speed (uses wiFi for time sync if available)
-		case ONE_X_TIMETABLE:
+		case ONE_X_TIMETABLE_MODE:
 			if (epoch > lastMapDrawTime) {
 				struct tm timeinfo;
 				localtime_r(&epoch, &timeinfo);
@@ -611,16 +622,21 @@ void loop() {
 			break;
 
 		// Run the timetable mode at 1000x speed (no wiFi required)
-		case FAST_FORWARD_TIMETABLE:
+		case HIGH_SPEED_TIMETABLE_MODE:
 			drawFastForwardTimetable(routes, modeStartTime, TIMETABLE_SPEED);  // 1000x speed
 			setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
 			nextFetchTime = 0;
 			break;
 #endif
 
+#if defined(OUT_OF_SERVICE_TRAINS)
+			// Hide out-of-service trains
+		case HIDE_OUT_OF_SERVICE_TRAINS_MODE: realtimeMode(epoch, wiFiConnected, true); break;
+#endif
+
 		default:
 			Serial.println("Unknown mode, reverting to REALTIME");
-			mode = REALTIME;
+			trainMapMode = REALTIME_MODE;
 			break;
 	}
 

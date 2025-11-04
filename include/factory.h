@@ -37,7 +37,7 @@ void waitForPowerButton(int timeout) {
 	}
 }
 
-void factoryTestMode() {
+bool factoryTestMode() {
 	preferences.begin("factory_test");
 	passed = preferences.getBool("passed", false);
 	if (passed == false) {
@@ -54,8 +54,11 @@ void factoryTestMode() {
 
 		factorySetColor(CRGB::Black);
 
+		return true;
+
 	} else {
 		Serial.println("Factory test passed, skipping.");
 		preferences.end();
+		return false;
 	}
 }

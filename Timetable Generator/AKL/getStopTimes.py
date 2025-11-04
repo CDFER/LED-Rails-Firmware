@@ -5,7 +5,7 @@ import time
 import os
 
 
-AT_API_KEY = "3d74a150df454381aefb00ce905a6434"
+AT_API_KEY = "Put-Your-API-Key-Here"
 
 
 def time_to_seconds(time_str):

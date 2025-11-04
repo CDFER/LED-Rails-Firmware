@@ -25,7 +25,8 @@
       "-DTIMETABLE_SPEED=600.0",
       "-DBACKEND_VERSION=\\\"110\\\"",
       "-DCITY_CODE=\\\"akl\\\"",
-      "-DAKL_V1_1_0"
+      "-DAKL_V1_1_0",
+      "-DOUT_OF_SERVICE_TRAINS"
     ],
     "f_cpu": "160000000L",
     "f_flash": "80000000L",

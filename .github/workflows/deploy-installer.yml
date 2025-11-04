@@ -26,35 +26,16 @@ jobs:
           key: ${{ runner.os }}-pio
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - name: Install PlatformIO Core
-        run: pip install --upgrade platformio
+        run: pip install --upgrade platformio intelhex
+        # Intel hex needed for bug: https://github.com/platformio/platform-espressif32/issues/1632
 
-      - name: Build and merge AKL_V1_0_0
-        run: pio run -e AKL_V1_0_0 --target mergebin
-
-      - name: Build and merge AKL_V1_1_0
-        run: pio run -e AKL_V1_1_0 --target mergebin
-
-      - name: Build and merge WLG_V1_0_0
-        run: pio run -e WLG_V1_0_0 --target mergebin
+      - name: Build and prepare installer
+        run: python .github/scripts/build_installer.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
-
-      - name: Prepare deployment files
-        run: |
-          mkdir -p _site/bin/AKL_V1_0_0
-          mkdir -p _site/bin/AKL_V1_1_0
-          mkdir -p _site/bin/WLG_V1_0_0
-          cp -r "Web Installer/bin/AKL_V1_0_0/." _site/bin/AKL_V1_0_0/
-          cp -r "Web Installer/bin/AKL_V1_1_0/." _site/bin/AKL_V1_1_0/
-          cp -r "Web Installer/bin/WLG_V1_0_0/." _site/bin/WLG_V1_0_0/
-          cp "Web Installer/led-rails.html" _site/
-          cp "Web Installer/favicon.png" _site/
-          cp .pio/build/AKL_V1_0_0/firmware-merged.bin _site/bin/AKL_V1_0_0/firmware.bin
-          cp .pio/build/AKL_V1_1_0/firmware-merged.bin _site/bin/AKL_V1_1_0/firmware.bin
-          cp .pio/build/WLG_V1_0_0/firmware-merged.bin _site/bin/WLG_V1_0_0/firmware.bin
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

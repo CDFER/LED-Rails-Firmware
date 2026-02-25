@@ -24,9 +24,11 @@ class BrightnessManager {
 
 	void begin() {
 		Wire.begin(SDA_PIN, SCL_PIN, 50000);
-		lightSensor.begin(GAIN_48X, EXPOSURE_50ms, true, Wire);
+		lightSensor.begin(GAIN_48X, EXPOSURE_100ms, true, Wire);
+		lightSensor.startPeriodicMeasurement();
 		loadBuckets(preferences);
-		setBrightness();
+		FastLED.setBrightness(gammaCorrectedBrightness(
+			0.0f));	 // Start with LEDs at minimum brightness until we get a reading from the light sensor
 	}
 
 	void increase() {
@@ -74,18 +76,29 @@ class BrightnessManager {
 			bucketIndex = getAmbientBucketIndex(ambientLux);
 			brightness = calculateBrightnessForAmbient(ambientLux, bucketIndex);
 			setBrightness();
+			// Serial.printf("Ambient Lux: %.0f, Bucket: %d, Brightness: %.2f\n", ambientLux, bucketIndex, brightness);
 		}
 	}
 
-	void setBrightness() {
-		float scaledBrightness = mapFloat(brightness, 0.0f, 1.0f, MIN_BRIGHTNESS / 255.0f, MAX_BRIGHTNESS / 255.0f);
-
-		// Apply gamma correction for perceived brightness
+	uint8_t gammaCorrectedBrightness(float _brightness) {
+		float scaledBrightness = mapFloat(_brightness, 0.0f, 1.0f, MIN_BRIGHTNESS / 255.0f, MAX_BRIGHTNESS / 255.0f);
 		float gamma = 2.2f;
-		uint8_t gammaBrightness = static_cast<uint8_t>(pow(scaledBrightness, gamma) * 255.0f);
+		return static_cast<uint8_t>(pow(scaledBrightness, gamma) * 255.0f);
+	}
+
+	void setBrightness() {
+		uint8_t gammaBrightness = gammaCorrectedBrightness(brightness);
 
 		// Update the LEDs
-		FastLED.setBrightness(powerOn ? gammaBrightness : 0);
+		// Apply Hysteresis to brightness
+		uint8_t prevBrightness = FastLED.getBrightness();
+		uint8_t newBrightness = powerOn ? gammaBrightness : 0;
+		if (abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || brightness == 0.0f || brightness == 1.0f) {
+			newBrightness = constrain(newBrightness,
+									  prevBrightness - 1,
+									  prevBrightness + 1);	// Limit brightness changes to 1 step at a time for smooth transitions
+			FastLED.setBrightness(newBrightness);
+		}
 	}
 
 
@@ -193,6 +206,8 @@ class BrightnessManager {
 		float brightnessMax = getBrightnessForBucket(index);
 
 		float newBrightness = mapFloat(lux, luxMin, luxMax, brightnessMin, brightnessMax);
+
+		newBrightness = constrain(newBrightness, 0.0f, 1.0f);
 
 		// Linear interpolation
 		return newBrightness;

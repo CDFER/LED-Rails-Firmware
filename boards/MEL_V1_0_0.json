@@ -1,0 +1,86 @@
+{
+  "build": {
+    "arduino": {
+      "ldscript": "esp32s3_out.ld",
+      "partitions": "default_8MB.csv"
+    },
+    "core": "esp32",
+    "extra_flags": [
+      "-DARDUINO_USB_MODE=1",
+      "-DARDUINO_USB_CDC_ON_BOOT=1",
+      "-DWIFI_LED_PIN=10",
+      "-DSERVER_LED_PIN=11",
+      "-DBRIGHTNESS_DOWN_BUTTON=7",
+      "-DBRIGHTNESS_UP_BUTTON=8",
+      "-DPOWER_BUTTON=0",
+      "-DMODE_BUTTON=9",
+      "-DLVL_Shifter_EN=48",
+      "-DLED_POWER_CH1_EN=42",
+      "-DLED_POWER_CH2_EN=41",
+      "-DLED_1_PIN=37",
+      "-DLED_1_START=100",
+      "-DLED_1_PIXELS=217",
+      "-DLED_2_PIN=33",
+      "-DLED_2_START=400",
+      "-DLED_2_PIXELS=150",
+      "-DLED_3_PIN=47",
+      "-DLED_3_START=600",
+      "-DLED_3_PIXELS=154",
+      "-DLED_4_PIN=35",
+      "-DLED_4_START=800",
+      "-DLED_4_PIXELS=147",
+      "-DLED_5_PIN=38",
+      "-DLED_5_START=1000",
+      "-DLED_5_PIXELS=117",
+      "-DLED_6_PIN=39",
+      "-DLED_6_START=1200",
+      "-DLED_6_PIXELS=160",
+      "-DLED_7_PIN=34",
+      "-DLED_7_START=1400",
+      "-DLED_7_PIXELS=75",
+      "-DLED_8_PIN=36",
+      "-DLED_8_START=1600",
+      "-DLED_8_PIXELS=22",
+      "-DMIN_BRIGHTNESS=34",
+      "-DMAX_BRIGHTNESS=192",
+      "-DBRIGHTNESS_STEP=20",
+      "-DBRIGHTNESS_HYSTERESIS=5",
+      "-DDEBOUNCE_MS=50",
+      "-DLIGHT_SENSOR=1",
+      "-DSCL_PIN=16",
+      "-DSDA_PIN=15",
+      "-DTIMETABLE_SPEED=500.0",
+      "-DBACKEND_VERSION=\\\"100\\\"",
+      "-DCITY_CODE=\\\"mel\\\"",
+      "-DMEL_V1_0_0"
+    ],
+    "f_cpu": "240000000L",
+    "f_flash": "80000000L",
+    "flash_mode": "qio",
+    "hwids": [["0X303A", "0x1001"]],
+    "mcu": "esp32s3",
+    "variant": "esp32s3"
+  },
+  "connectivity": [
+    "bluetooth",
+    "wifi"
+  ],
+  "debug": {
+    "default_tool": "esp-builtin",
+    "onboard_tools": [
+      "esp-builtin"
+    ],
+    "openocd_target": "esp32s3.cfg"
+  },
+  "frameworks": ["arduino", "espidf"],
+  "name": "Melbourne V1.0.0",
+  "upload": {
+    "flash_size": "8MB",
+    "maximum_ram_size": 327680,
+    "maximum_size": 8388608,
+    "require_upload_port": true,
+    "speed": 460800
+  },
+  "url": "https://keastudios.co.nz/",
+  "vendor": "Kea Studios"
+}

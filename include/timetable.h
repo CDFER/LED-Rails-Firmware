@@ -217,7 +217,9 @@ inline void printTimetableSize(const std::vector<const TrainRoute*>& routes) {
 	Serial.printf("Loaded %d routes, ~%0.2f KiB\n", routes.size(), bytes / 1024.0);
 }
 
-#if defined(WLG_V1_0_0)
+#if defined(MEL_V1_0_0)
+	#include "MEL_V1_0_0_Timetable.h"
+#elif defined(WLG_V1_0_0)
 	#include "WLG_V1_0_0_Timetable.h"
 #elif defined(AKL_V1_0_0)
 	#include "AKL_V1_0_0_Timetable.h"

@@ -68,8 +68,18 @@ void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
 
 void WiFiImprovSetup() {
 	importWiFi();
-	improvSerial.setDeviceInfo(
-		ImprovTypes::ChipFamily::CF_ESP32_C3, FIRMWARE, FIRMWARE_VERSION, ARDUINO_BOARD, "http://{LOCAL_IPV4}/");
+
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+	enum ImprovTypes::ChipFamily chip = ImprovTypes::ChipFamily::CF_ESP32_S2;
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+	enum ImprovTypes::ChipFamily chip = ImprovTypes::ChipFamily::CF_ESP32_C3;
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+	enum ImprovTypes::ChipFamily chip = ImprovTypes::ChipFamily::CF_ESP32_S3;
+#else
+	error("Unknown chip for Improv WiFi");
+#endif
+
+	improvSerial.setDeviceInfo(chip, FIRMWARE, FIRMWARE_VERSION, ARDUINO_BOARD, "http://{LOCAL_IPV4}/");
 	improvSerial.onImprovError(onImprovWiFiErrorCb);
 	improvSerial.onImprovConnected(onImprovWiFiConnectedCb);
 	setUpWebserver(server);
@@ -175,6 +185,7 @@ void manageWiFiConnection() {
 
 			while (strlen(savedWiFi[wifiNetworkIndex].ssid) == 0 && wifiNetworkIndex < MAX_WIFI_NETWORKS) {
 				wifiNetworkIndex++;	 // Skip empty SSIDs
+				printf("Skipping empty WiFi slot %i\n", wifiNetworkIndex);
 			}
 
 			if (wifiNetworkIndex >= MAX_WIFI_NETWORKS) {
@@ -185,8 +196,11 @@ void manageWiFiConnection() {
 		if (strlen(savedWiFi[wifiNetworkIndex].ssid) != 0) {
 			// Attempt to connect to the current network
 			Serial.printf("Attempting to connect to saved network %i: %s\n", wifiNetworkIndex, savedWiFi[wifiNetworkIndex].ssid);
+			WiFi.disconnect();	// Disconnect from any current network
 			WiFi.begin(savedWiFi[wifiNetworkIndex].ssid, savedWiFi[wifiNetworkIndex].password);
-			lastWiFiConnectAttempt = millis();
+			WiFi.setTxPower(WIFI_POWER_15dBm);	// Set WiFi power to avoid interference
 		}
+
+		lastWiFiConnectAttempt = millis();
 	}
 }

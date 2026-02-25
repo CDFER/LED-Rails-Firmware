@@ -2,15 +2,11 @@
 #include <FastLED.h>
 #include <Preferences.h>
 #include <buttons.h>
+#include <ledManager.h>
 
 extern Preferences preferences;
 
 extern ButtonManager buttons;
-
-extern CRGB leds1[];
-#if defined(LED_2_PIN)
-extern CRGB leds2[];
-#endif
 
 bool passed;
 
@@ -22,11 +18,7 @@ void onPowerFactory() {
 }
 
 void factorySetColor(CRGB color) {
-
-	fill_solid(leds1, LED_1_PIXELS, color);
-#if defined(LED_2_PIN)
-	fill_solid(leds2, LED_2_PIXELS, color);
-#endif
+	setAllLedsColor(color);
 	FastLED.show();
 }
 

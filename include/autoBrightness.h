@@ -17,8 +17,12 @@ struct BrightnessBucket {
 class BrightnessManager {
   public:
 	BrightnessManager() {
-		buckets[0] = { 1000.0f, 0.0f };	   // Dark (0-1000 lux)
-		buckets[1] = { 5000.0f, 0.1f };	   // Indoor (1000-5000 lux)
+		buckets[0] = { 1000.0f, 0.0f };	 // Dark (0-1000 lux)
+		if (CITY_CODE == "mel") {
+			buckets[1] = { 5000.0f, 0.2f };	 // Indoor (1000-2000 lux)
+		} else {
+			buckets[1] = { 5000.0f, 0.1f };	 // Indoor (1000-5000 lux)
+		}
 		buckets[2] = { 100000.0f, 1.0f };  // Outdoor (5000-100000 lux)
 	}
 
@@ -87,18 +91,27 @@ class BrightnessManager {
 	}
 
 	void setBrightness() {
-		uint8_t gammaBrightness = gammaCorrectedBrightness(brightness);
+		if (powerOn) {
+			uint8_t newBrightness = gammaCorrectedBrightness(brightness);
+			uint8_t prevBrightness =
+				constrain(FastLED.getBrightness(), gammaCorrectedBrightness(0.0), gammaCorrectedBrightness(1.0));
 
-		// Update the LEDs
-		// Apply Hysteresis to brightness
-		uint8_t prevBrightness = FastLED.getBrightness();
-		uint8_t newBrightness = powerOn ? gammaBrightness : 0;
-		if (abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || brightness == 0.0f || brightness == 1.0f) {
-			newBrightness = constrain(newBrightness,
-									  prevBrightness - 1,
-									  prevBrightness + 1);	// Limit brightness changes to 1 step at a time for smooth transitions
-			FastLED.setBrightness(newBrightness);
+			// Apply Hysteresis to brightness
+			if (abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || brightness == 0.0f || brightness == 1.0f
+				|| FastLED.getBrightness() == 0) {
+				// newBrightness =
+				// 	constrain(newBrightness,
+				// 			  prevBrightness - 1,
+				// 			  prevBrightness + 1);	// Limit brightness changes to 1 step at a time for smooth transitions
+				FastLED.setBrightness(newBrightness);
+			}
+		} else {
+			FastLED.setBrightness(0);
 		}
+	}
+
+	bool isOn() {
+		return powerOn;
 	}
 
 
@@ -121,6 +134,7 @@ class BrightnessManager {
 						  getBrightnessForBucket(i));
 		}
 		Serial.println();
+		Serial.printf("Current ambient: %.0flux, Bucket: %d, Brightness: %.0f%%\n", ambientLux, bucketIndex, brightness * 100.0f);
 	}
 
 	// Adjusts the brightness max for the current lux bucket and the one below it (interpolated)
@@ -204,6 +218,8 @@ class BrightnessManager {
 		float luxMax = getLuxForBucket(index);
 		float brightnessMin = getBrightnessForBucket(index - 1);
 		float brightnessMax = getBrightnessForBucket(index);
+
+		lux = constrain(lux, luxMin, luxMax);
 
 		float newBrightness = mapFloat(lux, luxMin, luxMax, brightnessMin, brightnessMax);
 

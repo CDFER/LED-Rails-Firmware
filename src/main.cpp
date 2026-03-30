@@ -36,7 +36,9 @@ String serverURLs[] = {
 	String("http://api.keastudios.co.nz/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
 	String("http://keastudios.co.nz/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
 	String("http://dirksonline.net/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
-	// String("http://192.168.86.31:3000/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",	 // For testing with a local server
+#if defined(BETA_BUILD)
+	String("http://192.168.86.31:3000/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",	 // For testing with a local server
+#endif
 };
 const int numServers = sizeof(serverURLs) / sizeof(serverURLs[0]);
 int currentServerIndex = 0;
@@ -416,6 +418,14 @@ void onBrightnessUp() {
 
 void onPower() {
 	brightness.toggle();
+	if (brightness.isOn()) {
+		setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+		vTaskDelay(pdMS_TO_TICKS(50));
+		lastMapDrawTime = 0;  // Force redraw
+		modeStartTime = millis();	// Reset start time for fast forward mode
+	} else {
+		setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
+	}
 }
 
 void onMode() {
@@ -431,19 +441,23 @@ void realtimeMode(time_t epoch, bool wiFiConnected, bool hideOutOfServiceTrains 
 	if (wiFiConnected) {
 		// --- Fetch new data periodically ---
 		if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
-			if (epoch > nextFetchTime + updateInterval) {
+			if (epoch > nextFetchTime + updateInterval && brightness.isOn()) {
 				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
 			}
 
 			time_t timeOffset = 0;
 			String downloadedJson = downloadJSON();
 			if (downloadedJson.length() > 0) {
-				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+				if (brightness.isOn()) {
+					setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+				}
 				time_t timeOffset = epoch - parseLEDMap(downloadedJson);
 			} else {
 				if (failedFetchCount > 3 + numServers) {
 					Serial.println("All servers failed to provide data.");
-					setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
+					if (brightness.isOn()) {
+						setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_ON_RED);
+					}
 				}
 			}
 
@@ -461,10 +475,12 @@ void realtimeMode(time_t epoch, bool wiFiConnected, bool hideOutOfServiceTrains 
 		}
 
 	} else {
-		if (millis() < 60 * 1000) {
-			setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
-		} else {
-			setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+		if (brightness.isOn()) {
+			if (millis() < 60 * 1000) {
+				setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
+			} else {
+				setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+			}
 		}
 	}
 }
@@ -535,28 +551,32 @@ void loop() {
 #if defined(TIMETABLE_SPEED)
 		// Run the timetable mode at 1x speed (uses wiFi for time sync if available)
 		case ONE_X_TIMETABLE_MODE:
-			if (epoch > lastMapDrawTime) {
-				struct tm timeinfo;
-				localtime_r(&epoch, &timeinfo);
-				uint32_t secondsSinceMidnight = timeinfo.tm_hour * 3600 + timeinfo.tm_min * 60 + timeinfo.tm_sec;
-				drawTimetableMap(secondsSinceMidnight, routes);
-				lastMapDrawTime = epoch;
-			}
+			if (brightness.isOn()) {
+				if (epoch > lastMapDrawTime) {
+					struct tm timeinfo;
+					localtime_r(&epoch, &timeinfo);
+					uint32_t secondsSinceMidnight = timeinfo.tm_hour * 3600 + timeinfo.tm_min * 60 + timeinfo.tm_sec;
+					drawTimetableMap(secondsSinceMidnight, routes);
+					lastMapDrawTime = epoch;
+				}
 
-			if (wiFiConnected) {
-				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
-			} else if (millis() < 60 * 1000) {
-				setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
-			} else {
-				setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+				if (wiFiConnected) {
+					setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
+				} else if (millis() < 60 * 1000) {
+					setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
+				} else {
+					setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+				}
 			}
 			break;
 
 		// Run the timetable mode at TIMETABLE_SPEED times normal speed (no wiFi required)
 		case HIGH_SPEED_TIMETABLE_MODE:
-			drawFastForwardTimetable(routes, modeStartTime, TIMETABLE_SPEED);
-			setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
-			nextFetchTime = 0;
+			if (brightness.isOn()) {
+				drawFastForwardTimetable(routes, modeStartTime, TIMETABLE_SPEED);
+				setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
+				nextFetchTime = 0;
+			}
 			break;
 #endif
 

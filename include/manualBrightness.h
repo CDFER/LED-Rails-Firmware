@@ -66,6 +66,10 @@ class BrightnessManager {
 		save(preferences);
 	}
 
+	bool isOn() {
+		return powerOn;
+	}
+
 
   private:
 	float brightness = MIN_BRIGHTNESS + BRIGHTNESS_STEP;  // Current brightness level (0-255)

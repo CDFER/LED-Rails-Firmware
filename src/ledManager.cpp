@@ -38,14 +38,6 @@ std::vector<LedStripInfo> ledStrips;
 
 TaskHandle_t fastLEDDitheringTaskHandle;
 
-void fastLEDDitheringTask(void* pvParameters) {
-	const TickType_t delay = pdMS_TO_TICKS(20);	 // 50fps = 20ms interval
-	while (true) {
-		FastLED.show();
-		vTaskDelay(delay);
-	}
-}
-
 void enablePower() {
 #if defined(LVL_Shifter_EN)
 	digitalWrite(LVL_Shifter_EN, LOW);	//Enable LVL Shifter
@@ -60,17 +52,12 @@ void enablePower() {
 #endif
 
 #if defined(LED_POWER_CH2_EN)
-	vTaskDelay(pdMS_TO_TICKS(50));		   // Short delay to ensure stable power before enabling the second channel
+	vTaskDelay(pdMS_TO_TICKS(25));		   // Short delay to ensure stable power before enabling the second channel
 	digitalWrite(LED_POWER_CH2_EN, HIGH);  //Enable Power to LED Channel 2
 #endif
 }
 
 void disablePower() {
-#if defined(LVL_Shifter_EN)
-	pinMode(LVL_Shifter_EN, OUTPUT);
-	digitalWrite(LVL_Shifter_EN, HIGH);	 // Disable LVL Shifter
-#endif
-
 #if defined(LED_5V_EN)
 	pinMode(LED_5V_EN, OUTPUT);
 	digitalWrite(LED_5V_EN, LOW);  // Disable 5V Power
@@ -85,6 +72,66 @@ void disablePower() {
 	pinMode(LED_POWER_CH2_EN, OUTPUT);
 	digitalWrite(LED_POWER_CH2_EN, LOW);  // Disable Power to LED Channel 2
 #endif
+
+#if defined(LVL_Shifter_EN)
+	pinMode(LVL_Shifter_EN, OUTPUT);
+	digitalWrite(LVL_Shifter_EN, HIGH);	 // Disable LVL Shifter
+#endif
+}
+
+bool anyLedsOn() {
+	for (const auto& strip : ledStrips) {
+		for (int j = 0; j < strip.numPixels; j++) {
+			if (strip.leds[j] != CRGB::Black) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void fastLEDDitheringTask(void* pvParameters) {
+	const TickType_t frameDelay = pdMS_TO_TICKS(20);  // 50fps = 20ms interval
+	enum class ledState { OFF, TURNING_ON, ON, TURNING_OFF };
+	ledState currentState = ledState::OFF;
+
+	while (true) {
+		switch (currentState) {
+			case ledState::OFF:
+				if (FastLED.getBrightness() > 0 && anyLedsOn()) {
+					currentState = ledState::TURNING_ON;
+				}
+				vTaskDelay(pdMS_TO_TICKS(10));	 // Check every 10ms when off to save CPU
+				break;
+
+			case ledState::TURNING_ON:
+				FastLED.clear(true);
+				enablePower();
+				currentState = ledState::ON;
+				break;
+
+			case ledState::ON: {
+				uint8_t frameCounter = 0;
+				while (frameCounter < 100) {  // Do 100 frames of dithering before checking
+					FastLED.show();
+					vTaskDelay(frameDelay);
+					frameCounter++;
+				}
+
+				if (FastLED.getBrightness() == 0 || !anyLedsOn()) {
+					currentState = ledState::TURNING_OFF;
+				}
+				break;
+			}
+
+			case ledState::TURNING_OFF:
+				disablePower();
+				currentState = ledState::OFF;
+				break;
+
+			default: break;
+		}
+	}
 }
 
 void setupLeds() {

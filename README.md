@@ -2,7 +2,7 @@
 
 [![PlatformIO](https://img.shields.io/badge/built%20with-PlatformIO-orange?logo=platformio)](https://platformio.org/)
 
-Firmware for my LED train maps (Currently includes Auckland and Wellington)
+Firmware for my LED train maps (Currently includes Auckland, Wellington and Melbourne)
 
 You can edit and run your firmware using platformio (An extention for VSCode)
 
@@ -15,7 +15,7 @@ The firmware is responsible for:
 
 ## Web Installer
 
-Easily flash the latest firmware to your ESP32-C3 using your browser:
+Easily flash the latest firmware to your map using your browser:
 
 [Open the LED Train Map Web Installer](https://cdfer.github.io/Auckland-LED-Train-Map/led-rails.html)
 

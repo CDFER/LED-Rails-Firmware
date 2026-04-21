@@ -1,19 +1,22 @@
+#pragma once
+
 #include <Arduino.h>
 #include <FastLED.h>
 #include <Preferences.h>
 #include <buttons.h>
+#include <ledManager.h>
 
 extern Preferences preferences;
 
 extern ButtonManager buttons;
 
-extern CRGB leds1[];
-#if defined(LED_2_PIN)
-extern CRGB leds2[];
-#endif
-
 bool passed;
 
+/**
+ * @brief Power button callback for factory test mode
+ * 
+ * Marks the test as passed and saves the result to NVS.
+ */
 void onPowerFactory() {
 	passed = true;
 	preferences.putBool("passed", passed);	// Toggle factory test mode pass/fail state
@@ -21,15 +24,21 @@ void onPowerFactory() {
 	preferences.end();
 }
 
+/**
+ * @brief Set all LEDs to a solid color and show immediately
+ * 
+ * @param color RGB color to display
+ */
 void factorySetColor(CRGB color) {
-
-	fill_solid(leds1, LED_1_PIXELS, color);
-#if defined(LED_2_PIN)
-	fill_solid(leds2, LED_2_PIXELS, color);
-#endif
+	setAllLedsColor(color);
 	FastLED.show();
 }
 
+/**
+ * @brief Wait for the power button to be pressed or timeout
+ * 
+ * @param timeout Maximum wait time in milliseconds
+ */
 void waitForPowerButton(int timeout) {
 	unsigned long startTime = millis();
 	while (!passed && (millis() - startTime < timeout)) {
@@ -37,6 +46,15 @@ void waitForPowerButton(int timeout) {
 	}
 }
 
+/**
+ * @brief Run the factory test sequence
+ * 
+ * Cycles through red, green, and blue test colors until the power button is
+ * pressed to confirm all LEDs are working.
+ * 
+ * @return true if the test was run and passed
+ * @return false if the test was already passed previously
+ */
 bool factoryTestMode() {
 	preferences.begin("factory_test");
 	passed = preferences.getBool("passed", false);
@@ -44,11 +62,18 @@ bool factoryTestMode() {
 		buttons.setCallback(POWER_BUTTON, onPowerFactory);
 		Serial.println("Factory test mode enabled");
 		uint8_t colorIndex = 0;
-		const CRGB testColors[] = { CRGB(128, 0, 0), CRGB(0, 128, 0), CRGB(0, 0, 128) };
+		const CRGB testColors[] = {
+			CRGB(128, 0, 0), CRGB(0, 128, 0), CRGB(0, 0, 128), CRGB(32, 32, 32), CRGB(32, 0, 0),
+			CRGB(0, 32, 0),	 CRGB(0, 0, 32),  CRGB(8, 8, 8),   CRGB(0, 0, 0),
+		};
 
 		while (!passed) {
 			factorySetColor(testColors[colorIndex]);
+#if defined(LED_8_PIXELS)  // If there are >=8 LED channels, show each color for 2 seconds
+			waitForPowerButton(2000);
+#else
 			waitForPowerButton(1000);
+#endif
 			colorIndex = (colorIndex + 1) % (sizeof(testColors) / sizeof(testColors[0]));
 		}
 

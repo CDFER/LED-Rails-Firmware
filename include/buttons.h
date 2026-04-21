@@ -11,15 +11,15 @@
  * from the ISR context to the button handling task.
  */
 struct ButtonEvent {
-	uint8_t pin;	   //< GPIO pin number of the button that was pressed
+	uint8_t pin;       // GPIO pin number of the button that was pressed
 	bool isLongPress;  // Flag indicating if this is a long press event
 };
 
 // FreeRTOS queue handle for button events
-QueueHandle_t buttonQueue;
+extern QueueHandle_t buttonQueue;
 
 // Default long press duration in milliseconds
-static const uint16_t DEFAULT_LONG_PRESS_MS = 500;
+const uint16_t defaultLongPressMs = 500;
 
 /**
  * @brief Button manager class for handling multiple button inputs with debouncing
@@ -83,9 +83,7 @@ class ButtonManager {
 	 * @param lpcb Callback function to execute when button is long pressed (optional)
 	 * @param longPressDuration Duration in ms to consider a long press (default: 1000ms)
 	 */
-	void add(uint8_t pin, ButtonCallback cb, ButtonCallback lpcb = nullptr, uint16_t longPressDuration = DEFAULT_LONG_PRESS_MS) {
-		buttons.push_back({ pin, cb, lpcb, longPressDuration, HIGH, 0, 0 });
-	}
+	void add(uint8_t pin, ButtonCallback cb, ButtonCallback lpcb = nullptr, uint16_t longPressDuration = defaultLongPressMs);
 
 	/**
 	 * @brief Update the callback function for an existing button
@@ -96,15 +94,7 @@ class ButtonManager {
 	 * @param pin GPIO pin number of the button to update
 	 * @param cb New callback function to execute when button is pressed
 	 */
-	void setCallback(uint8_t pin, ButtonCallback cb) {
-		for (auto& btn : buttons) {
-			if (btn.pin == pin) {
-				btn.callback = cb;
-				return;
-			}
-		}
-		Serial.printf("Button on pin %d not found!\n", pin);
-	}
+	void setCallback(uint8_t pin, ButtonCallback cb);
 
 	/**
 	 * @brief Update the long press callback function for an existing button
@@ -115,15 +105,7 @@ class ButtonManager {
 	 * @param pin GPIO pin number of the button to update
 	 * @param lpcb New callback function to execute when button is long pressed
 	 */
-	void setLongPressCallback(uint8_t pin, ButtonCallback lpcb) {
-		for (auto& btn : buttons) {
-			if (btn.pin == pin) {
-				btn.longPressCallback = lpcb;
-				return;
-			}
-		}
-		Serial.printf("Button on pin %d not found!\n", pin);
-	}
+	void setLongPressCallback(uint8_t pin, ButtonCallback lpcb);
 
 	/**
 	 * @brief Initialize the button manager
@@ -138,24 +120,7 @@ class ButtonManager {
 	 * 
 	 * - Starting the button handling task
 	 */
-	void begin() {
-		buttonQueue = xQueueCreate(20, sizeof(ButtonEvent));  // Increased queue size
-		if (buttonQueue == NULL) {
-			Serial.println("Failed to create button queue!");
-			return;
-		}
-
-		for (auto& btn : buttons) {
-			pinMode(btn.pin, INPUT_PULLUP);
-			attachInterruptArg(digitalPinToInterrupt(btn.pin),
-							   isrWrapper,
-							   &btn,
-							   CHANGE  // Trigger on both rising and falling edges
-			);
-		}
-
-		xTaskCreate(buttonTask, "ButtonTask", 2048, this, 2, NULL);
-	}
+	void begin();
 
   private:
 	static const int buttonTaskPollingInterval = 50;  // ms
@@ -169,35 +134,7 @@ class ButtonManager {
 	 * 
 	 * @param arg Pointer to the Button object that triggered the interrupt
 	 */
-	static void IRAM_ATTR isrWrapper(void* arg) {
-		Button* button = static_cast<Button*>(arg);
-		TickType_t now = xTaskGetTickCountFromISR();
-
-		bool newState = digitalRead(button->pin);
-
-		if (newState != button->state) {
-			button->state = newState;
-
-			if (newState == LOW) {
-				// Button pressed
-				button->fallingTick = now;
-				button->pressStartTick = now;
-				button->longPressTriggered = false;	 // Reset long press flag
-			} else {
-				// Button released
-				button->risingTick = now;
-				// Only send short press if it's debounced and not already handled as long press
-				if ((button->risingTick - button->fallingTick) > pdMS_TO_TICKS(DEBOUNCE_MS) && !button->longPressTriggered) {
-					ButtonEvent event = { button->pin, false };
-					BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-					xQueueSendFromISR(buttonQueue, &event, &xHigherPriorityTaskWoken);
-					if (xHigherPriorityTaskWoken) {
-						portYIELD_FROM_ISR();
-					}
-				}
-			}
-		}
-	}
+	static void IRAM_ATTR isrWrapper(void* arg);
 
 	/**
 	 * @brief FreeRTOS task for processing button events
@@ -208,46 +145,5 @@ class ButtonManager {
 	 * 
 	 * @param pvParameters Pointer to the ButtonManager instance
 	 */
-	static void buttonTask(void* pvParameters) {
-		ButtonManager* manager = static_cast<ButtonManager*>(pvParameters);
-		ButtonEvent event;
-		TickType_t lastCheckTime = xTaskGetTickCount();
-
-		while (true) {
-			// Check for long press events
-			TickType_t currentTime = xTaskGetTickCount();
-			TickType_t timeSinceLastCheck = currentTime - lastCheckTime;
-			lastCheckTime = currentTime;
-
-			for (auto& btn : manager->buttons) {
-				// If button is currently pressed, has long press callback, and long press not yet triggered
-				if (btn.state == LOW && btn.longPressCallback != nullptr && !btn.longPressTriggered) {
-					// Check if enough time has passed for a long press
-					TickType_t pressDuration = currentTime - btn.pressStartTick;
-					if (pressDuration >= pdMS_TO_TICKS(btn.longPressDuration)) {
-						// Send long press event
-						ButtonEvent longPressEvent = { btn.pin, true };
-						xQueueSend(buttonQueue, &longPressEvent, 0);
-						btn.longPressTriggered = true;	// Mark long press as triggered
-					}
-				}
-			}
-
-			// Process button events from queue
-			if (xQueueReceive(buttonQueue, &event, pdMS_TO_TICKS(buttonTaskPollingInterval))) {
-				for (auto& btn : manager->buttons) {
-					if (btn.pin == event.pin) {
-						if (event.isLongPress) {
-							if (btn.longPressCallback) {
-								btn.longPressCallback();
-							}
-						} else {
-							btn.callback();
-						}
-						break;
-					}
-				}
-			}
-		}
-	}
+	static void buttonTask(void* pvParameters);
 };

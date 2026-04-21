@@ -25,6 +25,7 @@
 #endif
 
 #include "buttons.h"
+#include "ledManager.h"
 
 Preferences preferences;
 BrightnessManager brightness;
@@ -32,12 +33,16 @@ ButtonManager buttons;
 
 // Array of server URLs for failover
 String serverURLs[] = {
+	String("http://api.keastudios.co.nz/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
 	String("http://keastudios.co.nz/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
 	String("http://dirksonline.net/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
-	// String("http://192.168.86.31:3000/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",	 // For local server for testing
+#if defined(BETA_BUILD)
+	String("http://192.168.86.31:3000/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",	 // For testing with a local server
+#endif
 };
 const int numServers = sizeof(serverURLs) / sizeof(serverURLs[0]);
 int currentServerIndex = 0;
+int failedFetchCount = 0;
 
 const char* ntpServers[] = { "nz.pool.ntp.org", "pool.msltime.measurement.govt.nz", "pool.ntp.org" };
 const char* time_zone = "NZST-12NZDT,M9.5.0,M4.1.0/3";
@@ -64,12 +69,6 @@ Mode trainMapMode = REALTIME_MODE;
 
 #if defined(TIMETABLE_SPEED)
 const auto& routes = getAllRoutes();
-#endif
-
-// Pins and pixel counts defined in the board file (./boards/)
-CRGB leds1[LED_1_PIXELS];
-#if defined(LED_2_PIN)
-CRGB leds2[LED_2_PIXELS];
 #endif
 
 CRGB black = CRGB::Black;
@@ -103,29 +102,16 @@ typedef struct {
 } statusLed;
 
 TaskHandle_t statusLedTaskHandle;
-TaskHandle_t fastLEDDitheringTaskHandle;
-
-void fastLEDDitheringTask(void* pvParameters) {
-	const TickType_t delay = pdMS_TO_TICKS(20);	 // 50fps = 20ms interval
-	while (true) {
-		FastLED.show();
-		vTaskDelay(delay);
-	}
-}
 
 const char* getLocalTime(time_t epoch) {
 	struct tm timeinfo;
 	static char buffer[64];
-	struct timeval tv;
 
 	// Convert epoch to local time
 	if (!localtime_r(&epoch, &timeinfo)) {
 		return "No time available";
 	}
-	gettimeofday(&tv, nullptr);
-	int ms = tv.tv_usec / 1000;
 	if (strftime(buffer, sizeof(buffer), "%H:%M:%S", &timeinfo)) {
-		snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), ".%03d", ms);
 		return buffer;
 	}
 	return "Format error";
@@ -217,44 +203,33 @@ void setStatusLedState(uint8_t pin, statusLedCommand command) {
 	setStatusLedState(pin, command, 0, LED_OFF);
 }
 
-const char* getSystemInfo() {
-	static char buffer[255];
+String getSystemInfo() {
 	FlashMode_t mode = (FlashMode_t)ESP.getFlashChipMode();
-	const char* flash_mode_str;
+	String flashMode;
 
 	// Convert flash mode to human-readable string
 	switch (mode) {
-		case FM_QIO: flash_mode_str = "Quad I/O (QIO)"; break;
-		case FM_QOUT: flash_mode_str = "Quad Output (QOUT)"; break;
-		case FM_DIO: flash_mode_str = "Dual I/O (DIO)"; break;
-		case FM_DOUT: flash_mode_str = "Dual Output (DOUT)"; break;
-		case FM_FAST_READ: flash_mode_str = "Fast Read"; break;
-		case FM_SLOW_READ: flash_mode_str = "Slow Read"; break;
-		case FM_UNKNOWN:
-		default: flash_mode_str = "Unknown"; break;
+		case FM_QIO: flashMode = "Quad I/O (QIO)"; break;
+		case FM_QOUT: flashMode = "Quad Output (QOUT)"; break;
+		case FM_DIO: flashMode = "Dual I/O (DIO)"; break;
+		case FM_DOUT: flashMode = "Dual Output (DOUT)"; break;
+		case FM_FAST_READ: flashMode = "Fast Read"; break;
+		case FM_SLOW_READ: flashMode = "Slow Read"; break;
+		default: flashMode = "Unknown"; break;
 	}
 
-	snprintf(
-		buffer,
-		sizeof(buffer),
-		"\n%s\n"
-		"%s-Rev%d\n"
-		"%d Core @ %dMHz\n"
-		"%dMiB Flash @ %dMHz in %s Mode\n"
-		"RAM Heap: %dkiB\n"
-		"IDF SDK: %s\n",
-		ARDUINO_BOARD,
-		ESP.getChipModel(),
-		ESP.getChipRevision(),
-		ESP.getChipCores(),
-		ESP.getCpuFreqMHz(),
-		ESP.getFlashChipSize() / (1024 * 1024),
-		ESP.getFlashChipSpeed() / (1000 * 1000),
-		flash_mode_str,
-		ESP.getHeapSize() / 1024,
-		ESP.getSdkVersion());
+	String info = "\n";
+	info += String(ARDUINO_BOARD) + "\n";
+	info += String(FIRMWARE) + " V" + FIRMWARE_VERSION + "\n";
+	info += "Built: " + String(__DATE__) + " " + __TIME__ + "\n";
+	info += String(ESP.getChipModel()) + "-Rev" + ESP.getChipRevision() + "\n";
+	info += String(ESP.getChipCores()) + " Core @ " + ESP.getCpuFreqMHz() + "MHz\n";
+	info += String(ESP.getFlashChipSize() / (1024 * 1024)) + "MiB Flash @ " + (ESP.getFlashChipSpeed() / (1000 * 1000))
+			+ "MHz in " + flashMode + " Mode\n";
+	info += "RAM Heap: " + String(ESP.getHeapSize() / 1024) + "kiB\n";
+	info += "IDF SDK: " + String(ESP.getSdkVersion()) + "\n";
 
-	return buffer;
+	return info;
 }
 
 String downloadJSON() {
@@ -262,7 +237,6 @@ String downloadJSON() {
 	String payload;
 
 	String url = serverURLs[currentServerIndex];
-	http.setConnectTimeout(1000);  // Set timeout to 1 second per attempt
 	http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
 
 	http.begin(url);
@@ -274,39 +248,20 @@ String downloadJSON() {
 		if (payload.length() == 0) {
 			Serial.printf("Fetch from %s returned too little data (%d bytes)\n", url.c_str(), payload.length());
 		} else {
+			failedFetchCount = 0;  // Reset failed fetch count on success
 			return payload;
 		}
-	} else {
-		Serial.printf("Fetch from %s returned: %i\n", url.c_str(), httpCode);
-		http.end();
+	}
+
+	Serial.printf("Fetch from %s returned: %i\n", url.c_str(), httpCode);
+	http.end();
+	failedFetchCount++;
+	if (failedFetchCount > 3) {
 		currentServerIndex++;  // Try the next server on the next attempt
 		currentServerIndex = currentServerIndex % numServers;
 	}
 
 	return String();
-}
-
-void setBlockColorRGB(uint16_t block, CRGB color) {
-
-	// Apply gamma correction (γ = 2.0)
-	auto gammaCorrect = [](float value) -> uint8_t {
-		return static_cast<uint8_t>(pow(value / 255.0f, 2.0) * 255.0f);
-	};
-
-	color.r = gammaCorrect(color.r);
-	color.g = gammaCorrect(color.g);
-	color.b = gammaCorrect(color.b);
-
-	// Set the color on the appropriate strand based on the block number
-	if (block >= 100 && block < 100 + LED_1_PIXELS) {
-		leds1[block - 100] = color;
-#if defined(LED_2_PIN)
-	} else if (block >= 300 && block < 300 + LED_2_PIXELS) {
-		leds2[block - 300] = color;
-#endif
-	} else if (block != 0) {  // Ignore block 0 (used for trains appearing and disappearing)
-		Serial.printf("Block %d is out of range for both strands.\n", block);
-	}
 }
 
 void setBlockColorId(uint8_t* blockColorIds, uint16_t block, int colorId) {
@@ -322,19 +277,11 @@ void setBlockColorId(uint8_t* blockColorIds, uint16_t block, int colorId) {
 	setBlockColorRGB(block, color);
 }
 
-void clearLEDs() {
-	// Clear both strands
-#if defined(LED_2_PIN)
-	fill_solid(leds2, LED_2_PIXELS, black);
-#endif
-	fill_solid(leds1, LED_1_PIXELS, black);
-}
-
 void drawRealtimeMap(time_t epoch, bool skipColorId0 = false) {
-	vTaskSuspend(fastLEDDitheringTaskHandle);
+	suspendDithering();
 	clearLEDs();
 
-	uint8_t blockColorIds[512] = { 0 };	 // Initialize all elements to 0
+	uint8_t blockColorIds[2000] = { 0 };  // Initialize all elements to 0
 
 	// Draw the map based on the current LED update schedule
 	for (const auto& update : ledUpdateSchedule) {
@@ -349,44 +296,70 @@ void drawRealtimeMap(time_t epoch, bool skipColorId0 = false) {
 		}
 	}
 
-	vTaskResume(fastLEDDitheringTaskHandle);
+	resumeDithering();
 }
 
+float timetableRenderTime = 0.0f;
+uint8_t printoutCounter = 0;
+
 #if defined(TIMETABLE_SPEED)
-void drawTimetableMap(uint32_t second, const std::vector<const TrainRoute*>& routes) {
-	vTaskSuspend(fastLEDDitheringTaskHandle);
+void drawTimetableMap(uint32_t second, RouteSpan<const TrainRoute*> routes) {
+	suspendDithering();
 	clearLEDs();
 
+	unsigned long currentMicros = micros();
 	for (size_t routeIndex = 0; routeIndex < routes.size(); routeIndex++) {
 		const TrainRoute* route = routes[routeIndex];
-		auto trains = createTrainsForRoute(route);
-		for (size_t trainIndex = 0; trainIndex < trains.size(); trainIndex++) {
-			if (trains[trainIndex].isVisible(second)) {
-				uint16_t block = trains[trainIndex].getCurrentBlock(second);
+		for (uint32_t startTime : route->getStartTimes()) {
+			TrainInstance train(route, startTime);
+			if (train.isVisible(second)) {
+				uint16_t block = train.getCurrentBlock(second);
 				setBlockColorRGB(block, route->getColor());
 			}
 		}
 	}
 
-	vTaskResume(fastLEDDitheringTaskHandle);
+	timetableRenderTime = (timetableRenderTime * 0.99f) + (0.01f * (micros() - currentMicros));
+
+	#if defined(BETA_BUILD)
+	Serial.printf("Drew timetable map in %.1f ms (avg: %.1f ms) Heap used: %.0f kiB\n",
+				  (micros() - currentMicros) / 1000.0f,
+				  timetableRenderTime / 1000.0f,
+				  (ESP.getHeapSize() - ESP.getFreeHeap()) / 1024.0f);
+	if (printoutCounter > 100) {
+		printf("Drew timetable map in %.1f ms (avg: %.1f ms) Heap used: %.0f kiB\n",
+			   (micros() - currentMicros) / 1000.0f,
+			   timetableRenderTime / 1000.0f,
+			   (ESP.getHeapSize() - ESP.getFreeHeap()) / 1024.0f);
+		printoutCounter = 0;
+	} else {
+		printoutCounter++;
+	}
+	#endif
+
+	resumeDithering();
 }
 
-void drawFastForwardTimetable(const std::vector<const TrainRoute*>& routes, uint32_t start_time, float xSpeed = 1000.0f) {
+bool timetableSetup = false;
+uint32_t first_route_start = 24 * 60 * 60;	// Start with max seconds in a day
+uint32_t last_route_start = 0;
+
+void drawFastForwardTimetable(RouteSpan<const TrainRoute*> routes, uint32_t start_time, float xSpeed = 1000.0f) {
 	// Calculate the current simulated time in seconds since midnight
 
-	const uint32_t night_time = 2 * 60 * 60;  // Shrink night time to 2 hours
+	const uint32_t night_time = 1 * 60 * 60;  // Shrink night time to 1 hour
 
-	uint32_t first_route_start = 24 * 60 * 60;	// Start with max seconds in a day
-	uint32_t last_route_start = 0;
-	for (const auto& route : routes) {
-		auto trains = createTrainsForRoute(route);
-		for (const auto& train : trains) {
-			if (train.getStartTimeSeconds() < first_route_start) {
-				first_route_start = train.getStartTimeSeconds();
-			} else if (train.getStartTimeSeconds() > last_route_start) {
-				last_route_start = train.getStartTimeSeconds();
+	if (!timetableSetup) {
+		for (const auto& route : routes) {
+			for (uint32_t startTime : route->getStartTimes()) {
+				if (startTime < first_route_start) {
+					first_route_start = startTime;
+				} else if (startTime > last_route_start) {
+					last_route_start = startTime;
+				}
 			}
 		}
+		timetableSetup = true;
 	}
 
 	uint32_t seconds = ((millis() - start_time) / 1000.0f * xSpeed);
@@ -467,6 +440,14 @@ void onBrightnessUp() {
 
 void onPower() {
 	brightness.toggle();
+	if (brightness.isOn()) {
+		setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+		vTaskDelay(pdMS_TO_TICKS(50));
+		lastMapDrawTime = 0;	   // Force redraw
+		modeStartTime = millis();  // Reset start time for fast forward mode
+	} else {
+		setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
+	}
 }
 
 void onMode() {
@@ -482,18 +463,24 @@ void realtimeMode(time_t epoch, bool wiFiConnected, bool hideOutOfServiceTrains 
 	if (wiFiConnected) {
 		// --- Fetch new data periodically ---
 		if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
-			if (epoch > nextFetchTime + updateInterval) {
+			if (epoch > nextFetchTime + updateInterval && brightness.isOn()) {
 				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
 			}
 
 			time_t timeOffset = 0;
 			String downloadedJson = downloadJSON();
 			if (downloadedJson.length() > 0) {
-				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
-				time_t timeOffset = epoch - parseLEDMap(downloadedJson);
+				if (brightness.isOn()) {
+					setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+				}
+				timeOffset = epoch - parseLEDMap(downloadedJson);
 			} else {
-				Serial.println("All servers failed to provide data.");
-				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
+				if (failedFetchCount > 3 + numServers) {
+					Serial.println("All servers failed to provide data.");
+					if (brightness.isOn()) {
+						setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_ON_RED);
+					}
+				}
 			}
 
 			nextFetchTime = constrain(nextFetchTime, epoch + 6, epoch + updateInterval);
@@ -510,10 +497,10 @@ void realtimeMode(time_t epoch, bool wiFiConnected, bool hideOutOfServiceTrains 
 		}
 
 	} else {
-		if (millis() < 60 * 1000) {
-			setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
-		} else {
-			setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+		if (brightness.isOn()) {
+			if (millis() > 60 * 1000) {
+				setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+			}
 		}
 	}
 }
@@ -525,30 +512,9 @@ void setup() {
 	// USB Serial
 	Serial.begin();
 	Serial.setDebugOutput(true);
-	xTaskCreate(improvSerialTask, "Improv Serial Task", 4096, nullptr, 2, nullptr);
+	xTaskCreate(improvSerialTask, "Improv Serial Task", 4096, nullptr, 3, nullptr);
 
-	// --- Setup Addressable LEDs ---
-#if defined(LVL_Shifter_EN)
-	pinMode(LVL_Shifter_EN, OUTPUT);
-	digitalWrite(LVL_Shifter_EN, HIGH);	 // Disable LVL Shifter
-#endif
-	pinMode(LED_5V_EN, OUTPUT);
-	digitalWrite(LED_5V_EN, LOW);  // Disable 5V Power
-
-	// FastLED initialization
-	FastLED.addLeds<WS2811, LED_1_PIN, GRB>(leds1, LED_1_PIXELS);
-#if defined(LED_2_PIN)
-	FastLED.addLeds<WS2811, LED_2_PIN, GRB>(leds2, LED_2_PIXELS);
-#endif
-	FastLED.clear(true);  // Clear all pixels on both strands
-	FastLED.setDither(BINARY_DITHER);
-
-	xTaskCreate(fastLEDDitheringTask, "FastLED Dithering", 1024, NULL, 2, &fastLEDDitheringTaskHandle);
-
-#if defined(LVL_Shifter_EN)
-	digitalWrite(LVL_Shifter_EN, LOW);	//Enable LVL Shifter
-#endif
-	digitalWrite(LED_5V_EN, HIGH);	//Enable 5V Power
+	setupLeds();
 
 	// --- Setup Buttons ---
 	buttons.add(BRIGHTNESS_DOWN_BUTTON, onBrightnessDown);
@@ -564,9 +530,11 @@ void setup() {
 	Serial.println(getSystemInfo());
 
 #if defined(FACTORY_TEST)
+	#if defined(TIMETABLE_SPEED)
 	if (factoryTestMode()) {
 		trainMapMode = HIGH_SPEED_TIMETABLE_MODE;  // Default to fast forward mode after factory test
 	}
+	#endif
 	buttons.setCallback(POWER_BUTTON, onPower);
 #endif
 
@@ -577,15 +545,19 @@ void setup() {
 	configTzTime(time_zone, ntpServers[0], ntpServers[1], ntpServers[2]);
 
 	// --- WiFi Setup ---
-	xTaskCreate(statusLedManagerTask, "Status LED Manager", 1024, NULL, 1, &statusLedTaskHandle);
-	setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
-	WiFi.setTxPower(WIFI_POWER_15dBm);	// Set WiFi power to avoid interference
+	xTaskCreate(statusLedManagerTask, "Status LED Manager", 1024, NULL, 2, &statusLedTaskHandle);
 
 	fetchOffset = random(0, 999);  // Random delay between 0 and 999 ms to reduce server load
 
-	WiFiImprovSetup();
+	if (WiFiImprovSetup()) {
+		Serial.println("WiFi credentials found...");
+		setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
+	} else {
+		Serial.println("No WiFi credentials found...");
+		setStatusLedState(WIFI_LED_PIN, LED_ON_RED);
+	}
 
-#if defined(TIMETABLE_MODE)
+#if defined(TIMETABLE_SPEED)
 	printTimetableSize(routes);
 #endif
 	brightness.begin();
@@ -604,28 +576,30 @@ void loop() {
 #if defined(TIMETABLE_SPEED)
 		// Run the timetable mode at 1x speed (uses wiFi for time sync if available)
 		case ONE_X_TIMETABLE_MODE:
-			if (epoch > lastMapDrawTime) {
-				struct tm timeinfo;
-				localtime_r(&epoch, &timeinfo);
-				uint32_t secondsSinceMidnight = timeinfo.tm_hour * 3600 + timeinfo.tm_min * 60 + timeinfo.tm_sec;
-				drawTimetableMap(secondsSinceMidnight, routes);
-				lastMapDrawTime = epoch;
-			}
+			if (brightness.isOn()) {
+				if (epoch > lastMapDrawTime) {
+					struct tm timeinfo;
+					localtime_r(&epoch, &timeinfo);
+					uint32_t secondsSinceMidnight = timeinfo.tm_hour * 3600 + timeinfo.tm_min * 60 + timeinfo.tm_sec;
+					drawTimetableMap(secondsSinceMidnight, routes);
+					lastMapDrawTime = epoch;
+				}
 
-			if (wiFiConnected) {
-				setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
-			} else if (millis() < 60 * 1000) {
-				setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
-			} else {
-				setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+				if (wiFiConnected) {
+					setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
+				} else if (millis() > 60 * 1000) {
+					setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+				}
 			}
 			break;
 
-		// Run the timetable mode at 1000x speed (no wiFi required)
+		// Run the timetable mode at TIMETABLE_SPEED times normal speed (no wiFi required)
 		case HIGH_SPEED_TIMETABLE_MODE:
-			drawFastForwardTimetable(routes, modeStartTime, TIMETABLE_SPEED);  // 1000x speed
-			setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
-			nextFetchTime = 0;
+			if (brightness.isOn()) {
+				drawFastForwardTimetable(routes, modeStartTime, TIMETABLE_SPEED);
+				setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
+				nextFetchTime = 0;
+			}
 			break;
 #endif
 

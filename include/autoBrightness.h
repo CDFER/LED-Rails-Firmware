@@ -1,52 +1,89 @@
+#pragma once
+
 #include <Arduino.h>
 #include <FastLED.h>
 #include <LTR303.h>
 #include <Preferences.h>
 
-// Preferences is in main.cpp
 extern Preferences preferences;
 
 LTR303 lightSensor;
 
-// Configurable bucket system
+/**
+ * @brief Lux range and corresponding brightness level
+ */
 struct BrightnessBucket {
-	float luxMax;		  // Maximum lux for this bucket
+	float luxMax;         // Maximum lux for this bucket
 	float brightnessMax;  // Brightness at maximum lux (0-1)
 };
 
+/**
+ * @brief Manages LED brightness using an ambient light sensor
+ * 
+ * Uses an LTR303 light sensor and a configurable bucket system to
+ * automatically adjust LED brightness based on ambient light levels.
+ */
 class BrightnessManager {
   public:
 	BrightnessManager() {
-		buckets[0] = { 1000.0f, 0.0f };	   // Dark (0-1000 lux)
-		buckets[1] = { 5000.0f, 0.1f };	   // Indoor (1000-5000 lux)
+		buckets[0] = { 1000.0f, 0.0f };	 // Dark (0-1000 lux)
+		if (CITY_CODE == "mel") {
+			buckets[1] = { 5000.0f, 0.2f };	 // Indoor (1000-2000 lux)
+		} else {
+			buckets[1] = { 5000.0f, 0.1f };	 // Indoor (1000-5000 lux)
+		}
 		buckets[2] = { 100000.0f, 1.0f };  // Outdoor (5000-100000 lux)
 	}
 
+	/**
+	 * @brief Initialize the light sensor and load saved brightness buckets
+	 */
 	void begin() {
 		Wire.begin(SDA_PIN, SCL_PIN, 50000);
-		lightSensor.begin(GAIN_48X, EXPOSURE_50ms, true, Wire);
+		lightSensor.begin(GAIN_48X, EXPOSURE_100ms, true, Wire);
+		lightSensor.startPeriodicMeasurement();
 		loadBuckets(preferences);
-		setBrightness();
+		FastLED.setBrightness(gammaCorrectedBrightness(
+			0.0f));	 // Start with LEDs at minimum brightness until we get a reading from the light sensor
 	}
 
+	/**
+	 * @brief Increase brightness for the current ambient bucket
+	 */
 	void increase() {
 		adjustBuckets(BRIGHTNESS_STEP / 255.0f);
 	}
 
+	/**
+	 * @brief Decrease brightness for the current ambient bucket
+	 */
 	void decrease() {
 		adjustBuckets(-BRIGHTNESS_STEP / 255.0f);
 	}
 
+	/**
+	 * @brief Toggle power on/off
+	 */
 	void toggle() {
 		powerOn = !powerOn;
 		setBrightness();
 	}
 
+	/**
+	 * @brief Set power state
+	 * 
+	 * @param on True to turn on, false to turn off
+	 */
 	void setPower(bool on) {
 		powerOn = on;
 		setBrightness();
 	}
 
+	/**
+	 * @brief Save brightness bucket settings to NVS
+	 * 
+	 * @param preferences Preferences instance for NVS access
+	 */
 	void saveBuckets(Preferences &preferences) {
 		preferences.begin("brightness", false);
 		for (int i = 0; i < numBuckets; i++) {
@@ -56,6 +93,11 @@ class BrightnessManager {
 		preferences.end();
 	}
 
+	/**
+	 * @brief Load brightness bucket settings from NVS
+	 * 
+	 * @param preferences Preferences instance for NVS access
+	 */
 	void loadBuckets(Preferences &preferences) {
 		preferences.begin("brightness", true);
 		for (int i = 0; i < numBuckets; i++) {
@@ -66,7 +108,9 @@ class BrightnessManager {
 		printBuckets();
 	}
 
-	// Get brightness from light sensor and adjust brightness
+	/**
+	 * @brief Read light sensor and update brightness
+	 */
 	void update() {
 		double lux;
 		if (lightSensor.getApproximateLux(lux)) {
@@ -74,18 +118,52 @@ class BrightnessManager {
 			bucketIndex = getAmbientBucketIndex(ambientLux);
 			brightness = calculateBrightnessForAmbient(ambientLux, bucketIndex);
 			setBrightness();
+			// Serial.printf("Ambient Lux: %.0f, Bucket: %d, Brightness: %.2f\n", ambientLux, bucketIndex, brightness);
 		}
 	}
 
-	void setBrightness() {
-		float scaledBrightness = mapFloat(brightness, 0.0f, 1.0f, MIN_BRIGHTNESS / 255.0f, MAX_BRIGHTNESS / 255.0f);
-
-		// Apply gamma correction for perceived brightness
+	/**
+	 * @brief Apply gamma correction to a brightness value
+	 * 
+	 * @param _brightness Brightness level (0-1)
+	 * @return uint8_t Gamma-corrected brightness (0-255)
+	 */
+	uint8_t gammaCorrectedBrightness(float _brightness) {
+		float scaledBrightness = mapFloat(_brightness, 0.0f, 1.0f, MIN_BRIGHTNESS / 255.0f, MAX_BRIGHTNESS / 255.0f);
 		float gamma = 2.2f;
-		uint8_t gammaBrightness = static_cast<uint8_t>(pow(scaledBrightness, gamma) * 255.0f);
+		return static_cast<uint8_t>(pow(scaledBrightness, gamma) * 255.0f);
+	}
 
-		// Update the LEDs
-		FastLED.setBrightness(powerOn ? gammaBrightness : 0);
+	/**
+	 * @brief Apply the current brightness to the LED strip
+	 */
+	void setBrightness() {
+		if (powerOn) {
+			uint8_t newBrightness = gammaCorrectedBrightness(brightness);
+			uint8_t prevBrightness =
+				constrain(FastLED.getBrightness(), gammaCorrectedBrightness(0.0), gammaCorrectedBrightness(1.0));
+
+			// Apply Hysteresis to brightness
+			if (abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || brightness == 0.0f || brightness == 1.0f
+				|| FastLED.getBrightness() == 0) {
+				// newBrightness =
+				// 	constrain(newBrightness,
+				// 			  prevBrightness - 1,
+				// 			  prevBrightness + 1);	// Limit brightness changes to 1 step at a time for smooth transitions
+				FastLED.setBrightness(newBrightness);
+			}
+		} else {
+			FastLED.setBrightness(0);
+		}
+	}
+
+	/**
+	 * @brief Check if LEDs are powered on
+	 * 
+	 * @return true if powered on
+	 */
+	bool isOn() {
+		return powerOn;
 	}
 
 
@@ -108,6 +186,7 @@ class BrightnessManager {
 						  getBrightnessForBucket(i));
 		}
 		Serial.println();
+		Serial.printf("Current ambient: %.0flux, Bucket: %d, Brightness: %.0f%%\n", ambientLux, bucketIndex, brightness * 100.0f);
 	}
 
 	// Adjusts the brightness max for the current lux bucket and the one below it (interpolated)
@@ -192,9 +271,12 @@ class BrightnessManager {
 		float brightnessMin = getBrightnessForBucket(index - 1);
 		float brightnessMax = getBrightnessForBucket(index);
 
+		lux = constrain(lux, luxMin, luxMax);
+
 		float newBrightness = mapFloat(lux, luxMin, luxMax, brightnessMin, brightnessMax);
 
-		// Linear interpolation
+		newBrightness = constrain(newBrightness, 0.0f, 1.0f);
+
 		return newBrightness;
 	}
 };

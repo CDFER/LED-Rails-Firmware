@@ -11,9 +11,10 @@ from typing import List, Optional
 
 # Configuration
 ENVIRONMENTS = [
-    {"id": "AKL_V1_0_0", "name": "Auckland V1.0"},
-    {"id": "AKL_V1_1_0", "name": "Auckland V1.1"},
-    {"id": "WLG_V1_0_0", "name": "Wellington V1.0"},
+    {"id": "AKL_V1_0_0", "name": "Auckland V1.0", "chipFamily": "ESP32-C3"},
+    {"id": "AKL_V1_1_0", "name": "Auckland V1.1", "chipFamily": "ESP32-C3"},
+    {"id": "WLG_V1_0_0", "name": "Wellington V1.0", "chipFamily": "ESP32-C3"},
+    {"id": "MEL_V1_0_0", "name": "Melbourne V1.0", "chipFamily": "ESP32-S3"},
 ]
 WEB_INSTALLER_SRC = "Web Installer"
 SITE_DIR = "_site"
@@ -34,21 +35,26 @@ def build_environments() -> None:
     """Build all configured environments with mergebin target"""
     for env in ENVIRONMENTS:
         print(f"Building environment: {env['id']}")
-        run_command(["pio", "run", "-e", env["id"], "--target", "mergebin"])
+        run_command(["pio", "run", "-e", env["id"], "--target", "mergebin_seperate_bootloader"])
 
 
-def create_manifest(env: dict, site_bin_dir: str) -> None:
+def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
     """Create manifest.json for the given environment in the _site/bin/env directory."""
-    manifest = {
+    manifest: dict[str, object] = {
         "name": env["name"],
         "version": "",
+        "new_install_prompt_erase": True,
         "builds": [
             {
-                "chipFamily": "ESP32-C3",
+                "chipFamily": env["chipFamily"],
                 "parts": [
                     {
-                        "path": "firmware.bin",
+                        "path": "bootloader.bin",
                         "offset": 0,
+                    },
+                    {
+                        "path": "firmware-app0.bin",
+                        "offset": 65536,
                     }
                 ],
             }
@@ -65,17 +71,24 @@ def prepare_deployment_files() -> None:
     for env in ENVIRONMENTS:
         os.makedirs(os.path.join(SITE_DIR, "bin", env["id"]), exist_ok=True)
 
-    # Copy web installer files (only favicon and html)
+    # Copy web installer files (favicon and html)
     shutil.copy(os.path.join(WEB_INSTALLER_SRC, "led-rails.html"), SITE_DIR)
     shutil.copy(os.path.join(WEB_INSTALLER_SRC, "favicon.png"), SITE_DIR)
 
     # Copy firmware binaries and create manifest.json
     for env in ENVIRONMENTS:
-        src_bin = os.path.join(BUILD_DIR, env["id"], "firmware-merged.bin")
+        # 
+        src_bin = os.path.join(BUILD_DIR, env["id"], "firmware-app0.bin")
         dst_bin_dir = os.path.join(SITE_DIR, "bin", env["id"])
-        dst_bin = os.path.join(dst_bin_dir, "firmware.bin")
+        dst_bin = os.path.join(dst_bin_dir, "firmware-app0.bin")
         shutil.copy(src_bin, dst_bin)
-        print(f"Copied firmware for {env['id']}")
+
+        src_bin = os.path.join(BUILD_DIR, env["id"], "bootloader.bin")
+        dst_bin_dir = os.path.join(SITE_DIR, "bin", env["id"])
+        dst_bin = os.path.join(dst_bin_dir, "bootloader.bin")
+        shutil.copy(src_bin, dst_bin)
+
+        print(f"Copied firmware and bootloader for {env['id']}")
         create_manifest(env, dst_bin_dir)
 
 

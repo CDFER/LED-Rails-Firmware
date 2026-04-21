@@ -11,7 +11,7 @@
  * from the ISR context to the button handling task.
  */
 struct ButtonEvent {
-	uint8_t pin;	   //< GPIO pin number of the button that was pressed
+	uint8_t pin;       // GPIO pin number of the button that was pressed
 	bool isLongPress;  // Flag indicating if this is a long press event
 };
 

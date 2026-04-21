@@ -1,10 +1,11 @@
+#pragma once
+
 #include <ESPAsyncWebServer.h>
 #include <Esp.h>
 #include <ImprovWiFiLibrary.h>
 #include <Preferences.h>
 #include <WiFi.h>
 
-// Preferences is in main.cpp
 extern Preferences preferences;
 
 ImprovWiFi improvSerial(&Serial);
@@ -14,6 +15,9 @@ AsyncWebServer server(80);
 #define MAX_PASS_LEN 64
 #define MAX_WIFI_NETWORKS 16
 
+/**
+ * @brief Structure for storing WiFi credentials
+ */
 struct savedWiFiNetwork {
 	char ssid[MAX_SSID_LEN];
 	char password[MAX_PASS_LEN];
@@ -23,30 +27,48 @@ int wifiNetworkIndex = 0;				   // Index of the current WiFi network
 unsigned long lastWiFiConnectAttempt = 0;  // Timestamp of the last WiFi connect attempt
 uint8_t wifiConnectAttempts = 0;		   // Number of attempts for the current network
 
-savedWiFiNetwork savedWiFi[MAX_WIFI_NETWORKS];	// Array to hold saved WiFi networks
+savedWiFiNetwork savedWiFi[MAX_WIFI_NETWORKS];
 
 void setUpWebserver(AsyncWebServer &server);
 
+/**
+ * @brief Callback for Improv WiFi errors
+ * 
+ * @param err Error type from Improv WiFi
+ */
 void onImprovWiFiErrorCb(ImprovTypes::Error err) {
 	Serial.printf("Improv WiFi Error: %d\n", err);
 	server.end();
 	server.begin();
 }
 
-// Save WiFi credentials to Preferences (NVS Flash Partition)
+/**
+ * @brief Save WiFi credentials to NVS
+ */
 void exportWiFi() {
 	preferences.begin("wifi");
 	preferences.putBytes("wifi", savedWiFi, sizeof(savedWiFi));
 	preferences.end();
 }
 
-// Read WiFi credentials from Preferences (NVS Flash Partition)
+/**
+ * @brief Load WiFi credentials from NVS
+ */
 void importWiFi() {
 	preferences.begin("wifi", true);
 	preferences.getBytes("wifi", savedWiFi, sizeof(savedWiFi));
 	preferences.end();
 }
 
+/**
+ * @brief Callback when WiFi is connected via Improv
+ * 
+ * Saves the new network at the top of the saved networks list
+ * and persists it to NVS.
+ * 
+ * @param ssid Network SSID
+ * @param password Network password
+ */
 void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
 	// Move the networks all down one position
 	for (int i = MAX_WIFI_NETWORKS - 1; i > 0; i--) {
@@ -66,7 +88,15 @@ void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
 	server.begin();
 }
 
-void WiFiImprovSetup() {
+/**
+ * @brief Initialize WiFi with Improv serial provisioning
+ * 
+ * Loads saved credentials from NVS and configures Improv WiFi
+ * for serial-based provisioning.
+ * 
+ * @return true if saved WiFi credentials were found, false otherwise
+ */
+bool WiFiImprovSetup() {
 	importWiFi();
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
@@ -83,6 +113,16 @@ void WiFiImprovSetup() {
 	improvSerial.onImprovError(onImprovWiFiErrorCb);
 	improvSerial.onImprovConnected(onImprovWiFiConnectedCb);
 	setUpWebserver(server);
+
+	bool savedWifiFound = false;
+	for (int i = 0; i < MAX_WIFI_NETWORKS; i++) {
+		if (strlen(savedWiFi[i].ssid) > 0) {
+			savedWifiFound = true;
+			break;
+		}
+	}
+
+	return savedWifiFound;
 }
 
 const char index_html[] PROGMEM = R"=====(
@@ -115,7 +155,7 @@ const char index_html[] PROGMEM = R"=====(
       text-align: center;
     }
     h1 {
-      color: #09f;
+      color: #fff;
       font-family: inherit;
       margin-bottom: 16px;
     }
@@ -134,7 +174,7 @@ const char index_html[] PROGMEM = R"=====(
 </head>
 <body>
   <div class="container">
-    <h1>LED-Rails</h1>
+    <h1>Kea Studios</h1>
     <h2>This is just an empty page for now, in the future settings will be added here...</h2>
   </div>
 </body>
@@ -142,11 +182,15 @@ const char index_html[] PROGMEM = R"=====(
 
 )=====";
 
+/**
+ * @brief Configure and start the async web server
+ * 
+ * @param server AsyncWebServer instance to configure
+ */
 void setUpWebserver(AsyncWebServer &server) {
-	// return 404 to webpage icon
 	server.on("/favicon.ico", [](AsyncWebServerRequest *request) {
 		request->send(404);
-	});	 // webpage icon
+	});
 
 	// Serve Basic HTML Page
 	server.on("/", HTTP_ANY, [](AsyncWebServerRequest *request) {
@@ -164,6 +208,11 @@ void setUpWebserver(AsyncWebServer &server) {
 	server.begin();
 }
 
+/**
+ * @brief FreeRTOS task for handling Improv WiFi serial communication
+ * 
+ * @param param Unused task parameter
+ */
 void improvSerialTask(void *param) {
 	while (true) {
 		while (Serial.available() > 0) {
@@ -173,6 +222,12 @@ void improvSerialTask(void *param) {
 	}
 }
 
+/**
+ * @brief Manage WiFi connection with failover across saved networks
+ * 
+ * Attempts to connect to saved WiFi networks, cycling through them
+ * on repeated failures.
+ */
 void manageWiFiConnection() {
 	const unsigned long attemptTimeout = 5000;	// 5 seconds for each attempt
 	const uint8_t maxAttempts = 3;				// Max attempts per network
@@ -185,7 +240,7 @@ void manageWiFiConnection() {
 
 			while (strlen(savedWiFi[wifiNetworkIndex].ssid) == 0 && wifiNetworkIndex < MAX_WIFI_NETWORKS) {
 				wifiNetworkIndex++;	 // Skip empty SSIDs
-				printf("Skipping empty WiFi slot %i\n", wifiNetworkIndex);
+									 // printf("Skipping empty WiFi slot %i\n", wifiNetworkIndex);
 			}
 
 			if (wifiNetworkIndex >= MAX_WIFI_NETWORKS) {

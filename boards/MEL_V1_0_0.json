@@ -49,7 +49,7 @@
       "-DLIGHT_SENSOR=1",
       "-DSCL_PIN=16",
       "-DSDA_PIN=15",
-      "-DTIMETABLE_SPEED=500.0",
+      "-DTIMETABLE_SPEED=600.0",
       "-DBACKEND_VERSION=\\\"100\\\"",
       "-DCITY_CODE=\\\"mel\\\"",
       "-DMEL_V1_0_0"

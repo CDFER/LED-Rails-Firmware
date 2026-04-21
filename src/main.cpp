@@ -106,16 +106,12 @@ TaskHandle_t statusLedTaskHandle;
 const char* getLocalTime(time_t epoch) {
 	struct tm timeinfo;
 	static char buffer[64];
-	struct timeval tv;
 
 	// Convert epoch to local time
 	if (!localtime_r(&epoch, &timeinfo)) {
 		return "No time available";
 	}
-	gettimeofday(&tv, nullptr);
-	int ms = tv.tv_usec / 1000;
 	if (strftime(buffer, sizeof(buffer), "%H:%M:%S", &timeinfo)) {
-		snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), ".%03d", ms);
 		return buffer;
 	}
 	return "Format error";
@@ -303,41 +299,67 @@ void drawRealtimeMap(time_t epoch, bool skipColorId0 = false) {
 	resumeDithering();
 }
 
+float timetableRenderTime = 0.0f;
+uint8_t printoutCounter = 0;
+
 #if defined(TIMETABLE_SPEED)
-void drawTimetableMap(uint32_t second, const std::vector<const TrainRoute*>& routes) {
+void drawTimetableMap(uint32_t second, RouteSpan<const TrainRoute*> routes) {
 	suspendDithering();
 	clearLEDs();
 
+	unsigned long currentMicros = micros();
 	for (size_t routeIndex = 0; routeIndex < routes.size(); routeIndex++) {
 		const TrainRoute* route = routes[routeIndex];
-		auto trains = createTrainsForRoute(route);
-		for (size_t trainIndex = 0; trainIndex < trains.size(); trainIndex++) {
-			if (trains[trainIndex].isVisible(second)) {
-				uint16_t block = trains[trainIndex].getCurrentBlock(second);
+		for (uint32_t startTime : route->getStartTimes()) {
+			TrainInstance train(route, startTime);
+			if (train.isVisible(second)) {
+				uint16_t block = train.getCurrentBlock(second);
 				setBlockColorRGB(block, route->getColor());
 			}
 		}
 	}
 
+	timetableRenderTime = (timetableRenderTime * 0.99f) + (0.01f * (micros() - currentMicros));
+
+	#if defined(BETA_BUILD)
+	Serial.printf("Drew timetable map in %.1f ms (avg: %.1f ms) Heap used: %.0f kiB\n",
+				  (micros() - currentMicros) / 1000.0f,
+				  timetableRenderTime / 1000.0f,
+				  (ESP.getHeapSize() - ESP.getFreeHeap()) / 1024.0f);
+	if (printoutCounter > 100) {
+		printf("Drew timetable map in %.1f ms (avg: %.1f ms) Heap used: %.0f kiB\n",
+			   (micros() - currentMicros) / 1000.0f,
+			   timetableRenderTime / 1000.0f,
+			   (ESP.getHeapSize() - ESP.getFreeHeap()) / 1024.0f);
+		printoutCounter = 0;
+	} else {
+		printoutCounter++;
+	}
+	#endif
+
 	resumeDithering();
 }
 
-void drawFastForwardTimetable(const std::vector<const TrainRoute*>& routes, uint32_t start_time, float xSpeed = 1000.0f) {
+bool timetableSetup = false;
+uint32_t first_route_start = 24 * 60 * 60;	// Start with max seconds in a day
+uint32_t last_route_start = 0;
+
+void drawFastForwardTimetable(RouteSpan<const TrainRoute*> routes, uint32_t start_time, float xSpeed = 1000.0f) {
 	// Calculate the current simulated time in seconds since midnight
 
-	const uint32_t night_time = 2 * 60 * 60;  // Shrink night time to 2 hours
+	const uint32_t night_time = 1 * 60 * 60;  // Shrink night time to 1 hour
 
-	uint32_t first_route_start = 24 * 60 * 60;	// Start with max seconds in a day
-	uint32_t last_route_start = 0;
-	for (const auto& route : routes) {
-		auto trains = createTrainsForRoute(route);
-		for (const auto& train : trains) {
-			if (train.getStartTimeSeconds() < first_route_start) {
-				first_route_start = train.getStartTimeSeconds();
-			} else if (train.getStartTimeSeconds() > last_route_start) {
-				last_route_start = train.getStartTimeSeconds();
+	if (!timetableSetup) {
+		for (const auto& route : routes) {
+			for (uint32_t startTime : route->getStartTimes()) {
+				if (startTime < first_route_start) {
+					first_route_start = startTime;
+				} else if (startTime > last_route_start) {
+					last_route_start = startTime;
+				}
 			}
 		}
+		timetableSetup = true;
 	}
 
 	uint32_t seconds = ((millis() - start_time) / 1000.0f * xSpeed);
@@ -421,8 +443,8 @@ void onPower() {
 	if (brightness.isOn()) {
 		setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
 		vTaskDelay(pdMS_TO_TICKS(50));
-		lastMapDrawTime = 0;  // Force redraw
-		modeStartTime = millis();	// Reset start time for fast forward mode
+		lastMapDrawTime = 0;	   // Force redraw
+		modeStartTime = millis();  // Reset start time for fast forward mode
 	} else {
 		setStatusLedState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
 	}
@@ -451,7 +473,7 @@ void realtimeMode(time_t epoch, bool wiFiConnected, bool hideOutOfServiceTrains 
 				if (brightness.isOn()) {
 					setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
 				}
-				time_t timeOffset = epoch - parseLEDMap(downloadedJson);
+				timeOffset = epoch - parseLEDMap(downloadedJson);
 			} else {
 				if (failedFetchCount > 3 + numServers) {
 					Serial.println("All servers failed to provide data.");
@@ -476,9 +498,7 @@ void realtimeMode(time_t epoch, bool wiFiConnected, bool hideOutOfServiceTrains 
 
 	} else {
 		if (brightness.isOn()) {
-			if (millis() < 60 * 1000) {
-				setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
-			} else {
+			if (millis() > 60 * 1000) {
 				setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
 			}
 		}
@@ -492,7 +512,7 @@ void setup() {
 	// USB Serial
 	Serial.begin();
 	Serial.setDebugOutput(true);
-	xTaskCreate(improvSerialTask, "Improv Serial Task", 4096, nullptr, 2, nullptr);
+	xTaskCreate(improvSerialTask, "Improv Serial Task", 4096, nullptr, 3, nullptr);
 
 	setupLeds();
 
@@ -525,14 +545,19 @@ void setup() {
 	configTzTime(time_zone, ntpServers[0], ntpServers[1], ntpServers[2]);
 
 	// --- WiFi Setup ---
-	xTaskCreate(statusLedManagerTask, "Status LED Manager", 1024, NULL, 1, &statusLedTaskHandle);
-	setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
+	xTaskCreate(statusLedManagerTask, "Status LED Manager", 1024, NULL, 2, &statusLedTaskHandle);
 
 	fetchOffset = random(0, 999);  // Random delay between 0 and 999 ms to reduce server load
 
-	WiFiImprovSetup();
+	if (WiFiImprovSetup()) {
+		Serial.println("WiFi credentials found...");
+		setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
+	} else {
+		Serial.println("No WiFi credentials found...");
+		setStatusLedState(WIFI_LED_PIN, LED_ON_RED);
+	}
 
-#if defined(TIMETABLE_MODE)
+#if defined(TIMETABLE_SPEED)
 	printTimetableSize(routes);
 #endif
 	brightness.begin();
@@ -562,9 +587,7 @@ void loop() {
 
 				if (wiFiConnected) {
 					setStatusLedState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
-				} else if (millis() < 60 * 1000) {
-					setStatusLedState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST, SERVER_LED_PIN, LED_OFF);
-				} else {
+				} else if (millis() > 60 * 1000) {
 					setStatusLedState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
 				}
 			}

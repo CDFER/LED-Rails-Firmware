@@ -101,7 +101,7 @@ void fastLEDDitheringTask(void* pvParameters) {
 				if (FastLED.getBrightness() > 0 && anyLedsOn()) {
 					currentState = ledState::TURNING_ON;
 				}
-				vTaskDelay(pdMS_TO_TICKS(10));	 // Check every 10ms when off to save CPU
+				vTaskDelay(frameDelay);
 				break;
 
 			case ledState::TURNING_ON:

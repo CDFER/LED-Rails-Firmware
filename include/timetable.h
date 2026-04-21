@@ -1,7 +1,8 @@
 
+#pragma once
+
 #include <Arduino.h>
 #include <FastLED.h>
-#include <vector>
 
 /**
  * @brief Structure representing a timetable entry
@@ -21,6 +22,23 @@ struct TimetableEntry {
 	constexpr TimetableEntry(int16_t seconds, int16_t block) : offsetSeconds(seconds), blockNumber(block) {}
 };
 
+template<typename T>
+struct RouteSpan {
+    const T* _data;
+    size_t _size;
+    constexpr RouteSpan(const T* d, size_t s) : _data(d), _size(s) {}
+    template<size_t N>
+    constexpr RouteSpan(const T (&arr)[N]) : _data(arr), _size(N) {}
+
+    const T* begin() const { return _data; }
+    const T* end() const { return _data + _size; }
+    const T& operator[](size_t index) const { return _data[index]; }
+    size_t size() const { return _size; }
+    bool empty() const { return _size == 0; }
+    const T& front() const { return _data[0]; }
+    const T& back() const { return _data[_size - 1]; }
+};
+
 /**
  * @brief Abstract base class for train routes
  * 
@@ -34,9 +52,9 @@ class TrainRoute {
 	/**
 	 * @brief Get the timetable entries for this route
 	 * 
-	 * @return const reference to vector of timetable entries
+	 * @return RouteSpan of timetable entries
 	 */
-	virtual const std::vector<TimetableEntry>& getEntries() const = 0;
+	virtual RouteSpan<TimetableEntry> getEntries() const = 0;
 
 	/**
 	 * @brief Get the color used to display this route
@@ -48,9 +66,9 @@ class TrainRoute {
 	/**
 	 * @brief Get the start times for trains on this route
 	 * 
-	 * @return const reference to vector of start times (seconds since midnight)
+	 * @return RouteSpan of start times (seconds since midnight)
 	 */
-	virtual const std::vector<uint32_t>& getStartTimes() const = 0;
+	virtual RouteSpan<uint32_t> getStartTimes() const = 0;
 
 	/**
 	 * @brief Get the current block number based on elapsed time
@@ -80,9 +98,6 @@ class TrainRoute {
 	 * @return uint16_t Total size in bytes
 	 */
 	uint16_t getSize() const {
-		// uint16_t timetableBytes = sizeof(TimetableEntry) * getEntries().size();
-		// uint16_t startTimesBytes = sizeof(uint32_t) * getStartTimes().size();
-		// return timetableBytes + startTimesBytes;
 		return sizeof(*this) + sizeof(TimetableEntry) * getEntries().size() + sizeof(uint32_t) * getStartTimes().size();
 	}
 };
@@ -188,27 +203,11 @@ class TrainInstance {
 };
 
 /**
- * @brief Create train instances for all start times of a route
- * 
- * @param route Pointer to route for which to create train instances
- * @return std::vector<TrainInstance> Vector of train instances
- */
-inline std::vector<TrainInstance> createTrainsForRoute(const TrainRoute* route) {
-	std::vector<TrainInstance> trains;
-	const auto& startTimes = route->getStartTimes();
-	for (uint32_t startTime : startTimes) {
-		trains.emplace_back(route, startTime);
-	}
-
-	return trains;
-}
-
-/**
  * @brief Print information about loaded routes and memory usage
  * 
  * @param routes Vector of pointers to loaded routes
  */
-inline void printTimetableSize(const std::vector<const TrainRoute*>& routes) {
+inline void printTimetableSize(RouteSpan<const TrainRoute*> routes) {
 	uint32_t bytes = 0;
 	for (const auto& route : routes) {
 		bytes += route->getSize();

@@ -1,19 +1,28 @@
+#pragma once
+
 #include <Arduino.h>
 #include <FastLED.h>
 #include <LTR303.h>
 #include <Preferences.h>
 
-// Preferences is in main.cpp
 extern Preferences preferences;
 
 LTR303 lightSensor;
 
-// Configurable bucket system
+/**
+ * @brief Lux range and corresponding brightness level
+ */
 struct BrightnessBucket {
-	float luxMax;		  // Maximum lux for this bucket
+	float luxMax;         // Maximum lux for this bucket
 	float brightnessMax;  // Brightness at maximum lux (0-1)
 };
 
+/**
+ * @brief Manages LED brightness using an ambient light sensor
+ * 
+ * Uses an LTR303 light sensor and a configurable bucket system to
+ * automatically adjust LED brightness based on ambient light levels.
+ */
 class BrightnessManager {
   public:
 	BrightnessManager() {
@@ -26,6 +35,9 @@ class BrightnessManager {
 		buckets[2] = { 100000.0f, 1.0f };  // Outdoor (5000-100000 lux)
 	}
 
+	/**
+	 * @brief Initialize the light sensor and load saved brightness buckets
+	 */
 	void begin() {
 		Wire.begin(SDA_PIN, SCL_PIN, 50000);
 		lightSensor.begin(GAIN_48X, EXPOSURE_100ms, true, Wire);
@@ -35,24 +47,43 @@ class BrightnessManager {
 			0.0f));	 // Start with LEDs at minimum brightness until we get a reading from the light sensor
 	}
 
+	/**
+	 * @brief Increase brightness for the current ambient bucket
+	 */
 	void increase() {
 		adjustBuckets(BRIGHTNESS_STEP / 255.0f);
 	}
 
+	/**
+	 * @brief Decrease brightness for the current ambient bucket
+	 */
 	void decrease() {
 		adjustBuckets(-BRIGHTNESS_STEP / 255.0f);
 	}
 
+	/**
+	 * @brief Toggle power on/off
+	 */
 	void toggle() {
 		powerOn = !powerOn;
 		setBrightness();
 	}
 
+	/**
+	 * @brief Set power state
+	 * 
+	 * @param on True to turn on, false to turn off
+	 */
 	void setPower(bool on) {
 		powerOn = on;
 		setBrightness();
 	}
 
+	/**
+	 * @brief Save brightness bucket settings to NVS
+	 * 
+	 * @param preferences Preferences instance for NVS access
+	 */
 	void saveBuckets(Preferences &preferences) {
 		preferences.begin("brightness", false);
 		for (int i = 0; i < numBuckets; i++) {
@@ -62,6 +93,11 @@ class BrightnessManager {
 		preferences.end();
 	}
 
+	/**
+	 * @brief Load brightness bucket settings from NVS
+	 * 
+	 * @param preferences Preferences instance for NVS access
+	 */
 	void loadBuckets(Preferences &preferences) {
 		preferences.begin("brightness", true);
 		for (int i = 0; i < numBuckets; i++) {
@@ -72,7 +108,9 @@ class BrightnessManager {
 		printBuckets();
 	}
 
-	// Get brightness from light sensor and adjust brightness
+	/**
+	 * @brief Read light sensor and update brightness
+	 */
 	void update() {
 		double lux;
 		if (lightSensor.getApproximateLux(lux)) {
@@ -84,12 +122,21 @@ class BrightnessManager {
 		}
 	}
 
+	/**
+	 * @brief Apply gamma correction to a brightness value
+	 * 
+	 * @param _brightness Brightness level (0-1)
+	 * @return uint8_t Gamma-corrected brightness (0-255)
+	 */
 	uint8_t gammaCorrectedBrightness(float _brightness) {
 		float scaledBrightness = mapFloat(_brightness, 0.0f, 1.0f, MIN_BRIGHTNESS / 255.0f, MAX_BRIGHTNESS / 255.0f);
 		float gamma = 2.2f;
 		return static_cast<uint8_t>(pow(scaledBrightness, gamma) * 255.0f);
 	}
 
+	/**
+	 * @brief Apply the current brightness to the LED strip
+	 */
 	void setBrightness() {
 		if (powerOn) {
 			uint8_t newBrightness = gammaCorrectedBrightness(brightness);
@@ -110,6 +157,11 @@ class BrightnessManager {
 		}
 	}
 
+	/**
+	 * @brief Check if LEDs are powered on
+	 * 
+	 * @return true if powered on
+	 */
 	bool isOn() {
 		return powerOn;
 	}
@@ -225,7 +277,6 @@ class BrightnessManager {
 
 		newBrightness = constrain(newBrightness, 0.0f, 1.0f);
 
-		// Linear interpolation
 		return newBrightness;
 	}
 };

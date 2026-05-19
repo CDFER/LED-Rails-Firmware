@@ -91,7 +91,7 @@ bool anyLedsOn() {
 }
 
 void fastLEDDitheringTask(void* pvParameters) {
-	const TickType_t frameDelay = pdMS_TO_TICKS(20);  // 50fps = 20ms interval
+	const TickType_t frameDelay = pdMS_TO_TICKS(10);  // 100fps = 10ms interval
 	enum class ledState { OFF, TURNING_ON, ON, TURNING_OFF };
 	ledState currentState = ledState::OFF;
 
@@ -113,8 +113,9 @@ void fastLEDDitheringTask(void* pvParameters) {
 			case ledState::ON: {
 				uint8_t frameCounter = 0;
 				while (frameCounter < 100) {  // Do 100 frames of dithering before checking
-					FastLED.show();
-					vTaskDelay(frameDelay);
+					// FastLED.show();
+					// vTaskDelay(frameDelay);
+					FastLED.delay(frameDelay);
 					frameCounter++;
 				}
 
@@ -192,7 +193,7 @@ void setupLeds() {
 
 	enablePower();
 
-	xTaskCreate(fastLEDDitheringTask, "FastLED Dithering", 2048, NULL, 2, &fastLEDDitheringTaskHandle);
+	xTaskCreate(fastLEDDitheringTask, "FastLED Dithering", 2048, NULL, 3, &fastLEDDitheringTaskHandle);
 }
 
 void setBlockColorRGB(uint16_t block, CRGB color) {

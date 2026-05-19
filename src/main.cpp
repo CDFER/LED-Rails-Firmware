@@ -44,7 +44,7 @@ const int numServers = sizeof(serverURLs) / sizeof(serverURLs[0]);
 int currentServerIndex = 0;
 int failedFetchCount = 0;
 
-const char* ntpServers[] = { "nz.pool.ntp.org", "pool.msltime.measurement.govt.nz", "pool.ntp.org" };
+const char* ntpServers[] = { "pool.ntp.org", "pool.msltime.measurement.govt.nz", "nz.pool.ntp.org" };
 const char* time_zone = "NZST-12NZDT,M9.5.0,M4.1.0/3";
 
 time_t lastMapDrawTime = 0;	  // Tracks the last time the map was drawn
@@ -277,11 +277,16 @@ void setBlockColorId(uint8_t* blockColorIds, uint16_t block, int colorId) {
 	setBlockColorRGB(block, color);
 }
 
-void drawRealtimeMap(time_t epoch, bool skipColorId0 = false) {
-	suspendDithering();
-	clearLEDs();
+float timetableRenderTime = 0.0f;
+float worstRenderTime = 0.0f;
+uint8_t printoutCounter = 0;
 
+void drawRealtimeMap(time_t epoch, bool skipColorId0 = false) {
 	uint8_t blockColorIds[2000] = { 0 };  // Initialize all elements to 0
+
+	suspendDithering();
+	unsigned long currentMicros = micros();
+	clearLEDs();
 
 	// Draw the map based on the current LED update schedule
 	for (const auto& update : ledUpdateSchedule) {
@@ -297,10 +302,26 @@ void drawRealtimeMap(time_t epoch, bool skipColorId0 = false) {
 	}
 
 	resumeDithering();
-}
 
-float timetableRenderTime = 0.0f;
-uint8_t printoutCounter = 0;
+#if defined(BETA_BUILD)
+	float renderTime = (micros() - currentMicros) / 1000.0f;
+	if (renderTime > worstRenderTime){
+		worstRenderTime = renderTime;
+	}
+	printf("Drew map in %.1f ms, Worst is %0.1f ms\n", renderTime, worstRenderTime);
+
+	bool anyLEDon = false;
+	for (int i = 0; i < 2000; i++) {
+		if (blockColorIds[i] != 0) {
+			anyLEDon = true;
+			break;
+		}
+	}
+	if (!anyLEDon) {
+		printf("No LEDs are on!\n");
+	}
+#endif
+}
 
 #if defined(TIMETABLE_SPEED)
 void drawTimetableMap(uint32_t second, RouteSpan<const TrainRoute*> routes) {
@@ -319,13 +340,11 @@ void drawTimetableMap(uint32_t second, RouteSpan<const TrainRoute*> routes) {
 		}
 	}
 
+	resumeDithering();
+
 	timetableRenderTime = (timetableRenderTime * 0.99f) + (0.01f * (micros() - currentMicros));
 
 	#if defined(BETA_BUILD)
-	Serial.printf("Drew timetable map in %.1f ms (avg: %.1f ms) Heap used: %.0f kiB\n",
-				  (micros() - currentMicros) / 1000.0f,
-				  timetableRenderTime / 1000.0f,
-				  (ESP.getHeapSize() - ESP.getFreeHeap()) / 1024.0f);
 	if (printoutCounter > 100) {
 		printf("Drew timetable map in %.1f ms (avg: %.1f ms) Heap used: %.0f kiB\n",
 			   (micros() - currentMicros) / 1000.0f,
@@ -336,8 +355,6 @@ void drawTimetableMap(uint32_t second, RouteSpan<const TrainRoute*> routes) {
 		printoutCounter++;
 	}
 	#endif
-
-	resumeDithering();
 }
 
 bool timetableSetup = false;
@@ -533,6 +550,7 @@ void setup() {
 	#if defined(TIMETABLE_SPEED)
 	if (factoryTestMode()) {
 		trainMapMode = HIGH_SPEED_TIMETABLE_MODE;  // Default to fast forward mode after factory test
+		modeStartTime = millis();				   // Reset start time for fast forward mode
 	}
 	#endif
 	buttons.setCallback(POWER_BUTTON, onPower);

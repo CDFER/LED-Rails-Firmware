@@ -13,7 +13,7 @@ LTR303 lightSensor;
  * @brief Lux range and corresponding brightness level
  */
 struct BrightnessBucket {
-	float luxMax;         // Maximum lux for this bucket
+	float luxMax;		  // Maximum lux for this bucket
 	float brightnessMax;  // Brightness at maximum lux (0-1)
 };
 
@@ -112,9 +112,13 @@ class BrightnessManager {
 	 * @brief Read light sensor and update brightness
 	 */
 	void update() {
-		double lux;
-		if (lightSensor.getApproximateLux(lux)) {
-			ambientLux = float(lux) * luxSmoothingFactor + ambientLux * (1.0f - luxSmoothingFactor);
+		double newLux;
+		if (lightSensor.getApproximateLux(newLux)) {
+			if (newLux > ambientLux) {
+				ambientLux = float(newLux) * luxUpSmoothingFactor + ambientLux * (1.0f - luxUpSmoothingFactor);
+			} else {
+				ambientLux = float(newLux) * luxDownSmoothingFactor + ambientLux * (1.0f - luxDownSmoothingFactor);
+			}
 			bucketIndex = getAmbientBucketIndex(ambientLux);
 			brightness = calculateBrightnessForAmbient(ambientLux, bucketIndex);
 			setBrightness();
@@ -144,12 +148,9 @@ class BrightnessManager {
 				constrain(FastLED.getBrightness(), gammaCorrectedBrightness(0.0), gammaCorrectedBrightness(1.0));
 
 			// Apply Hysteresis to brightness
-			if (abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || brightness == 0.0f || brightness == 1.0f
-				|| FastLED.getBrightness() == 0) {
-				// newBrightness =
-				// 	constrain(newBrightness,
-				// 			  prevBrightness - 1,
-				// 			  prevBrightness + 1);	// Limit brightness changes to 1 step at a time for smooth transitions
+			if (abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || newBrightness == 0.0f || newBrightness == 1.0f) {
+				// Limit brightness changes for smooth transitions
+				newBrightness = constrain(newBrightness, prevBrightness - 1, prevBrightness + 2);
 				FastLED.setBrightness(newBrightness);
 			}
 		} else {
@@ -174,7 +175,9 @@ class BrightnessManager {
 	bool powerOn = true;	  // Power state
 	BrightnessBucket buckets[3];
 	const int numBuckets = sizeof(buckets) / sizeof(buckets[0]);
-	const float luxSmoothingFactor = 0.05f;	 // Smoothing factor for lux readings (0-1)
+	const float luxUpSmoothingFactor = 0.05f;	 // Smoothing factor for lux readings (0-1)
+	const float luxDownSmoothingFactor = 0.01f;	 // Smoothing factor for lux readings (0-1)
+
 
 	void printBuckets() {
 		for (int i = 0; i < numBuckets; i++) {

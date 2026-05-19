@@ -25,13 +25,16 @@ void onPowerFactory() {
 }
 
 /**
- * @brief Set all LEDs to a solid color and show immediately
+ * @brief Set all LEDs to a specific color with a brightness ramp for factory testing
  * 
  * @param color RGB color to display
  */
 void factorySetColor(CRGB color) {
-	setAllLedsColor(color);
-	FastLED.show();
+	for (int b = 0; b <= 255; b += 16) {
+		setAllLedsColor(color);
+		FastLED.setBrightness(b);
+		FastLED.show();
+	}
 }
 
 /**
@@ -42,7 +45,8 @@ void factorySetColor(CRGB color) {
 void waitForPowerButton(int timeout) {
 	unsigned long startTime = millis();
 	while (!passed && (millis() - startTime < timeout)) {
-		vTaskDelay(pdMS_TO_TICKS(100));
+		vTaskDelay(pdMS_TO_TICKS(30));
+		FastLED.show();
 	}
 }
 
@@ -63,11 +67,12 @@ bool factoryTestMode() {
 		Serial.println("Factory test mode enabled");
 		uint8_t colorIndex = 0;
 		const CRGB testColors[] = {
-			CRGB(128, 0, 0), CRGB(0, 128, 0), CRGB(0, 0, 128), CRGB(32, 32, 32), CRGB(32, 0, 0),
-			CRGB(0, 32, 0),	 CRGB(0, 0, 32),  CRGB(8, 8, 8),   CRGB(0, 0, 0),
+			CRGB(128, 0, 0), CRGB(0, 128, 0), CRGB(0, 0, 128), CRGB(32, 32, 32),
+			CRGB(32, 0, 0),	 CRGB(0, 32, 0),  CRGB(0, 0, 32),  CRGB(1, 1, 1),
 		};
 
 		while (!passed) {
+			// Ramp up to full brightness for the current test color
 			factorySetColor(testColors[colorIndex]);
 #if defined(LED_8_PIXELS)  // If there are >=8 LED channels, show each color for 2 seconds
 			waitForPowerButton(2000);

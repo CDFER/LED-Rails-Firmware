@@ -1,7 +1,8 @@
 #include "buttons.h"
 
-// Define the global queue handle
+// Define the global instances
 QueueHandle_t buttonQueue;
+ButtonManager buttons;
 
 void ButtonManager::add(uint8_t pin, ButtonCallback cb, ButtonCallback lpcb, uint16_t longPressDuration) {
 	buttons.push_back({ pin, cb, lpcb, longPressDuration, HIGH, 0, 0 });

@@ -1,4 +1,4 @@
-#include "ledManager.h"
+#include "mapLEDs.h"
 
 // Define the LED arrays
 // Pins and pixel counts defined in the board file (./boards/)
@@ -38,6 +38,10 @@ std::vector<LedStripInfo> ledStrips;
 
 TaskHandle_t fastLEDDitheringTaskHandle;
 
+LedManager mapLEDs;
+
+extern BrightnessManager brightness;
+
 void enablePower() {
 #if defined(LVL_Shifter_EN)
 	digitalWrite(LVL_Shifter_EN, LOW);	//Enable LVL Shifter
@@ -55,6 +59,7 @@ void enablePower() {
 	vTaskDelay(pdMS_TO_TICKS(25));		   // Short delay to ensure stable power before enabling the second channel
 	digitalWrite(LED_POWER_CH2_EN, HIGH);  //Enable Power to LED Channel 2
 #endif
+	Serial.println("LED power rail/s turned on.");
 }
 
 void disablePower() {
@@ -77,6 +82,7 @@ void disablePower() {
 	pinMode(LVL_Shifter_EN, OUTPUT);
 	digitalWrite(LVL_Shifter_EN, HIGH);	 // Disable LVL Shifter
 #endif
+	Serial.println("LED power rail/s turned off.");
 }
 
 bool anyLedsOn() {
@@ -110,20 +116,32 @@ void fastLEDDitheringTask(void* pvParameters) {
 				currentState = ledState::ON;
 				break;
 
-			case ledState::ON: {
-				uint8_t frameCounter = 0;
-				while (frameCounter < 100) {  // Do 100 frames of dithering before checking
-					// FastLED.show();
-					// vTaskDelay(frameDelay);
-					FastLED.delay(frameDelay);
-					frameCounter++;
-				}
+			case ledState::ON:
+				{
+					TickType_t lastRunTime = xTaskGetTickCount();
+					uint8_t frameCounter = 0;
+					while (frameCounter < 100) {  // Do 100 frames of dithering before checking
+						// FastLED.show();
+						// vTaskDelay(frameDelay);
+						FastLED.delay(frameDelay);
 
-				if (FastLED.getBrightness() == 0 || !anyLedsOn()) {
-					currentState = ledState::TURNING_OFF;
+						TickType_t currentTime = xTaskGetTickCount();
+						uint32_t elapsedTimeMs = pdTICKS_TO_MS(currentTime - lastRunTime);
+						if (elapsedTimeMs > 30) {
+							ESP_LOGW("FastLED",
+									 "Dithering frame took %u ms, which is longer than expected. Check for performance issues.",
+									 elapsedTimeMs);
+						}
+						lastRunTime = currentTime;
+
+						frameCounter++;
+					}
+
+					if (FastLED.getBrightness() == 0 || !anyLedsOn()) {
+						currentState = ledState::TURNING_OFF;
+					}
+					break;
 				}
-				break;
-			}
 
 			case ledState::TURNING_OFF:
 				disablePower();
@@ -132,10 +150,12 @@ void fastLEDDitheringTask(void* pvParameters) {
 
 			default: break;
 		}
+
+		brightness.update();
 	}
 }
 
-void setupLeds() {
+void LedManager::begin() {
 	disablePower();
 
 	ledStrips.clear();
@@ -193,10 +213,13 @@ void setupLeds() {
 
 	enablePower();
 
-	xTaskCreate(fastLEDDitheringTask, "FastLED Dithering", 2048, NULL, 3, &fastLEDDitheringTaskHandle);
+	brightness.begin();
+
+	xTaskCreatePinnedToCore(
+		fastLEDDitheringTask, "FastLED Dithering", 2048, NULL, 3, &fastLEDDitheringTaskHandle, ARDUINO_RUNNING_CORE);
 }
 
-void setBlockColorRGB(uint16_t block, CRGB color) {
+void LedManager::setBlockColorRGB(uint16_t block, CRGB color) {
 	// Apply gamma correction (γ = 2.0)
 	auto gammaCorrect = [](float value) -> uint8_t {
 		return static_cast<uint8_t>(pow(value / 255.0f, 2.0) * 255.0f);
@@ -223,22 +246,22 @@ void setBlockColorRGB(uint16_t block, CRGB color) {
 	}
 }
 
-void clearLEDs() {
+void LedManager::clear() {
 	for (const auto& strip : ledStrips) {
 		fill_solid(strip.leds, strip.numPixels, CRGB::Black);
 	}
 }
 
-void setAllLedsColor(CRGB color) {
+void LedManager::setAllLedsColor(CRGB color) {
 	for (const auto& strip : ledStrips) {
 		fill_solid(strip.leds, strip.numPixels, color);
 	}
 }
 
-void suspendDithering() {
+void LedManager::suspendDithering() {
 	vTaskSuspend(fastLEDDitheringTaskHandle);
 }
 
-void resumeDithering() {
+void LedManager::resumeDithering() {
 	vTaskResume(fastLEDDitheringTaskHandle);
 }

@@ -10,6 +10,8 @@ extern Preferences preferences;
 
 extern ButtonManager buttons;
 
+extern LedManager mapLEDs;
+
 bool passed;
 
 /**
@@ -30,10 +32,10 @@ void onPowerFactory() {
  * @param color RGB color to display
  */
 void factorySetColor(CRGB color) {
-	for (int b = 0; b <= 255; b += 16) {
-		setAllLedsColor(color);
+	for (int b = 0; b <= 255; b += 5) {
+		mapLEDs.setAllLedsColor(color);
 		FastLED.setBrightness(b);
-		FastLED.show();
+		FastLED.delay(10);
 	}
 }
 
@@ -45,8 +47,7 @@ void factorySetColor(CRGB color) {
 void waitForPowerButton(int timeout) {
 	unsigned long startTime = millis();
 	while (!passed && (millis() - startTime < timeout)) {
-		vTaskDelay(pdMS_TO_TICKS(30));
-		FastLED.show();
+		FastLED.delay(10);
 	}
 }
 
@@ -68,7 +69,7 @@ bool factoryTestMode() {
 		uint8_t colorIndex = 0;
 		const CRGB testColors[] = {
 			CRGB(128, 0, 0), CRGB(0, 128, 0), CRGB(0, 0, 128), CRGB(32, 32, 32),
-			CRGB(32, 0, 0),	 CRGB(0, 32, 0),  CRGB(0, 0, 32),  CRGB(1, 1, 1),
+			CRGB(32, 0, 0),	 CRGB(0, 32, 0),  CRGB(0, 0, 32),  CRGB(0, 0, 0),
 		};
 
 		while (!passed) {

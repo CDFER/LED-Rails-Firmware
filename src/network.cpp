@@ -1,4 +1,5 @@
 #include "network.h"
+#include "statusLeds.h"
 
 NetworkManager* NetworkManager::instance = nullptr;
 NetworkManager network;
@@ -71,6 +72,18 @@ NetworkManager::NetworkManager() : improvSerial(&Serial), server(80) {
 		savedWiFi[i].ssid[0] = '\0';
 		savedWiFi[i].password[0] = '\0';
 	}
+
+	currentMapData = std::make_shared<MapData>();
+
+	serverURLs = {
+		String("http://api.keastudios.co.nz/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
+#if defined(BETA_BUILD)
+		String("http://192.168.86.31:3000/") + CITY_CODE + "-ltm/" + BACKEND_VERSION
+			+ ".json",	// For testing with a local server
+#endif
+		String("http://keastudios.co.nz/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
+		String("http://dirksonline.net/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
+	};
 }
 
 NetworkManager::~NetworkManager() {
@@ -149,7 +162,7 @@ void NetworkManager::setUpWebserver() {
 	server.begin();
 }
 
-bool NetworkManager::begin() {
+void NetworkManager::begin() {
 
 	// --- Time Setup ---
 	const char* ntpServers[] = { "pool.ntp.org", "pool.msltime.measurement.govt.nz", "nz.pool.ntp.org" };
@@ -172,15 +185,7 @@ bool NetworkManager::begin() {
 	enum ImprovTypes::ChipFamily chip = ImprovTypes::ChipFamily::CF_ESP32;
 #endif
 
-	// Use hardcoded values that match what was previously used.
-	// FIRMWARE, FIRMWARE_VERSION, ARDUINO_BOARD need to be defined.
-	// They should be available if we include Arduino.h or any config header.
-	// But let's verify if main.cpp or somewhere else defines them.
-	// Often they are passed in via build flags (platformio.ini).
 	improvSerial.setDeviceInfo(chip, FIRMWARE, FIRMWARE_VERSION, ARDUINO_BOARD, "http://{LOCAL_IPV4}/");
-
-	// ImprovWiFiLibrary typically needs a standard function pointer or std::function.
-	// We'll use lambda wrappers or static methods.
 	improvSerial.onImprovError(onImprovWiFiErrorCbWrapper);
 	improvSerial.onImprovConnected(onImprovWiFiConnectedCbWrapper);
 
@@ -194,11 +199,23 @@ bool NetworkManager::begin() {
 		}
 	}
 
+	if (savedWifiFound) {
+		Serial.println("WiFi credentials found...");
+		statusLEDs.setState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
+	} else {
+		Serial.println("No WiFi credentials found...");
+		statusLEDs.setState(WIFI_LED_PIN, LED_ON_RED);
+	}
+
+#if defined(BETA_BUILD)
+	fetchOffset = 0;  // No need for random offset in beta builds
+#else
+	fetchOffset = random(0, 999);  // Random delay between 0 and 999 ms to reduce server load
+#endif
+
 	// Create tasks
 	xTaskCreate(improvSerialTask, "Improv Serial Task", 4096, this, 3, nullptr);
-	xTaskCreate(networkTask, "Network Task", 4096, this, 2, nullptr);
-
-	return savedWifiFound;
+	xTaskCreate(networkTask, "Network Task", 16384, this, 2, nullptr);
 }
 
 void NetworkManager::improvSerialTask(void* pvParameters) {
@@ -211,24 +228,188 @@ void NetworkManager::improvSerialTask(void* pvParameters) {
 	}
 }
 
+String NetworkManager::fetchMapUpdateJSON() {
+	HTTPClient http;
+	const String& url = serverURLs[currentServerIndex];
+
+	http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
+	http.begin(url);
+
+	int httpCode = http.GET();
+	if (httpCode == HTTP_CODE_OK) {
+		String payload = http.getString();
+		http.end();
+		if (payload.length() > 0) {
+			failedFetchCount = 0;
+			return payload;
+		}
+		Serial.printf("Fetch from %s: empty payload\n", url.c_str());
+	} else {
+		Serial.printf("Fetch from %s error: %i\n", url.c_str(), httpCode);
+		http.end();
+	}
+
+	if (++failedFetchCount > 3) {
+		currentServerIndex = (currentServerIndex + 1) % serverURLs.size();
+	}
+	return "";
+}
+
+time_t NetworkManager::parseLEDMapUpdateJSON(const String& downloadedJson) {
+	JsonDocument doc;
+	if (DeserializationError error = deserializeJson(doc, downloadedJson)) {
+		Serial.printf("JSON parse error: %s\n", error.c_str());
+		return 0;
+	}
+
+	time_t baseTimestamp = doc["timestamp"] | 0;
+	updateInterval = doc["update"] | updateInterval;
+
+	if (baseTimestamp + updateInterval <= nextFetchTime) {
+		Serial.println("Fetched the same data twice");
+		return baseTimestamp;
+	}
+	nextFetchTime = baseTimestamp + updateInterval;
+
+	const char* version = doc["version"] | "";
+	if (strcmp(BACKEND_VERSION, version) != 0) {
+		Serial.printf("Backend version mismatch: expected %s, got %s\n", BACKEND_VERSION, version);
+	}
+
+	auto newMapData = std::make_shared<MapData>();
+
+	JsonObject colors = doc["colors"];
+	newMapData->colorTable.reserve(colors.size());
+	for (JsonPair kv : colors) {
+		JsonArray rgb = kv.value();
+		newMapData->colorTable.push_back(CRGB(rgb[0] | 0, rgb[1] | 0, rgb[2] | 0));
+	}
+
+	JsonArray updates = doc["updates"];
+	newMapData->ledUpdateSchedule.reserve(updates.size());
+	for (JsonObject update : updates) {
+		int offset = update["t"];
+
+		time_t timestamp = 0;
+		uint16_t msOffset = 0;
+		if (offset > 0) {
+			timestamp = baseTimestamp + offset;
+			// Random Seed based on block for consistency to spread out updates within the second
+			randomSeed(update["b"][0]);
+			msOffset = random(0, 1000);
+		}
+
+		newMapData->ledUpdateSchedule.push_back({ update["b"][0], update["b"][1], update["c"], timestamp, msOffset });
+	}
+
+	{
+		std::lock_guard<std::mutex> lock(mapDataMutex);
+		currentMapData = newMapData;
+	}
+
+	return baseTimestamp;
+}
+
+void NetworkManager::setSystemState(NetworkMode mode, bool brightnessOn) {
+	this->currentMode = mode;
+	this->isBrightnessOn = brightnessOn;
+}
+
+std::shared_ptr<MapData> NetworkManager::getMapData() {
+	std::lock_guard<std::mutex> lock(mapDataMutex);
+	return currentMapData;
+}
+
+const char* NetworkManager::formatEpoch(time_t epoch) const {
+	struct tm timeinfo;
+	static char buffer[64];
+
+	// Convert epoch to local time
+	if (!localtime_r(&epoch, &timeinfo)) {
+		return "No time available";
+	}
+	if (strftime(buffer, sizeof(buffer), "%H:%M:%S", &timeinfo)) {
+		return buffer;
+	}
+	return "Format error";
+}
+
 void NetworkManager::networkTask(void* pvParameters) {
 	NetworkManager* manager = static_cast<NetworkManager*>(pvParameters);
 
 	while (true) {
-		manager->manageWiFiConnection();
+		manager->updateStatusLEDs();
+
+		if (WiFi.status() == WL_CONNECTED) {
+			if (manager->currentMode == NetworkMode::REALTIME) {
+				manager->manageLEDMapAPI();
+			}
+		} else {
+			manager->manageWiFiConnection();
+		}
 		vTaskDelay(pdMS_TO_TICKS(100));	 // Sleep bit to yield to other tasks
 	}
 }
 
-void NetworkManager::manageWiFiConnection() {
-	if (WiFi.status() == WL_CONNECTED) {
+void NetworkManager::updateStatusLEDs() {
+	wifiConnected = (WiFi.status() == WL_CONNECTED);
+	time_t epoch = time(nullptr);
+
+	if (!isBrightnessOn || currentMode == NetworkMode::OFF) {
+		statusLEDs.setState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
 		return;
 	}
 
-	const unsigned long attemptTimeout = 5000;	// 5 seconds for each attempt
-	const uint8_t maxAttempts = 3;				// Max attempts per network
+	if (currentMode == NetworkMode::TIME_ONLY) {
+		if (wifiConnected) {
+			statusLEDs.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
+		} else if (millis() > 60 * 1000) {
+			statusLEDs.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+		}
+	} else if (currentMode == NetworkMode::REALTIME) {
+		if (wifiConnected) {
+			if (failedFetchCount > 3 + serverURLs.size()) {
+				statusLEDs.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
+			} else if (epoch > nextFetchTime + updateInterval) {
+				statusLEDs.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
+			} else {
+				statusLEDs.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+			}
+		} else {
+			if (millis() > 60 * 1000) {
+				statusLEDs.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+			}
+		}
+	}
+}
 
-	if (millis() - lastWiFiConnectAttempt > attemptTimeout || lastWiFiConnectAttempt == 0) {
+void NetworkManager::manageLEDMapAPI() {
+	time_t epoch = time(nullptr);  // Get current time
+	if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
+		time_t timeOffset = 0;
+		String downloadedJson = fetchMapUpdateJSON();
+		if (downloadedJson.length() > 0) {
+			timeOffset = epoch - parseLEDMapUpdateJSON(downloadedJson);
+		} else {
+			if (failedFetchCount > 3 + serverURLs.size()) {
+				Serial.println("All servers failed to provide data.");
+			}
+		}
+		nextFetchTime = constrain(nextFetchTime, epoch + 2, epoch + updateInterval);
+		Serial.printf("%s fetchDelay:%2is size:%1.1fkiB MCU:%2.0f°C WiFi:%2idBm\n",
+					  formatEpoch(epoch),
+					  timeOffset,
+					  downloadedJson.length() / 1024.0,
+					  temperatureRead(),
+					  WiFi.RSSI());
+	}
+}
+
+void NetworkManager::manageWiFiConnection() {
+	const TickType_t attemptTimeout = pdMS_TO_TICKS(5000);	// 5 seconds for each attempt
+	const uint8_t maxAttempts = 3;							// Max attempts per network
+
+	if (xTaskGetTickCount() - lastWiFiConnectAttempt > attemptTimeout || lastWiFiConnectAttempt == 0) {
 		if (wifiConnectAttempts < maxAttempts) {
 			wifiConnectAttempts++;
 		} else {
@@ -251,6 +432,6 @@ void NetworkManager::manageWiFiConnection() {
 			WiFi.setTxPower(WIFI_POWER_15dBm);	// Set WiFi power to avoid interference
 		}
 
-		lastWiFiConnectAttempt = millis();
+		lastWiFiConnectAttempt = xTaskGetTickCount();
 	}
 }

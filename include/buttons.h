@@ -1,3 +1,8 @@
+/**
+ * @file buttons.h
+ * @brief Button management and interrupt handling
+ */
+
 #pragma once
 
 #include <Arduino.h>
@@ -11,14 +16,14 @@
  * from the ISR context to the button handling task.
  */
 struct ButtonEvent {
-	uint8_t pin;	   // GPIO pin number of the button that was pressed
-	bool isLongPress;  // Flag indicating if this is a long press event
+	uint8_t pin;	   ///< GPIO pin number of the button that was pressed
+	bool isLongPress;  ///< Flag indicating if this is a long press event
 };
 
-// FreeRTOS queue handle for button events
+/// FreeRTOS queue handle for button events
 extern QueueHandle_t buttonQueue;
 
-// Default long press duration in milliseconds
+/// Default long press duration in milliseconds
 const uint16_t defaultLongPressMs = 500;
 
 /**
@@ -40,17 +45,17 @@ class ButtonManager {
 	 * its pin, callback function, and debouncing state variables.
 	 */
 	struct Button {
-		uint8_t pin;					   // GPIO pin number for this button
-		ButtonCallback callback;		   // Function to call when button is pressed
-		ButtonCallback longPressCallback;  // Function to call when button is long pressed
-		uint16_t longPressDuration;		   // Duration in ms to consider a long press
+		uint8_t pin;					   ///< GPIO pin number for this button
+		ButtonCallback callback;		   ///< Function to call when button is pressed
+		ButtonCallback longPressCallback;  ///< Function to call when button is long pressed
+		uint16_t longPressDuration;		   ///< Duration in ms to consider a long press
 
 		// For debouncing
-		bool state;					// Current state of the button (assumes idle state is HIGH with INPUT_PULLUP)
-		TickType_t fallingTick;		// Tick count when button last transitioned to LOW
-		TickType_t risingTick;		// Tick count when button last transitioned to HIGH
-		TickType_t pressStartTick;	// Tick count when button press started (for long press detection)
-		bool longPressTriggered;	// Flag to prevent multiple long press events
+		bool state;					///< Current state of the button (assumes idle state is HIGH with INPUT_PULLUP)
+		TickType_t fallingTick;		///< Tick count when button last transitioned to LOW
+		TickType_t risingTick;		///< Tick count when button last transitioned to HIGH
+		TickType_t pressStartTick;	///< Tick count when button press started (for long press detection)
+		bool longPressTriggered;	///< Flag to prevent multiple long press events
 
 		/**
 		 * @brief Construct a new Button object

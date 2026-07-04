@@ -96,12 +96,73 @@ bool anyLedsOn() {
 	return false;
 }
 
-void fastLEDDitheringTask(void* pvParameters) {
-	const TickType_t frameDelay = pdMS_TO_TICKS(10);  // 100fps = 10ms interval
+void LedManager::processFrames() {
+	std::vector<LedCommand>* frame;
+	// Process all complete frames in queue without blocking
+	while (xQueueReceive(frameQueue, &frame, 0) == pdTRUE) {
+		if (frame == nullptr)
+			continue;
+
+		for (const auto& cmd : *frame) {
+			switch (cmd.type) {
+				case CMD_SET_BLOCK:
+					{
+						// Apply gamma correction (γ = 2.0)
+						auto gammaCorrect = [](float value) -> uint8_t {
+							return static_cast<uint8_t>(pow(value / 255.0f, 2.0) * 255.0f);
+						};
+
+						CRGB color = cmd.color;
+						color.r = gammaCorrect(color.r);
+						color.g = gammaCorrect(color.g);
+						color.b = gammaCorrect(color.b);
+
+						if (cmd.block == 0)
+							break;
+
+						bool found = false;
+						for (const auto& strip : ledStrips) {
+							if (cmd.block >= strip.startBlock && cmd.block < strip.startBlock + strip.numPixels) {
+								strip.leds[cmd.block - strip.startBlock] = color;
+								found = true;
+								break;
+							}
+						}
+						if (!found) {
+							Serial.printf("Block %d is out of range.\n", cmd.block);
+						}
+					}
+					break;
+				case CMD_CLEAR_ALL:
+					for (const auto& strip : ledStrips) {
+						fill_solid(strip.leds, strip.numPixels, CRGB::Black);
+					}
+					break;
+				case CMD_SET_ALL_COLOR:
+					for (const auto& strip : ledStrips) {
+						fill_solid(strip.leds, strip.numPixels, cmd.color);
+					}
+					break;
+			}
+		}
+
+		delete frame;  // Clean up the dynamically allocated frame
+	}
+}
+
+void LedManager::task_wrapper(void* pvParameters) {
+	static_cast<LedManager*>(pvParameters)->task();
+}
+
+void LedManager::task() {
+	const TickType_t frameDelay = pdMS_TO_TICKS(20);  // 50fps = 20ms interval
 	enum class ledState { OFF, TURNING_ON, ON, TURNING_OFF };
 	ledState currentState = ledState::OFF;
 
 	while (true) {
+		// Process any queued frame updates before rendering
+		processFrames();
+
 		switch (currentState) {
 			case ledState::OFF:
 				if (FastLED.getBrightness() > 0 && anyLedsOn()) {
@@ -118,23 +179,32 @@ void fastLEDDitheringTask(void* pvParameters) {
 
 			case ledState::ON:
 				{
-					TickType_t lastRunTime = xTaskGetTickCount();
+					TickType_t lastFrameTime = xTaskGetTickCount();
 					uint8_t frameCounter = 0;
+
 					while (frameCounter < 100) {  // Do 100 frames of dithering before checking
-						// FastLED.show();
-						// vTaskDelay(frameDelay);
-						FastLED.delay(frameDelay);
+						// Process updates between dither frames to keep rendering responsive
+						processFrames();
+						brightness.update();
+
+						TickType_t startTime = xTaskGetTickCount();
+						FastLED.show();
 
 						TickType_t currentTime = xTaskGetTickCount();
-						uint32_t elapsedTimeMs = pdTICKS_TO_MS(currentTime - lastRunTime);
-						if (elapsedTimeMs > 30) {
+						uint32_t elapsedTimeMs = pdTICKS_TO_MS(currentTime - lastFrameTime);
+						if (elapsedTimeMs > pdTICKS_TO_MS(frameDelay) + 10) {
 							ESP_LOGW("FastLED",
-									 "Dithering frame took %u ms, which is longer than expected. Check for performance issues.",
-									 elapsedTimeMs);
+									 "Frame took %u ms, which is longer than expected. FastLED.show() took %u ms.",
+									 elapsedTimeMs,
+									 pdTICKS_TO_MS(xTaskGetTickCount() - startTime));
 						}
-						lastRunTime = currentTime;
+						lastFrameTime = currentTime;
 
 						frameCounter++;
+
+						while (xTaskGetTickCount() - startTime < frameDelay) {
+							yield();  // Yield to other tasks
+						}
 					}
 
 					if (FastLED.getBrightness() == 0 || !anyLedsOn()) {
@@ -156,6 +226,11 @@ void fastLEDDitheringTask(void* pvParameters) {
 }
 
 void LedManager::begin() {
+	frameQueue = xQueueCreate(10, sizeof(std::vector<LedCommand>*));
+	if (frameQueue == NULL) {
+		Serial.println("Error creating LED frame queue!");
+	}
+
 	disablePower();
 
 	ledStrips.clear();
@@ -215,53 +290,39 @@ void LedManager::begin() {
 
 	brightness.begin();
 
-	xTaskCreatePinnedToCore(
-		fastLEDDitheringTask, "FastLED Dithering", 2048, NULL, 3, &fastLEDDitheringTaskHandle, ARDUINO_RUNNING_CORE);
+	xTaskCreate(task_wrapper, "LedManager Task", 4096, this, 5, &fastLEDDitheringTaskHandle);
+}
+
+void LedManager::beginFrame() {
+	if (currentFrame != nullptr) {
+		delete currentFrame;
+	}
+	currentFrame = new std::vector<LedCommand>();
+}
+
+void LedManager::show() {
+	if (currentFrame != nullptr) {
+		if (xQueueSend(frameQueue, &currentFrame, 0) != pdTRUE) {
+			delete currentFrame;  // Drop the frame if the queue is full to avoid leaks
+		}
+		currentFrame = nullptr;
+	}
 }
 
 void LedManager::setBlockColorRGB(uint16_t block, CRGB color) {
-	// Apply gamma correction (γ = 2.0)
-	auto gammaCorrect = [](float value) -> uint8_t {
-		return static_cast<uint8_t>(pow(value / 255.0f, 2.0) * 255.0f);
-	};
-
-	color.r = gammaCorrect(color.r);
-	color.g = gammaCorrect(color.g);
-	color.b = gammaCorrect(color.b);
-
-	if (block == 0)
-		return;	 // Ignore block 0
-
-	bool found = false;
-	for (const auto& strip : ledStrips) {
-		if (block >= strip.startBlock && block < strip.startBlock + strip.numPixels) {
-			strip.leds[block - strip.startBlock] = color;
-			found = true;
-			break;
-		}
-	}
-
-	if (!found) {
-		Serial.printf("Block %d is out of range.\n", block);
+	if (currentFrame != nullptr) {
+		currentFrame->push_back({ CMD_SET_BLOCK, block, color });
 	}
 }
 
 void LedManager::clear() {
-	for (const auto& strip : ledStrips) {
-		fill_solid(strip.leds, strip.numPixels, CRGB::Black);
+	if (currentFrame != nullptr) {
+		currentFrame->push_back({ CMD_CLEAR_ALL, 0, CRGB::Black });
 	}
 }
 
 void LedManager::setAllLedsColor(CRGB color) {
-	for (const auto& strip : ledStrips) {
-		fill_solid(strip.leds, strip.numPixels, color);
+	if (currentFrame != nullptr) {
+		currentFrame->push_back({ CMD_SET_ALL_COLOR, 0, color });
 	}
-}
-
-void LedManager::suspendDithering() {
-	vTaskSuspend(fastLEDDitheringTaskHandle);
-}
-
-void LedManager::resumeDithering() {
-	vTaskResume(fastLEDDitheringTaskHandle);
 }

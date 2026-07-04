@@ -1,11 +1,17 @@
 #pragma once
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
+#include <FastLED.h>
+#include <HTTPClient.h>
 #include <ImprovWiFiLibrary.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <esp_sntp.h>
+#include <memory>
+#include <mutex>
+#include <vector>
 
 /// Maximum length for a WiFi SSID
 #define MAX_SSID_LEN 32
@@ -13,6 +19,27 @@
 #define MAX_PASS_LEN 64
 /// Maximum number of saved WiFi networks
 #define MAX_WIFI_NETWORKS 16
+
+enum class NetworkMode {
+	REALTIME,	// Fetch map data, show both LEDs
+	TIME_ONLY,	// No map fetch, show Wifi LED only
+	OFF			// No fetches, LEDs off
+};
+
+// --- Data structure for scheduled LED updates ---
+struct LedUpdate {
+	uint16_t preBlock;
+	uint16_t postBlock;
+	int colorId;
+	time_t timestamp;	// Timestamp for when the update should occur
+	uint16_t msOffset;	// Millisecond offset for precise timing within the second
+};
+
+// Immutable snapshot of map data
+struct MapData {
+	std::vector<CRGB> colorTable;
+	std::vector<LedUpdate> ledUpdateSchedule;
+};
 
 /**
  * @brief Structure representing saved WiFi credentials
@@ -49,24 +76,51 @@ class NetworkManager {
 	 * 
 	 * Starts background tasks for network management and Improv Wi-Fi, 
 	 * and initializes checking for saved credentials.
-	 * 
-	 * @return true if saved WiFi credentials were found, false otherwise
 	 */
-	bool begin();
+	void begin();
+
+	// Set the current desired state from the main loop
+	void setSystemState(NetworkMode mode, bool brightnessOn);
+
+	// Get a thread-safe snapshot of the latest parsed map data
+	std::shared_ptr<MapData> getMapData();
+
+	// Thread-safe check if WiFi is connected
+	bool isConnected() const {
+		return wifiConnected;
+	}
 
   private:
 	savedWiFiNetwork savedWiFi[MAX_WIFI_NETWORKS];	// Array of saved WiFi network credentials
-	int wifiNetworkIndex = 0;						// Current index for iterating through saved networks
-	unsigned long lastWiFiConnectAttempt = 0;		// Timestamp of the last WiFi connection attempt
+	uint8_t wifiNetworkIndex = 0;					// Current index for iterating through saved networks
+	TickType_t lastWiFiConnectAttempt = 0;			// Timestamp of the last WiFi connection attempt
 	uint8_t wifiConnectAttempts = 0;				// Counter for WiFi connection attempts
 
 	ImprovWiFi improvSerial;  // Instance handling Improv WiFi serial protocol
 	AsyncWebServer server;	  // Asynchronous web server (port 80)
 	Preferences preferences;  // NVS preferences for saving/loading credentials
 
-	/**
-	 * @brief Save the current WiFi credentials to NVS preferences
-	 */
+	uint8_t failedFetchCount = 0;
+	uint8_t updateInterval = 30;  // Default update interval in seconds
+	time_t nextFetchTime = 0;	  // Tracks when the next update should occur
+	uint16_t fetchOffset = 0;	  // Random time ms to fetch (reduces server load)
+
+	NetworkMode currentMode = NetworkMode::REALTIME;
+	bool isBrightnessOn = true;
+	bool wifiConnected = false;
+
+	std::shared_ptr<MapData> currentMapData;
+	std::mutex mapDataMutex;
+
+	void updateStatusLEDs();
+
+  public:
+	// Array of server URLs for failover
+	std::vector<String> serverURLs;
+	uint8_t currentServerIndex = 0;
+
+  private:
+	// Private network functions
 	void exportWiFi();
 
 	/**
@@ -130,6 +184,11 @@ class NetworkManager {
 	 * @param password The connected network's password
 	 */
 	void onImprovWiFiConnectedCb(const char* ssid, const char* password);
+
+	String fetchMapUpdateJSON();
+	time_t parseLEDMapUpdateJSON(const String& downloadedJson);
+	void manageLEDMapAPI();
+	const char* formatEpoch(time_t epoch) const;
 
 	/// Static instance pointer used for routing callbacks if lambdas aren't supported
 	static NetworkManager* instance;

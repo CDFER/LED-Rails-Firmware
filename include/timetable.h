@@ -1,4 +1,9 @@
 
+/**
+ * @file timetable.h
+ * @brief Core structures and classes for static timetable-based rendering
+ */
+
 #pragma once
 
 #include <Arduino.h>
@@ -10,8 +15,8 @@
  * Each entry defines when a train enters a specific block along its route.
  */
 struct TimetableEntry {
-	int16_t offsetSeconds;	// Offset in seconds from route start time (-32768 to 32767)
-	int16_t blockNumber;	// Block number (0-32767, with -1 reserved for "no block")
+	int16_t offsetSeconds;	///< Offset in seconds from route start time (-32768 to 32767)
+	int16_t blockNumber;	///< Block number (0-32767, with -1 reserved for "no block")
 
 	/**
 	 * @brief Construct a new TimetableEntry object
@@ -22,21 +27,52 @@ struct TimetableEntry {
 	constexpr TimetableEntry(int16_t seconds, int16_t block) : offsetSeconds(seconds), blockNumber(block) {}
 };
 
-template<typename T>
-struct RouteSpan {
-    const T* _data;
-    size_t _size;
-    constexpr RouteSpan(const T* d, size_t s) : _data(d), _size(s) {}
-    template<size_t N>
-    constexpr RouteSpan(const T (&arr)[N]) : _data(arr), _size(N) {}
+/**
+ * @brief Non-owning view of a collection of objects (similar to std::span)
+ * @tparam T Type of elements in the span
+ */
+template<typename T> struct RouteSpan {
+	const T* _data;	 ///< Pointer to the underlying array
+	size_t _size;	 ///< Number of elements in the span
 
-    const T* begin() const { return _data; }
-    const T* end() const { return _data + _size; }
-    const T& operator[](size_t index) const { return _data[index]; }
-    size_t size() const { return _size; }
-    bool empty() const { return _size == 0; }
-    const T& front() const { return _data[0]; }
-    const T& back() const { return _data[_size - 1]; }
+	/**
+     * @brief Construct from a pointer and size
+     */
+	constexpr RouteSpan(const T* d, size_t s) : _data(d), _size(s) {}
+
+	/**
+     * @brief Construct from a fixed-size array
+     */
+	template<size_t N> constexpr RouteSpan(const T (&arr)[N]) : _data(arr), _size(N) {}
+
+	/// Get iterator to start
+	const T* begin() const {
+		return _data;
+	}
+	/// Get iterator to end
+	const T* end() const {
+		return _data + _size;
+	}
+	/// Access element by index
+	const T& operator[](size_t index) const {
+		return _data[index];
+	}
+	/// Get number of elements
+	size_t size() const {
+		return _size;
+	}
+	/// Check if span is empty
+	bool empty() const {
+		return _size == 0;
+	}
+	/// Get first element
+	const T& front() const {
+		return _data[0];
+	}
+	/// Get last element
+	const T& back() const {
+		return _data[_size - 1];
+	}
 };
 
 /**

@@ -35,7 +35,7 @@ def build_environments() -> None:
     """Build all configured environments with mergebin target"""
     for env in ENVIRONMENTS:
         print(f"Building environment: {env['id']}")
-        run_command(["pio", "run", "-e", env["id"], "--target", "mergebin_seperate_bootloader"])
+        run_command(["pio", "run", "--environment", env["id"], "--target", "mergebin_seperate_bootloader"])
 
 
 def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
@@ -53,6 +53,10 @@ def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
                         "offset": 0,
                     },
                     {
+                        "path": "partitions.bin",
+                        "offset": 32768,
+                    },
+                    {
                         "path": "firmware-app0.bin",
                         "offset": 65536,
                     }
@@ -60,13 +64,6 @@ def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
             }
         ],
     }
-
-    # Add the partition table for ESP32-S3 devices
-    if env["chipFamily"] == "ESP32-S3":
-        manifest["builds"][0]["parts"].append({
-            "path": "partitions.bin",
-            "offset": 32768,
-        })
 
     manifest_path = os.path.join(site_bin_dir, "manifest.json")
     with open(manifest_path, "w", encoding="utf-8") as f:
@@ -85,28 +82,21 @@ def prepare_deployment_files() -> None:
 
     # Copy firmware binaries and create manifest.json
     for env in ENVIRONMENTS:
-        # 
+        # Copy the firmware binary from the build directory
         src_bin = os.path.join(BUILD_DIR, env["id"], "firmware-app0.bin")
         dst_bin_dir = os.path.join(SITE_DIR, "bin", env["id"])
         dst_bin = os.path.join(dst_bin_dir, "firmware-app0.bin")
         shutil.copy(src_bin, dst_bin)
 
-        # Depenting on the cpu family, copy the appropriate bootloader binary
-        if env["chipFamily"] == "ESP32-C3":
-            src_bin = os.path.join(WEB_INSTALLER_SRC, "Bootloaders", "esp32-c3_bootloader.bin")
-        elif env["chipFamily"] == "ESP32-S3":
-            src_bin = os.path.join(WEB_INSTALLER_SRC, "Bootloaders", "esp32-s3_bootloader.bin")
-        else:
-            print(f"Unknown chip family for environment {env['id']}: {env['chipFamily']}")
-            sys.exit(1)
+        # Copy the bootloader binary from the build directory
+        src_bin = os.path.join(BUILD_DIR, env["id"], "bootloader.bin")
         dst_bin = os.path.join(dst_bin_dir, "bootloader.bin")
         shutil.copy(src_bin, dst_bin)
 
-        # Add partition table for ESP32-S3 devices
-        if env["chipFamily"] == "ESP32-S3":
-            src_bin = os.path.join(BUILD_DIR, env["id"], "partitions.bin")
-            dst_bin = os.path.join(dst_bin_dir, "partitions.bin")
-            shutil.copy(src_bin, dst_bin)
+        # Copy the partition table from the build directory
+        src_bin = os.path.join(BUILD_DIR, env["id"], "partitions.bin")
+        dst_bin = os.path.join(dst_bin_dir, "partitions.bin")
+        shutil.copy(src_bin, dst_bin)
 
         print(f"Copied firmware and bootloader for {env['id']}")
         create_manifest(env, dst_bin_dir)

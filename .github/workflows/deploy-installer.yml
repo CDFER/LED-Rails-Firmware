@@ -18,14 +18,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/cache@v6
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.platformio/.cache
-          key: ${{ runner.os }}-pio
       - uses: actions/setup-python@v6
         with:
+          cache: 'pip' # caching pip dependencies
           python-version: "3.14"
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio intelhex

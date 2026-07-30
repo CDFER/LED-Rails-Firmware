@@ -82,12 +82,6 @@ class LedManager {
 	void processFrames();
 
 	/**
-	 * @brief Task wrapper for FreeRTOS
-	 * @param pvParameters Pointer to the LedManager instance
-	 */
-	static void task_wrapper(void* pvParameters);
-
-	/**
 	 * @brief Main task loop for LED rendering
 	 */
 	void task();

@@ -70,7 +70,7 @@ class StatusLEDManager {
 	/**
 	 * @brief Main task loop for status LED timing and updates
 	 */
-	static void taskMethod(void* pvParameters);
+	static void task(void* pvParameters);
 };
 
 /**

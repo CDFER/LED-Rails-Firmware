@@ -52,7 +52,8 @@
       "-DTIMETABLE_SPEED=600.0",
       "-DBACKEND_VERSION=\\\"100\\\"",
       "-DCITY_CODE=\\\"mel\\\"",
-      "-DMEL_V1_0_0"
+      "-DMEL_V1_0_0",
+      "-DTIMEZONE=\\\"AEST-10AEDT,M10.1.0,M4.1.0/3\\\""
     ],
     "f_cpu": "240000000L",
     "f_flash": "80000000L",

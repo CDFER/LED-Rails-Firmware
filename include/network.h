@@ -48,8 +48,8 @@ struct MapData {
  * that can be retrieved and tried during connection.
  */
 struct savedWiFiNetwork {
-	char ssid[MAX_SSID_LEN];	  // The SSID of the WiFi network
-	char password[MAX_PASS_LEN];  // The password of the WiFi network
+	char ssid[MAX_SSID_LEN + 1];	  // The SSID of the WiFi network
+	char password[MAX_PASS_LEN + 1];  // The password of the WiFi network
 };
 
 /**
@@ -65,11 +65,6 @@ class NetworkManager {
 	 * @brief Construct a new Network Manager object
 	 */
 	NetworkManager();
-
-	/**
-	 * @brief Destroy the Network Manager object
-	 */
-	~NetworkManager();
 
 	/**
 	 * @brief Initialize the Network Manager
@@ -93,6 +88,7 @@ class NetworkManager {
   private:
 	savedWiFiNetwork savedWiFi[MAX_WIFI_NETWORKS];	// Array of saved WiFi network credentials
 	uint8_t wifiNetworkIndex = 0;					// Current index for iterating through saved networks
+	uint16_t wifiAttemptedMask = 0;					// Saved networks already attempted in the current retry cycle
 	TickType_t lastWiFiConnectAttempt = 0;			// Timestamp of the last WiFi connection attempt
 	uint8_t wifiConnectAttempts = 0;				// Counter for WiFi connection attempts
 
@@ -112,15 +108,12 @@ class NetworkManager {
 	std::shared_ptr<MapData> currentMapData;
 	std::mutex mapDataMutex;
 
-	void updateStatusLEDs();
-
-  public:
 	// Array of server URLs for failover
 	std::vector<String> serverURLs;
 	uint8_t currentServerIndex = 0;
 
-  private:
-	// Private network functions
+	void updateStatusLEDs();
+
 	void exportWiFi();
 
 	/**
@@ -156,21 +149,6 @@ class NetworkManager {
 	static void networkTask(void* pvParameters);
 
 	/**
-	 * @brief Static wrapper for Improv WiFi error callback
-	 * 
-	 * @param err The Improv error that occurred
-	 */
-	static void onImprovWiFiErrorCbWrapper(ImprovTypes::Error err);
-
-	/**
-	 * @brief Static wrapper for Improv WiFi connected callback
-	 * 
-	 * @param ssid The connected network's SSID
-	 * @param password The connected network's password
-	 */
-	static void onImprovWiFiConnectedCbWrapper(const char* ssid, const char* password);
-
-	/**
 	 * @brief Internal callback for handling Improv WiFi errors
 	 * 
 	 * @param err The Improv error that occurred
@@ -189,9 +167,7 @@ class NetworkManager {
 	time_t parseLEDMapUpdateJSON(const String& downloadedJson);
 	void manageLEDMapAPI();
 	const char* formatEpoch(time_t epoch) const;
-
-	/// Static instance pointer used for routing callbacks if lambdas aren't supported
-	static NetworkManager* instance;
+	const char* getFormattedTimeWithMs() const;
 };
 
 // Global instance of the NetworkManager

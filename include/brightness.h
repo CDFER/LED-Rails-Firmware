@@ -102,8 +102,8 @@ class BrightnessManager {
 #if defined(LIGHT_SENSOR)
 	float ambientLux;							 ///< Smoothed ambient light level in lux
 	int bucketIndex;							 ///< Current brightness bucket index
-	BrightnessBucket buckets[3];				 ///< Configuration for light-to-brightness mapping
-	const int numBuckets = 3;					 ///< Number of brightness buckets
+	BrightnessBucket buckets[4];				 ///< Configuration for light-to-brightness mapping
+	const int numBuckets = 4;					 ///< Number of brightness buckets
 	const float luxUpSmoothingFactor = 0.05f;	 ///< Smoothing factor for increasing light
 	const float luxDownSmoothingFactor = 0.01f;	 ///< Smoothing factor for decreasing light
 

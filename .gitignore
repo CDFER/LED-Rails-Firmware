@@ -60,3 +60,6 @@ PCB/jlcpcb/
 # Unfinished or abandoned
 *AKL CRL*
 *AKL CRL Testing*
+
+# Web Installer Temp Files
+_site

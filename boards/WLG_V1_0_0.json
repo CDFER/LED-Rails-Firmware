@@ -28,7 +28,8 @@
       "-DTIMETABLE_SPEED=1000.0",
       "-DBACKEND_VERSION=\\\"100\\\"",
       "-DCITY_CODE=\\\"wlg\\\"",
-      "-DWLG_V1_0_0"
+      "-DWLG_V1_0_0",
+      "-DTIMEZONE=\\\"NZST-12NZDT,M9.5.0,M4.1.0/3\\\""
     ],
     "f_cpu": "160000000L",
     "f_flash": "80000000L",

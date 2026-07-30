@@ -1,4 +1,5 @@
 #include "mapLEDs.h"
+#include "ledStorageSync.h"
 
 // Define the LED arrays
 // Pins and pixel counts defined in the board file (./boards/)
@@ -150,10 +151,6 @@ void LedManager::processFrames() {
 	}
 }
 
-void LedManager::task_wrapper(void* pvParameters) {
-	static_cast<LedManager*>(pvParameters)->task();
-}
-
 void LedManager::task() {
 	const TickType_t frameDelay = pdMS_TO_TICKS(20);  // 50fps = 20ms interval
 	enum class ledState { OFF, TURNING_ON, ON, TURNING_OFF };
@@ -168,7 +165,7 @@ void LedManager::task() {
 				if (FastLED.getBrightness() > 0 && anyLedsOn()) {
 					currentState = ledState::TURNING_ON;
 				}
-				vTaskDelay(frameDelay);
+				vTaskDelay(pdMS_TO_TICKS(100));	 // Sleep a bit to yield to other tasks
 				break;
 
 			case ledState::TURNING_ON:
@@ -179,32 +176,35 @@ void LedManager::task() {
 
 			case ledState::ON:
 				{
-					TickType_t lastFrameTime = xTaskGetTickCount();
 					uint8_t frameCounter = 0;
 
 					while (frameCounter < 100) {  // Do 100 frames of dithering before checking
 						// Process updates between dither frames to keep rendering responsive
 						processFrames();
 						brightness.update();
+						TickType_t lastFrameTime = xTaskGetTickCount();
 
-						TickType_t startTime = xTaskGetTickCount();
+						// TickType_t startTime = xTaskGetTickCount();
+						xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 						FastLED.show();
+						xSemaphoreGive(fastLEDPreferencesMutex);
 
-						TickType_t currentTime = xTaskGetTickCount();
-						uint32_t elapsedTimeMs = pdTICKS_TO_MS(currentTime - lastFrameTime);
-						if (elapsedTimeMs > pdTICKS_TO_MS(frameDelay) + 10) {
-							ESP_LOGW("FastLED",
-									 "Frame took %u ms, which is longer than expected. FastLED.show() took %u ms.",
-									 elapsedTimeMs,
-									 pdTICKS_TO_MS(xTaskGetTickCount() - startTime));
-						}
-						lastFrameTime = currentTime;
+						// TickType_t currentTime = xTaskGetTickCount();
+						// uint32_t elapsedTimeMs = pdTICKS_TO_MS(currentTime - lastFrameTime);
+						// if (elapsedTimeMs > pdTICKS_TO_MS(frameDelay) + 10) {
+						// 	ESP_LOGW("FastLED",
+						// 			 "Frame took %u ms, which is longer than expected. FastLED.show() took %u ms.",
+						// 			 elapsedTimeMs,
+						// 			 pdTICKS_TO_MS(xTaskGetTickCount() - startTime));
+						// }
+						// lastFrameTime = currentTime;
 
-						frameCounter++;
+						// frameCounter++;
 
-						while (xTaskGetTickCount() - startTime < frameDelay) {
-							yield();  // Yield to other tasks
-						}
+						// while (xTaskGetTickCount() - startTime < frameDelay) {
+						// 	yield();  // Yield to other tasks
+						// }
+						vTaskDelayUntil(&lastFrameTime, frameDelay);
 					}
 
 					if (FastLED.getBrightness() == 0 || !anyLedsOn()) {
@@ -226,6 +226,11 @@ void LedManager::task() {
 }
 
 void LedManager::begin() {
+	fastLEDPreferencesMutex = xSemaphoreCreateMutex();
+	if (fastLEDPreferencesMutex == nullptr) {
+		Serial.println("Error creating FastLED/Preferences mutex!");
+	}
+
 	frameQueue = xQueueCreate(10, sizeof(std::vector<LedCommand>*));
 	if (frameQueue == NULL) {
 		Serial.println("Error creating LED frame queue!");
@@ -286,11 +291,19 @@ void LedManager::begin() {
 	FastLED.clear(true);
 	FastLED.setDither(BINARY_DITHER);
 
-	enablePower();
+	// enablePower();
 
 	brightness.begin();
 
-	xTaskCreate(task_wrapper, "LedManager Task", 4096, this, 5, &fastLEDDitheringTaskHandle);
+	xTaskCreate(
+		[](void* pvParameters) {
+			static_cast<LedManager*>(pvParameters)->task();
+		},
+		"LedManager Task",
+		4096,
+		this,
+		5,
+		&fastLEDDitheringTaskHandle);
 }
 
 void LedManager::beginFrame() {
@@ -302,7 +315,8 @@ void LedManager::beginFrame() {
 
 void LedManager::show() {
 	if (currentFrame != nullptr) {
-		if (xQueueSend(frameQueue, &currentFrame, 0) != pdTRUE) {
+		if (frameQueue == NULL || xQueueSend(frameQueue, &currentFrame, 0) != pdTRUE) {
+			Serial.println("Frame queue full, dropping frame.");
 			delete currentFrame;  // Drop the frame if the queue is full to avoid leaks
 		}
 		currentFrame = nullptr;

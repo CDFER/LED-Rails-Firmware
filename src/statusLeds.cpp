@@ -3,7 +3,7 @@
 StatusLEDManager statusLEDs;
 
 void StatusLEDManager::begin() {
-	xTaskCreate(taskMethod, "Status LED Manager", 1024, this, 2, &taskHandle);
+	xTaskCreate(task, "Status LED Manager", 2048, this, 5, &taskHandle);
 }
 
 void StatusLEDManager::setState(uint8_t pin1, statusLedCommand cmd1, uint8_t pin2, statusLedCommand cmd2) {
@@ -38,9 +38,9 @@ void StatusLEDManager::setCharlieplexedLED(uint8_t pin, statusLedCommand state) 
 	}
 }
 
-void StatusLEDManager::taskMethod(void* pvParameters) {
+void StatusLEDManager::task(void* pvParameters) {
 // Default LEDs as originally configured
-// Using conditionally defined pins since they might come from build_flags
+// Using conditionally defined pins since they come from build_flags
 #ifndef WIFI_LED_PIN
 	#define WIFI_LED_PIN 255
 #endif

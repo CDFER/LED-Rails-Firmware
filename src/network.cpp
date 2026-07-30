@@ -1,8 +1,32 @@
 #include "network.h"
+#include "ledStorageSync.h"
 #include "statusLeds.h"
 
-NetworkManager* NetworkManager::instance = nullptr;
 NetworkManager network;
+
+namespace {
+struct LegacySavedWiFiNetwork {
+	char ssid[MAX_SSID_LEN];
+	char password[MAX_PASS_LEN];
+};
+
+void copyUtf8(char* destination, size_t destinationSize, const char* source) {
+	if (destinationSize == 0) {
+		return;
+	}
+
+	size_t length = strnlen(source, destinationSize - 1);
+	if (source[length] != '\0') {
+		length = destinationSize - 1;
+		while (length > 0 && (static_cast<uint8_t>(source[length]) & 0xC0) == 0x80) {
+			--length;
+		}
+	}
+
+	memcpy(destination, source, length);
+	destination[length] = '\0';
+}
+}
 
 static void onNTPTimeSyncCb(struct timeval* t) {
 	Serial.println("Time synced via NTP");
@@ -65,9 +89,8 @@ const char index_html[] PROGMEM = R"=====(
 )=====";
 
 NetworkManager::NetworkManager() : improvSerial(&Serial), server(80) {
-	instance = this;
-
 	// Initialize savedWiFi to empty
+	memset(savedWiFi, 0, sizeof(savedWiFi));
 	for (int i = 0; i < MAX_WIFI_NETWORKS; i++) {
 		savedWiFi[i].ssid[0] = '\0';
 		savedWiFi[i].password[0] = '\0';
@@ -86,38 +109,38 @@ NetworkManager::NetworkManager() : improvSerial(&Serial), server(80) {
 	};
 }
 
-NetworkManager::~NetworkManager() {
-	if (instance == this) {
-		instance = nullptr;
-	}
-}
-
 void NetworkManager::exportWiFi() {
+	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	preferences.begin("wifi");
 	preferences.putBytes("wifi", savedWiFi, sizeof(savedWiFi));
 	preferences.end();
+	xSemaphoreGive(fastLEDPreferencesMutex);
 }
 
 void NetworkManager::importWiFi() {
+	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	preferences.begin("wifi", true);
-	preferences.getBytes("wifi", savedWiFi, sizeof(savedWiFi));
+	const size_t storedSize = preferences.getBytesLength("wifi");
+	if (storedSize == sizeof(LegacySavedWiFiNetwork) * MAX_WIFI_NETWORKS) {
+		LegacySavedWiFiNetwork legacyNetworks[MAX_WIFI_NETWORKS] = {};
+		preferences.getBytes("wifi", legacyNetworks, sizeof(legacyNetworks));
+		for (int i = 0; i < MAX_WIFI_NETWORKS; i++) {
+			copyUtf8(savedWiFi[i].ssid, sizeof(savedWiFi[i].ssid), legacyNetworks[i].ssid);
+			copyUtf8(savedWiFi[i].password, sizeof(savedWiFi[i].password), legacyNetworks[i].password);
+		}
+	} else {
+		preferences.getBytes("wifi", savedWiFi, sizeof(savedWiFi));
+		for (int i = 0; i < MAX_WIFI_NETWORKS; i++) {
+			savedWiFi[i].ssid[MAX_SSID_LEN] = '\0';
+			savedWiFi[i].password[MAX_PASS_LEN] = '\0';
+		}
+	}
 	preferences.end();
-}
-
-void NetworkManager::onImprovWiFiErrorCbWrapper(ImprovTypes::Error err) {
-	if (instance) {
-		instance->onImprovWiFiErrorCb(err);
-	}
-}
-
-void NetworkManager::onImprovWiFiConnectedCbWrapper(const char* ssid, const char* password) {
-	if (instance) {
-		instance->onImprovWiFiConnectedCb(ssid, password);
-	}
+	xSemaphoreGive(fastLEDPreferencesMutex);
 }
 
 void NetworkManager::onImprovWiFiErrorCb(ImprovTypes::Error err) {
-	Serial.printf("Improv WiFi Error: %d\n", err);
+	// Serial.printf("Improv WiFi Error: %d\n", err);
 	server.end();
 	server.begin();
 }
@@ -130,8 +153,8 @@ void NetworkManager::onImprovWiFiConnectedCb(const char* ssid, const char* passw
 	}
 
 	// Save the new network at the top
-	strncpy(savedWiFi[0].ssid, ssid, MAX_SSID_LEN);
-	strncpy(savedWiFi[0].password, password, MAX_PASS_LEN);
+	copyUtf8(savedWiFi[0].ssid, sizeof(savedWiFi[0].ssid), ssid);
+	copyUtf8(savedWiFi[0].password, sizeof(savedWiFi[0].password), password);
 
 	// Save the updated WiFi networks to Preferences
 	exportWiFi();
@@ -166,11 +189,10 @@ void NetworkManager::begin() {
 
 	// --- Time Setup ---
 	const char* ntpServers[] = { "pool.ntp.org", "pool.msltime.measurement.govt.nz", "nz.pool.ntp.org" };
-	const char* time_zone = "NZST-12NZDT,M9.5.0,M4.1.0/3";
 	sntp_set_time_sync_notification_cb(onNTPTimeSyncCb);
 	sntp_set_sync_interval(1000 * 60 * 15);	 // Set sync interval to 15 minutes
 	sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
-	configTzTime(time_zone, ntpServers[0], ntpServers[1], ntpServers[2]);
+	configTzTime(TIMEZONE, ntpServers[0], ntpServers[1], ntpServers[2]);
 
 	importWiFi();
 
@@ -181,13 +203,16 @@ void NetworkManager::begin() {
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 	enum ImprovTypes::ChipFamily chip = ImprovTypes::ChipFamily::CF_ESP32_S3;
 #else
-	// Default or add fallback if unknown chip
 	enum ImprovTypes::ChipFamily chip = ImprovTypes::ChipFamily::CF_ESP32;
 #endif
 
 	improvSerial.setDeviceInfo(chip, FIRMWARE, FIRMWARE_VERSION, ARDUINO_BOARD, "http://{LOCAL_IPV4}/");
-	improvSerial.onImprovError(onImprovWiFiErrorCbWrapper);
-	improvSerial.onImprovConnected(onImprovWiFiConnectedCbWrapper);
+	improvSerial.onImprovError([](ImprovTypes::Error err) {
+		network.onImprovWiFiErrorCb(err);
+	});
+	improvSerial.onImprovConnected([](const char* ssid, const char* password) {
+		network.onImprovWiFiConnectedCb(ssid, password);
+	});
 
 	setUpWebserver();
 
@@ -214,8 +239,8 @@ void NetworkManager::begin() {
 #endif
 
 	// Create tasks
-	xTaskCreate(improvSerialTask, "Improv Serial Task", 4096, this, 3, nullptr);
-	xTaskCreate(networkTask, "Network Task", 16384, this, 2, nullptr);
+	xTaskCreatePinnedToCore(improvSerialTask, "Improv Serial Task", 4096, this, 3, nullptr, ARDUINO_RUNNING_CORE);
+	xTaskCreatePinnedToCore(networkTask, "Network Task", 16384, this, 2, nullptr, ARDUINO_RUNNING_CORE);
 }
 
 void NetworkManager::improvSerialTask(void* pvParameters) {
@@ -334,6 +359,22 @@ const char* NetworkManager::formatEpoch(time_t epoch) const {
 	return "Format error";
 }
 
+const char* NetworkManager::getFormattedTimeWithMs() const {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);  // Get epoch time with microsecond precision
+
+	struct tm timeinfo;
+	localtime_r(&tv.tv_sec, &timeinfo);	 // Convert seconds to local time struct
+
+	long milliseconds = tv.tv_usec / 1000;	// Convert microseconds to milliseconds
+
+	static char buf[16];
+	// Format: HH:MM:SS.mmm
+	snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%03ld", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, milliseconds);
+
+	return buf;
+}
+
 void NetworkManager::networkTask(void* pvParameters) {
 	NetworkManager* manager = static_cast<NetworkManager*>(pvParameters);
 
@@ -385,19 +426,25 @@ void NetworkManager::updateStatusLEDs() {
 
 void NetworkManager::manageLEDMapAPI() {
 	time_t epoch = time(nullptr);  // Get current time
+
+	// Update nextFetchTime to account for time drift
+	nextFetchTime = constrain(nextFetchTime, epoch - 1, epoch + updateInterval);
+
 	if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
 		time_t timeOffset = 0;
 		String downloadedJson = fetchMapUpdateJSON();
 		if (downloadedJson.length() > 0) {
 			timeOffset = epoch - parseLEDMapUpdateJSON(downloadedJson);
+			nextFetchTime = constrain(nextFetchTime, epoch + 2, epoch + updateInterval);
 		} else {
 			if (failedFetchCount > 3 + serverURLs.size()) {
 				Serial.println("All servers failed to provide data.");
 			}
 		}
-		nextFetchTime = constrain(nextFetchTime, epoch + 2, epoch + updateInterval);
+
+		// Get current time incl ms HH:MM:SS.mmm
 		Serial.printf("%s fetchDelay:%2is size:%1.1fkiB MCU:%2.0f°C WiFi:%2idBm\n",
-					  formatEpoch(epoch),
+					  getFormattedTimeWithMs(),
 					  timeOffset,
 					  downloadedJson.length() / 1024.0,
 					  temperatureRead(),
@@ -406,32 +453,62 @@ void NetworkManager::manageLEDMapAPI() {
 }
 
 void NetworkManager::manageWiFiConnection() {
-	const TickType_t attemptTimeout = pdMS_TO_TICKS(5000);	// 5 seconds for each attempt
-	const uint8_t maxAttempts = 3;							// Max attempts per network
+	const TickType_t attemptTimeout = pdMS_TO_TICKS(30000);	 // 30 seconds between scans/attempts
 
 	if (xTaskGetTickCount() - lastWiFiConnectAttempt > attemptTimeout || lastWiFiConnectAttempt == 0) {
-		if (wifiConnectAttempts < maxAttempts) {
-			wifiConnectAttempts++;
-		} else {
-			wifiConnectAttempts = 0;
-
-			while (strlen(savedWiFi[wifiNetworkIndex].ssid) == 0 && wifiNetworkIndex < MAX_WIFI_NETWORKS) {
-				wifiNetworkIndex++;	 // Skip empty SSIDs
-			}
-
-			if (wifiNetworkIndex >= MAX_WIFI_NETWORKS) {
-				wifiNetworkIndex = 0;
+		lastWiFiConnectAttempt = xTaskGetTickCount();
+		bool savedWifiFound = false;
+		for (uint8_t savedIndex = 0; savedIndex < MAX_WIFI_NETWORKS; savedIndex++) {
+			if (savedWiFi[savedIndex].ssid[0] != '\0') {
+				savedWifiFound = true;
+				break;
 			}
 		}
 
-		if (strlen(savedWiFi[wifiNetworkIndex].ssid) != 0) {
-			// Attempt to connect to the current network
-			Serial.printf("Attempting to connect to saved network %i: %s\n", wifiNetworkIndex, savedWiFi[wifiNetworkIndex].ssid);
+		if (!savedWifiFound) {
+			return;
+		}
+
+		int scanResult = WiFi.scanNetworks(/*async=*/false, /*hidden=*/false, /*channels=*/0, /*max_ms_per_channel=*/100);
+		int8_t bestSavedNetwork = -1;
+		int32_t bestRssi = INT32_MIN;
+
+		if (scanResult >= 0) {
+			for (uint8_t selectionPass = 0; selectionPass < 2 && bestSavedNetwork < 0; selectionPass++) {
+				if (selectionPass == 1) {
+					// All visible saved networks have failed; begin a new retry cycle.
+					wifiAttemptedMask = 0;
+				}
+
+				for (int scanIndex = 0; scanIndex < scanResult; scanIndex++) {
+					const String scannedSsid = WiFi.SSID(scanIndex);
+					for (uint8_t savedIndex = 0; savedIndex < MAX_WIFI_NETWORKS; savedIndex++) {
+						if (savedWiFi[savedIndex].ssid[0] != '\0' && (wifiAttemptedMask & (1U << savedIndex)) == 0
+							&& scannedSsid == savedWiFi[savedIndex].ssid && WiFi.RSSI(scanIndex) > bestRssi) {
+							bestSavedNetwork = savedIndex;
+							bestRssi = WiFi.RSSI(scanIndex);
+						}
+					}
+				}
+			}
+		}
+
+		WiFi.scanDelete();
+
+		if (bestSavedNetwork >= 0) {
+			wifiNetworkIndex = bestSavedNetwork;
+			wifiAttemptedMask |= 1U << wifiNetworkIndex;  // Mark this network as attempted in the current retry cycle
+			Serial.printf("Attempting to connect to saved network %i: %s (%ld dBm)\n",
+						  wifiNetworkIndex,
+						  savedWiFi[wifiNetworkIndex].ssid,
+						  bestRssi);
 			WiFi.disconnect();	// Disconnect from any current network
 			WiFi.begin(savedWiFi[wifiNetworkIndex].ssid, savedWiFi[wifiNetworkIndex].password);
 			WiFi.setTxPower(WIFI_POWER_15dBm);	// Set WiFi power to avoid interference
+		} else if (scanResult >= 0) {
+			Serial.println("No saved WiFi networks are available");
+		} else {
+			Serial.printf("WiFi scan failed: %i\n", scanResult);
 		}
-
-		lastWiFiConnectAttempt = xTaskGetTickCount();
 	}
 }

@@ -43,13 +43,18 @@ void onMode() {
 
 void setup() {
 	// Hardware Serial
-	// Serial0.begin(115200);
+	Serial0.begin(115200);
+	Serial0.setDebugOutput(true);
 
 	// USB Serial
 	Serial.begin();
-	Serial.setDebugOutput(true);
+	// Serial.setDebugOutput(true);
+	Serial.setTxBufferSize(1024);  // Increase TX buffer size to reduce dropped characters
+
+	statusLEDs.begin();
 
 	mapLEDs.begin();
+
 	modeManager.begin();
 
 	// --- Setup Buttons ---
@@ -73,8 +78,6 @@ void setup() {
 	#endif
 	buttons.setCallback(POWER_BUTTON, onPower);
 #endif
-
-	statusLEDs.begin();
 
 	network.begin();
 

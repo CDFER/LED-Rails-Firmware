@@ -28,7 +28,8 @@
       "-DBACKEND_VERSION=\\\"100\\\"",
       "-DCITY_CODE=\\\"akl\\\"",
       "-DAKL_V1_0_0",
-      "-DOUT_OF_SERVICE_TRAINS"
+      "-DOUT_OF_SERVICE_TRAINS",
+      "-DTIMEZONE=\\\"NZST-12NZDT,M9.5.0,M4.1.0/3\\\""
     ],
     "f_cpu": "160000000L",
     "f_flash": "80000000L",

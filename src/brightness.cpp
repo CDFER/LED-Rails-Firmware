@@ -1,8 +1,10 @@
 #include "brightness.h"
+#include "ledStorageSync.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
 Preferences preferences;
+SemaphoreHandle_t fastLEDPreferencesMutex = nullptr;
 
 BrightnessManager brightness;
 
@@ -51,13 +53,14 @@ bool BrightnessManager::isOn() {
 LTR303 lightSensor;
 
 BrightnessManager::BrightnessManager() : brightness(0.1f), powerOn(true), ambientLux(0.0f), bucketIndex(0) {
-	buckets[0] = { 1000.0f, 0.0f };	 // Dark (0-1000 lux)
+	buckets[0] = { 0.0f, 0.0f };	 // Min (0 lux)
+	buckets[1] = { 1000.0f, 0.0f };	 // Dark (0-1000 lux)
 	if (String(CITY_CODE) == "mel") {
-		buckets[1] = { 5000.0f, 0.2f };	 // Indoor (1000-2000 lux)
+		buckets[2] = { 5000.0f, 0.2f };	 // Indoor (1000-2000 lux)
 	} else {
-		buckets[1] = { 5000.0f, 0.1f };	 // Indoor (1000-5000 lux)
+		buckets[2] = { 5000.0f, 0.1f };	 // Indoor (1000-5000 lux)
 	}
-	buckets[2] = { 100000.0f, 1.0f };  // Outdoor (5000-100000 lux)
+	buckets[3] = { 100000.0f, 1.0f };  // Outdoor (5000-100000 lux)
 }
 
 void BrightnessManager::begin() {
@@ -70,25 +73,38 @@ void BrightnessManager::begin() {
 }
 
 void BrightnessManager::save() {
-	Serial.println("Saving brightness buckets to Preferences");
 	Preferences localPrefs;
+	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	localPrefs.begin("brightness", false);
 	for (int i = 0; i < numBuckets; i++) {
 		localPrefs.putFloat(("lux" + String(i)).c_str(), buckets[i].luxMax);
 		localPrefs.putFloat(("bright" + String(i)).c_str(), buckets[i].brightnessMax);
 	}
 	localPrefs.end();
+	xSemaphoreGive(fastLEDPreferencesMutex);
 }
 
 void BrightnessManager::load() {
 	Preferences localPrefs;
 	localPrefs.begin("brightness", true);
-	for (int i = 0; i < numBuckets; i++) {
-		buckets[i].luxMax = localPrefs.getFloat(("lux" + String(i)).c_str(), buckets[i].luxMax);
-		buckets[i].brightnessMax = localPrefs.getFloat(("bright" + String(i)).c_str(), buckets[i].brightnessMax);
+	if (!localPrefs.isKey("lux3")) {
+		// Legacy format: only 3 buckets stored, need to migrate to 4 buckets
+		buckets[0] = { 0.0f, 0.0f };
+		for (int i = 1; i < numBuckets; i++) {
+			int legacyIndex = i - 1;
+			buckets[i].luxMax = localPrefs.getFloat(("lux" + String(legacyIndex)).c_str(), buckets[i].luxMax);
+			buckets[i].brightnessMax = localPrefs.getFloat(("bright" + String(legacyIndex)).c_str(), buckets[i].brightnessMax);
+		}
+		this->save();  // Save the migrated buckets back to Preferences
+		Serial.println("Migrated legacy brightness buckets to new format");
+	} else {
+		for (int i = 0; i < numBuckets; i++) {
+			buckets[i].luxMax = localPrefs.getFloat(("lux" + String(i)).c_str(), buckets[i].luxMax);
+			buckets[i].brightnessMax = localPrefs.getFloat(("bright" + String(i)).c_str(), buckets[i].brightnessMax);
+		}
 	}
 	localPrefs.end();
-	printBuckets();
+	// printBuckets();
 }
 
 void BrightnessManager::update() {
@@ -147,13 +163,14 @@ void BrightnessManager::setBrightness() {
 			uint8_t prevBrightness =
 				constrain(FastLED.getBrightness(), gammaCorrectedBrightness(0.0), gammaCorrectedBrightness(1.0));
 
-			if (abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || newBrightness == 0.0f || newBrightness == 1.0f) {
-				if (buttonPressed) {  // If the brightness change was triggered by a button press, apply it immediately without smoothing
-					newBrightness = gammaCorrectedBrightness(brightness);
-					buttonPressed = false;
-				} else {
-					newBrightness = constrain(newBrightness, prevBrightness - 1, prevBrightness + 2);
-				}
+			if (buttonPressed) {  // If the brightness change was triggered by a button press, apply it immediately
+				newBrightness = gammaCorrectedBrightness(brightness);
+				buttonPressed = false;
+				FastLED.setBrightness(newBrightness);
+				Serial.printf("Current Brightness: %d\n", FastLED.getBrightness());
+			} else if (
+				abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || newBrightness == 0.0f || newBrightness == 1.0f) {
+				newBrightness = constrain(newBrightness, prevBrightness - 1, prevBrightness + 2);
 				FastLED.setBrightness(newBrightness);
 			}
 		}
@@ -163,8 +180,9 @@ void BrightnessManager::setBrightness() {
 }
 
 void BrightnessManager::printBuckets() {
+	Serial.println("Current brightness buckets:");
 	for (int i = 0; i < numBuckets; i++) {
-		Serial.printf("{%d: {lux: %.0f-%.0f, bright: %.2f-%.2f}},",
+		Serial.printf("%d: {lux: %.0f-%.0f, bright: %.2f-%.2f},\n",
 					  i,
 					  getLuxForBucket(i - 1),
 					  getLuxForBucket(i),
@@ -177,7 +195,11 @@ void BrightnessManager::printBuckets() {
 void BrightnessManager::adjustBuckets(float delta) {
 	float luxMin = getLuxForBucket(bucketIndex - 1);
 	float luxMax = getLuxForBucket(bucketIndex);
-	float ratio = (ambientLux - luxMin) / (luxMax - luxMin);
+
+	float ratio = 0.0f;
+	if (luxMax > luxMin) {
+		ratio = constrain((ambientLux - luxMin) / (luxMax - luxMin), 0.0f, 1.0f);
+	}
 
 	float upperDelta = delta * ratio;
 	buckets[bucketIndex].brightnessMax += upperDelta;
@@ -187,6 +209,14 @@ void BrightnessManager::adjustBuckets(float delta) {
 		float lowerDelta = delta * (1.0f - ratio);
 		buckets[bucketIndex - 1].brightnessMax += lowerDelta;
 		buckets[bucketIndex - 1].brightnessMax = constrain(buckets[bucketIndex - 1].brightnessMax, 0.0f, 1.0f);
+	}
+
+	// Ensure brightness limits never decrease as ambient light increases.
+	// If one bucket increases, propagate that minimum through later buckets.
+	for (int i = 1; i < numBuckets; i++) {
+		if (buckets[i].brightnessMax < buckets[i - 1].brightnessMax) {
+			buckets[i].brightnessMax = buckets[i - 1].brightnessMax;
+		}
 	}
 
 	brightness = calculateBrightnessForAmbient(ambientLux, bucketIndex);
@@ -280,9 +310,11 @@ void BrightnessManager::update() {
 
 void BrightnessManager::save() {
 	Preferences localPrefs;
+	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	localPrefs.begin("brightness");
 	localPrefs.putInt("brightness", int(brightness));
 	localPrefs.end();
+	xSemaphoreGive(fastLEDPreferencesMutex);
 }
 
 void BrightnessManager::load() {

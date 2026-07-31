@@ -1,57 +1,76 @@
+/**
+ * @file factory.h
+ * @brief Factory LED test flow and persistent pass-state handling.
+ */
+
 #pragma once
 
 #include <Arduino.h>
 #include <Preferences.h>
 #include <atomic>
-#include <buttons.h>
-#include <mapLEDs.h>
+#include "buttons.h"
+#include "ledStorageSync.h"
+#include "mapLeds.h"
+#include "statusLeds.h"
 
+/// Shared NVS preferences handle used by the firmware.
 extern Preferences preferences;
 
+/// Global button manager used by the factory test callbacks.
 extern ButtonManager buttons;
 
-extern LedManager mapLEDs;
+/// Global LED manager used to submit factory-test frames.
+extern LedManager mapLeds;
 
+/** @brief True once the factory test has been completed successfully. */
 inline std::atomic<bool> factoryTestPassed{ false };
 
 /**
- * @brief Power button callback for factory test mode
- * 
- * Marks the test as passed and saves the result to NVS.
+ * @brief Mark the factory test as passed when the power button is pressed.
+ *
+ * The result is stored in NVS so subsequent boots can skip the test.
  */
 inline void onPowerFactory() {
 	factoryTestPassed.store(true);
+	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	Preferences localPrefs;
 	localPrefs.begin("factory_test", false);
-	localPrefs.putBool("passed", true);	 // Toggle factory test mode pass/fail state
+	localPrefs.putBool("passed", true);  // Toggle factory test mode pass/fail state
 	Serial.println("Factory test mode saved as passed");
 	localPrefs.end();
+	xSemaphoreGive(fastLEDPreferencesMutex);
 }
 
 /**
- * @brief Set all LEDs to a specific color with a brightness ramp for factory testing
- * 
- * @param color RGB color to display
+ * @brief Display a color while ramping brightness for factory testing.
+ * @param color RGB color to display.
  */
 inline void factorySetColor(CRGB color) {
-	for (int b = 0; b <= 255; b += 10) {
-		if (factoryTestPassed.load())
-			break;	// Exit early if button is pressed during fade
-		CRGB fadedColor = color;
-		fadedColor.nscale8_video(b);
+	if (color == CRGB(255, 0, 0)) {
+		statusLeds.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_ON_RED);
+	} else if (color == CRGB(0, 255, 0)) {
+		statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+	} else {
+		statusLeds.setState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
+	}
 
-		mapLEDs.beginFrame();
-		mapLEDs.setAllLedsColor(fadedColor);
-		mapLEDs.show();
-		Serial.printf("Factory test color: R=%d, G=%d, B=%d, Brightness=%d\n", fadedColor.r, fadedColor.g, fadedColor.b, b);
-		vTaskDelay(pdMS_TO_TICKS(30));	// Short delay to allow the LEDs to update
+	for (int brightnessLevel = 0; brightnessLevel <= 255; brightnessLevel += 64) {
+		if (factoryTestPassed.load())
+			break;  // Exit early if button is pressed during fade
+		CRGB fadedColor = color;
+		fadedColor.nscale8_video(brightnessLevel);
+
+		mapLeds.beginFrame();
+		mapLeds.setAllLedsColor(fadedColor);
+		mapLeds.show();
+		// Serial.printf("Factory test color: R=%d, G=%d, B=%d, Brightness=%d\n", fadedColor.r, fadedColor.g, fadedColor.b, b);
+		vTaskDelay(pdMS_TO_TICKS(100));  // Delay to allow the LEDs to update
 	}
 }
 
 /**
- * @brief Wait for the power button to be pressed or timeout
- * 
- * @param timeout Maximum wait time in milliseconds
+ * @brief Wait until the factory button callback runs or a timeout expires.
+ * @param timeout Maximum wait time in milliseconds.
  */
 inline void waitForPowerButton(int timeout) {
 	unsigned long startTime = millis();
@@ -61,20 +80,22 @@ inline void waitForPowerButton(int timeout) {
 }
 
 /**
- * @brief Run the factory test sequence
- * 
- * Cycles through red, green, and blue test colors until the power button is
- * pressed to confirm all LEDs are working.
- * 
- * @return true if the test was run and passed
- * @return false if the test was already passed previously
+ * @brief Run the factory color sequence unless it has already passed.
+ *
+ * Red, green, blue, and low-level white test colors are displayed until the
+ * power button confirms that the LEDs are working.
+ *
+ * @return true if the test ran and was passed during this call.
+ * @return false if a previous pass was loaded from NVS.
  */
 inline bool factoryTestMode() {
 	{
+		xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 		Preferences localPrefs;
 		localPrefs.begin("factory_test", true);
 		factoryTestPassed.store(localPrefs.getBool("passed", false));
 		localPrefs.end();
+		xSemaphoreGive(fastLEDPreferencesMutex);
 	}
 
 	if (!factoryTestPassed.load()) {
@@ -82,23 +103,26 @@ inline bool factoryTestMode() {
 		Serial.println("Factory test mode enabled");
 		uint8_t colorIndex = 0;
 		const CRGB testColors[] = {
-			CRGB(255, 0, 0), CRGB(0, 255, 0), CRGB(0, 0, 255), CRGB(255, 255, 255), CRGB(0, 0, 0),
+			CRGB(255, 0, 0),
+			CRGB(0, 255, 0),
+			CRGB(0, 0, 255),
+			CRGB(128, 128, 128),
 		};
 
 		while (!factoryTestPassed.load()) {
-			// Ramp up to full brightness for the current test color
+			// Ramp up to full brightnessManager for the current test color
 			factorySetColor(testColors[colorIndex]);
-#if defined(LED_8_PIXELS)  // If there are >=8 LED channels, show each color for 2 seconds
-			waitForPowerButton(2000);
+#if defined(LED_8_PIXELS)  // If there are >=8 LED channels, show each color for longer
+			waitForPowerButton(1500);
 #else
-			waitForPowerButton(1000);
+			waitForPowerButton(500);
 #endif
 			colorIndex = (colorIndex + 1) % (sizeof(testColors) / sizeof(testColors[0]));
 		}
 
-		mapLEDs.beginFrame();
-		mapLEDs.setAllLedsColor(CRGB::Black);
-		mapLEDs.show();
+		mapLeds.beginFrame();
+		mapLeds.setAllLedsColor(CRGB::Black);
+		mapLeds.show();
 
 		return true;
 

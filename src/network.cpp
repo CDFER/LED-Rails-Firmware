@@ -28,7 +28,8 @@ void copyUtf8(char* destination, size_t destinationSize, const char* source) {
 }
 }
 
-static void onNTPTimeSyncCb(struct timeval* t) {
+static void onNtpTimeSyncCallback(struct timeval* timeValue) {
+	(void)timeValue;
 	Serial.println("Time synced via NTP");
 }
 
@@ -89,20 +90,20 @@ const char index_html[] PROGMEM = R"=====(
 )=====";
 
 NetworkManager::NetworkManager() : improvSerial(&Serial), server(80) {
-	// Initialize savedWiFi to empty
-	memset(savedWiFi, 0, sizeof(savedWiFi));
-	for (int i = 0; i < MAX_WIFI_NETWORKS; i++) {
-		savedWiFi[i].ssid[0] = '\0';
-		savedWiFi[i].password[0] = '\0';
+	// Initialize saved WiFi networks to empty
+	memset(savedWiFiNetworks, 0, sizeof(savedWiFiNetworks));
+	for (int networkIndex = 0; networkIndex < MAX_WIFI_NETWORKS; networkIndex++) {
+		savedWiFiNetworks[networkIndex].ssid[0] = '\0';
+		savedWiFiNetworks[networkIndex].password[0] = '\0';
 	}
 
 	currentMapData = std::make_shared<MapData>();
 
-	serverURLs = {
+	serverUrls = {
 		String("http://api.keastudios.co.nz/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
 #if defined(BETA_BUILD)
 		String("http://192.168.86.31:3000/") + CITY_CODE + "-ltm/" + BACKEND_VERSION
-			+ ".json",	// For testing with a local server
+		    + ".json",  // For testing with a local server
 #endif
 		String("http://keastudios.co.nz/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
 		String("http://dirksonline.net/") + CITY_CODE + "-ltm/" + BACKEND_VERSION + ".json",
@@ -112,7 +113,7 @@ NetworkManager::NetworkManager() : improvSerial(&Serial), server(80) {
 void NetworkManager::exportWiFi() {
 	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	preferences.begin("wifi");
-	preferences.putBytes("wifi", savedWiFi, sizeof(savedWiFi));
+	preferences.putBytes("wifi", savedWiFiNetworks, sizeof(savedWiFiNetworks));
 	preferences.end();
 	xSemaphoreGive(fastLEDPreferencesMutex);
 }
@@ -124,37 +125,42 @@ void NetworkManager::importWiFi() {
 	if (storedSize == sizeof(LegacySavedWiFiNetwork) * MAX_WIFI_NETWORKS) {
 		LegacySavedWiFiNetwork legacyNetworks[MAX_WIFI_NETWORKS] = {};
 		preferences.getBytes("wifi", legacyNetworks, sizeof(legacyNetworks));
-		for (int i = 0; i < MAX_WIFI_NETWORKS; i++) {
-			copyUtf8(savedWiFi[i].ssid, sizeof(savedWiFi[i].ssid), legacyNetworks[i].ssid);
-			copyUtf8(savedWiFi[i].password, sizeof(savedWiFi[i].password), legacyNetworks[i].password);
+		for (int networkIndex = 0; networkIndex < MAX_WIFI_NETWORKS; networkIndex++) {
+			copyUtf8(savedWiFiNetworks[networkIndex].ssid,
+			         sizeof(savedWiFiNetworks[networkIndex].ssid),
+			         legacyNetworks[networkIndex].ssid);
+			copyUtf8(savedWiFiNetworks[networkIndex].password,
+			         sizeof(savedWiFiNetworks[networkIndex].password),
+			         legacyNetworks[networkIndex].password);
 		}
 	} else {
-		preferences.getBytes("wifi", savedWiFi, sizeof(savedWiFi));
-		for (int i = 0; i < MAX_WIFI_NETWORKS; i++) {
-			savedWiFi[i].ssid[MAX_SSID_LEN] = '\0';
-			savedWiFi[i].password[MAX_PASS_LEN] = '\0';
+		preferences.getBytes("wifi", savedWiFiNetworks, sizeof(savedWiFiNetworks));
+		for (int networkIndex = 0; networkIndex < MAX_WIFI_NETWORKS; networkIndex++) {
+			savedWiFiNetworks[networkIndex].ssid[MAX_SSID_LEN] = '\0';
+			savedWiFiNetworks[networkIndex].password[MAX_PASS_LEN] = '\0';
 		}
 	}
 	preferences.end();
 	xSemaphoreGive(fastLEDPreferencesMutex);
 }
 
-void NetworkManager::onImprovWiFiErrorCb(ImprovTypes::Error err) {
-	// Serial.printf("Improv WiFi Error: %d\n", err);
+void NetworkManager::onImprovWiFiErrorCallback(ImprovTypes::Error error) {
+	(void)error;
+	// Serial.printf("Improv WiFi Error: %d\n", error);
 	server.end();
 	server.begin();
 }
 
-void NetworkManager::onImprovWiFiConnectedCb(const char* ssid, const char* password) {
+void NetworkManager::onImprovWiFiConnectedCallback(const char* ssid, const char* password) {
 	// Move the networks all down one position
-	for (int i = MAX_WIFI_NETWORKS - 1; i > 0; i--) {
-		strncpy(savedWiFi[i].ssid, savedWiFi[i - 1].ssid, MAX_SSID_LEN);
-		strncpy(savedWiFi[i].password, savedWiFi[i - 1].password, MAX_PASS_LEN);
+	for (int networkIndex = MAX_WIFI_NETWORKS - 1; networkIndex > 0; networkIndex--) {
+		strncpy(savedWiFiNetworks[networkIndex].ssid, savedWiFiNetworks[networkIndex - 1].ssid, MAX_SSID_LEN);
+		strncpy(savedWiFiNetworks[networkIndex].password, savedWiFiNetworks[networkIndex - 1].password, MAX_PASS_LEN);
 	}
 
 	// Save the new network at the top
-	copyUtf8(savedWiFi[0].ssid, sizeof(savedWiFi[0].ssid), ssid);
-	copyUtf8(savedWiFi[0].password, sizeof(savedWiFi[0].password), password);
+	copyUtf8(savedWiFiNetworks[0].ssid, sizeof(savedWiFiNetworks[0].ssid), ssid);
+	copyUtf8(savedWiFiNetworks[0].password, sizeof(savedWiFiNetworks[0].password), password);
 
 	// Save the updated WiFi networks to Preferences
 	exportWiFi();
@@ -164,7 +170,7 @@ void NetworkManager::onImprovWiFiConnectedCb(const char* ssid, const char* passw
 	server.begin();
 }
 
-void NetworkManager::setUpWebserver() {
+void NetworkManager::setupWebServer() {
 	server.on("/favicon.ico", [](AsyncWebServerRequest* request) {
 		request->send(404);
 	});
@@ -173,7 +179,7 @@ void NetworkManager::setUpWebserver() {
 	server.on("/", HTTP_ANY, [](AsyncWebServerRequest* request) {
 		AsyncWebServerResponse* response = request->beginResponse(200, "text/html", index_html);
 		response->addHeader(
-			"Cache-Control", "public,max-age=31536000");  // save this file to cache for 1 year (unless you refresh)
+		    "Cache-Control", "public,max-age=31536000");  // save this file to cache for 1 year (unless you refresh)
 		request->send(response);
 		Serial.println("Served Basic HTML Page");
 	});
@@ -186,11 +192,12 @@ void NetworkManager::setUpWebserver() {
 }
 
 void NetworkManager::begin() {
+	WiFi.setHostname(CITY_CODE "-train-map");
 
 	// --- Time Setup ---
 	const char* ntpServers[] = { "pool.ntp.org", "pool.msltime.measurement.govt.nz", "nz.pool.ntp.org" };
-	sntp_set_time_sync_notification_cb(onNTPTimeSyncCb);
-	sntp_set_sync_interval(1000 * 60 * 15);	 // Set sync interval to 15 minutes
+	sntp_set_time_sync_notification_cb(onNtpTimeSyncCallback);
+	sntp_set_sync_interval(1000 * 60 * 15);  // Set sync interval to 15 minutes
 	sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
 	configTzTime(TIMEZONE, ntpServers[0], ntpServers[1], ntpServers[2]);
 
@@ -208,28 +215,28 @@ void NetworkManager::begin() {
 
 	improvSerial.setDeviceInfo(chip, FIRMWARE, FIRMWARE_VERSION, ARDUINO_BOARD, "http://{LOCAL_IPV4}/");
 	improvSerial.onImprovError([](ImprovTypes::Error err) {
-		network.onImprovWiFiErrorCb(err);
+		network.onImprovWiFiErrorCallback(err);
 	});
 	improvSerial.onImprovConnected([](const char* ssid, const char* password) {
-		network.onImprovWiFiConnectedCb(ssid, password);
+		network.onImprovWiFiConnectedCallback(ssid, password);
 	});
 
-	setUpWebserver();
+	setupWebServer();
 
-	bool savedWifiFound = false;
-	for (int i = 0; i < MAX_WIFI_NETWORKS; i++) {
-		if (strlen(savedWiFi[i].ssid) > 0) {
-			savedWifiFound = true;
+	bool savedWiFiFound = false;
+	for (int savedNetworkIndex = 0; savedNetworkIndex < MAX_WIFI_NETWORKS; savedNetworkIndex++) {
+		if (strlen(savedWiFiNetworks[savedNetworkIndex].ssid) > 0) {
+			savedWiFiFound = true;
 			break;
 		}
 	}
 
-	if (savedWifiFound) {
+	if (savedWiFiFound) {
 		Serial.println("WiFi credentials found...");
-		statusLEDs.setState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
+		statusLeds.setState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
 	} else {
 		Serial.println("No WiFi credentials found...");
-		statusLEDs.setState(WIFI_LED_PIN, LED_ON_RED);
+		statusLeds.setState(WIFI_LED_PIN, LED_ON_RED);
 	}
 
 #if defined(BETA_BUILD)
@@ -253,34 +260,34 @@ void NetworkManager::improvSerialTask(void* pvParameters) {
 	}
 }
 
-String NetworkManager::fetchMapUpdateJSON() {
-	HTTPClient http;
-	const String& url = serverURLs[currentServerIndex];
+String NetworkManager::fetchMapUpdateJson() {
+	HTTPClient httpClient;
+	const String& url = serverUrls[currentServerIndex];
 
-	http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
-	http.begin(url);
+	httpClient.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
+	httpClient.begin(url);
 
-	int httpCode = http.GET();
+	int httpCode = httpClient.GET();
 	if (httpCode == HTTP_CODE_OK) {
-		String payload = http.getString();
-		http.end();
-		if (payload.length() > 0) {
+		String responseBody = httpClient.getString();
+		httpClient.end();
+		if (responseBody.length() > 0) {
 			failedFetchCount = 0;
-			return payload;
+			return responseBody;
 		}
 		Serial.printf("Fetch from %s: empty payload\n", url.c_str());
 	} else {
 		Serial.printf("Fetch from %s error: %i\n", url.c_str(), httpCode);
-		http.end();
+		httpClient.end();
 	}
 
 	if (++failedFetchCount > 3) {
-		currentServerIndex = (currentServerIndex + 1) % serverURLs.size();
+		currentServerIndex = (currentServerIndex + 1) % serverUrls.size();
 	}
 	return "";
 }
 
-time_t NetworkManager::parseLEDMapUpdateJSON(const String& downloadedJson) {
+time_t NetworkManager::parseLedMapUpdateJson(const String& downloadedJson) {
 	JsonDocument doc;
 	if (DeserializationError error = deserializeJson(doc, downloadedJson)) {
 		Serial.printf("JSON parse error: %s\n", error.c_str());
@@ -305,26 +312,27 @@ time_t NetworkManager::parseLEDMapUpdateJSON(const String& downloadedJson) {
 
 	JsonObject colors = doc["colors"];
 	newMapData->colorTable.reserve(colors.size());
-	for (JsonPair kv : colors) {
-		JsonArray rgb = kv.value();
-		newMapData->colorTable.push_back(CRGB(rgb[0] | 0, rgb[1] | 0, rgb[2] | 0));
+	for (JsonPair colorEntry : colors) {
+		JsonArray rgbValues = colorEntry.value();
+		newMapData->colorTable.push_back(CRGB(rgbValues[0] | 0, rgbValues[1] | 0, rgbValues[2] | 0));
 	}
 
 	JsonArray updates = doc["updates"];
 	newMapData->ledUpdateSchedule.reserve(updates.size());
-	for (JsonObject update : updates) {
-		int offset = update["t"];
+	for (JsonObject updateEntry : updates) {
+		int transitionOffsetSeconds = updateEntry["t"];
 
 		time_t timestamp = 0;
 		uint16_t msOffset = 0;
-		if (offset > 0) {
-			timestamp = baseTimestamp + offset;
+		if (transitionOffsetSeconds > 0) {
+			timestamp = baseTimestamp + transitionOffsetSeconds;
 			// Random Seed based on block for consistency to spread out updates within the second
-			randomSeed(update["b"][0]);
+			randomSeed(updateEntry["b"][0]);
 			msOffset = random(0, 1000);
 		}
 
-		newMapData->ledUpdateSchedule.push_back({ update["b"][0], update["b"][1], update["c"], timestamp, msOffset });
+		newMapData->ledUpdateSchedule.push_back(
+		    { updateEntry["b"][0], updateEntry["b"][1], updateEntry["c"], timestamp, msOffset });
 	}
 
 	{
@@ -335,9 +343,9 @@ time_t NetworkManager::parseLEDMapUpdateJSON(const String& downloadedJson) {
 	return baseTimestamp;
 }
 
-void NetworkManager::setSystemState(NetworkMode mode, bool brightnessOn) {
+void NetworkManager::setSystemState(NetworkMode mode, bool statusLedsEnabled) {
 	this->currentMode = mode;
-	this->isBrightnessOn = brightnessOn;
+	this->statusLedsEnabled = statusLedsEnabled;
 }
 
 std::shared_ptr<MapData> NetworkManager::getMapData() {
@@ -346,85 +354,91 @@ std::shared_ptr<MapData> NetworkManager::getMapData() {
 }
 
 const char* NetworkManager::formatEpoch(time_t epoch) const {
-	struct tm timeinfo;
-	static char buffer[64];
+	struct tm localTime;
+	static char formattedTimeBuffer[64];
 
 	// Convert epoch to local time
-	if (!localtime_r(&epoch, &timeinfo)) {
+	if (!localtime_r(&epoch, &localTime)) {
 		return "No time available";
 	}
-	if (strftime(buffer, sizeof(buffer), "%H:%M:%S", &timeinfo)) {
-		return buffer;
+	if (strftime(formattedTimeBuffer, sizeof(formattedTimeBuffer), "%H:%M:%S", &localTime)) {
+		return formattedTimeBuffer;
 	}
 	return "Format error";
 }
 
 const char* NetworkManager::getFormattedTimeWithMs() const {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);  // Get epoch time with microsecond precision
+	struct timeval timeValue;
+	gettimeofday(&timeValue, NULL);  // Get epoch time with microsecond precision
 
-	struct tm timeinfo;
-	localtime_r(&tv.tv_sec, &timeinfo);	 // Convert seconds to local time struct
+	struct tm localTime;
+	localtime_r(&timeValue.tv_sec, &localTime);  // Convert seconds to local time struct
 
-	long milliseconds = tv.tv_usec / 1000;	// Convert microseconds to milliseconds
+	long milliseconds = timeValue.tv_usec / 1000;  // Convert microseconds to milliseconds
 
-	static char buf[16];
+	static char formattedTimeBuffer[16];
 	// Format: HH:MM:SS.mmm
-	snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%03ld", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, milliseconds);
+	snprintf(formattedTimeBuffer,
+	         sizeof(formattedTimeBuffer),
+	         "%02d:%02d:%02d.%03ld",
+	         localTime.tm_hour,
+	         localTime.tm_min,
+	         localTime.tm_sec,
+	         milliseconds);
 
-	return buf;
+	return formattedTimeBuffer;
 }
 
 void NetworkManager::networkTask(void* pvParameters) {
 	NetworkManager* manager = static_cast<NetworkManager*>(pvParameters);
 
 	while (true) {
-		manager->updateStatusLEDs();
+		manager->updateStatusLeds();
 
 		if (WiFi.status() == WL_CONNECTED) {
 			if (manager->currentMode == NetworkMode::REALTIME) {
-				manager->manageLEDMapAPI();
+				manager->manageLedMapApi();
 			}
 		} else {
 			manager->manageWiFiConnection();
 		}
-		vTaskDelay(pdMS_TO_TICKS(100));	 // Sleep bit to yield to other tasks
+		vTaskDelay(pdMS_TO_TICKS(100));  // Sleep bit to yield to other tasks
 	}
 }
 
-void NetworkManager::updateStatusLEDs() {
+void NetworkManager::updateStatusLeds() {
 	wifiConnected = (WiFi.status() == WL_CONNECTED);
 	time_t epoch = time(nullptr);
 
-	if (!isBrightnessOn || currentMode == NetworkMode::OFF) {
-		statusLEDs.setState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
+	if (!statusLedsEnabled || currentMode == NetworkMode::OFF) {
+		statusLeds.setState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
 		return;
 	}
 
 	if (currentMode == NetworkMode::TIME_ONLY) {
 		if (wifiConnected) {
-			statusLEDs.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
+			statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
 		} else if (millis() > 60 * 1000) {
-			statusLEDs.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+			statusLeds.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
 		}
 	} else if (currentMode == NetworkMode::REALTIME) {
 		if (wifiConnected) {
-			if (failedFetchCount > 3 + serverURLs.size()) {
-				statusLEDs.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
+			if (failedFetchCount > 3 + serverUrls.size()) {
+				statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
 			} else if (epoch > nextFetchTime + updateInterval) {
-				statusLEDs.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
+				statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
 			} else {
-				statusLEDs.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+				statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
 			}
 		} else {
 			if (millis() > 60 * 1000) {
-				statusLEDs.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+				statusLeds.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
 			}
 		}
 	}
 }
 
-void NetworkManager::manageLEDMapAPI() {
+void NetworkManager::manageLedMapApi() {
 	time_t epoch = time(nullptr);  // Get current time
 
 	// Update nextFetchTime to account for time drift
@@ -432,83 +446,102 @@ void NetworkManager::manageLEDMapAPI() {
 
 	if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
 		time_t timeOffset = 0;
-		String downloadedJson = fetchMapUpdateJSON();
+		String downloadedJson = fetchMapUpdateJson();
 		if (downloadedJson.length() > 0) {
-			timeOffset = epoch - parseLEDMapUpdateJSON(downloadedJson);
+			timeOffset = epoch - parseLedMapUpdateJson(downloadedJson);
 			nextFetchTime = constrain(nextFetchTime, epoch + 2, epoch + updateInterval);
 		} else {
-			if (failedFetchCount > 3 + serverURLs.size()) {
+			if (failedFetchCount > 3 + serverUrls.size()) {
 				Serial.println("All servers failed to provide data.");
 			}
 		}
 
 		// Get current time incl ms HH:MM:SS.mmm
 		Serial.printf("%s fetchDelay:%2is size:%1.1fkiB MCU:%2.0f°C WiFi:%2idBm\n",
-					  getFormattedTimeWithMs(),
-					  timeOffset,
-					  downloadedJson.length() / 1024.0,
-					  temperatureRead(),
-					  WiFi.RSSI());
+		              getFormattedTimeWithMs(),
+		              timeOffset,
+		              downloadedJson.length() / 1024.0,
+		              temperatureRead(),
+		              WiFi.RSSI());
+		Serial.flush();
 	}
 }
 
 void NetworkManager::manageWiFiConnection() {
-	const TickType_t attemptTimeout = pdMS_TO_TICKS(30000);	 // 30 seconds between scans/attempts
+	const TickType_t attemptTimeout = pdMS_TO_TICKS(30000);  // 30 seconds between scans/attempts
 
 	if (xTaskGetTickCount() - lastWiFiConnectAttempt > attemptTimeout || lastWiFiConnectAttempt == 0) {
 		lastWiFiConnectAttempt = xTaskGetTickCount();
-		bool savedWifiFound = false;
-		for (uint8_t savedIndex = 0; savedIndex < MAX_WIFI_NETWORKS; savedIndex++) {
-			if (savedWiFi[savedIndex].ssid[0] != '\0') {
-				savedWifiFound = true;
-				break;
+		uint8_t savedWiFiCount = 0;
+		int8_t onlySavedWiFiIndex = -1;
+		for (uint8_t savedNetworkIndex = 0; savedNetworkIndex < MAX_WIFI_NETWORKS; savedNetworkIndex++) {
+			if (savedWiFiNetworks[savedNetworkIndex].ssid[0] != '\0') {
+				savedWiFiCount++;
+				onlySavedWiFiIndex = savedNetworkIndex;
 			}
 		}
 
-		if (!savedWifiFound) {
+		if (savedWiFiCount == 0) {
 			return;
 		}
 
-		int scanResult = WiFi.scanNetworks(/*async=*/false, /*hidden=*/false, /*channels=*/0, /*max_ms_per_channel=*/100);
-		int8_t bestSavedNetwork = -1;
-		int32_t bestRssi = INT32_MIN;
+		int8_t bestSavedWiFiIndex = -1;
+		int32_t bestSignalStrength = INT32_MIN;
 
-		if (scanResult >= 0) {
-			for (uint8_t selectionPass = 0; selectionPass < 2 && bestSavedNetwork < 0; selectionPass++) {
-				if (selectionPass == 1) {
-					// All visible saved networks have failed; begin a new retry cycle.
-					wifiAttemptedMask = 0;
-				}
+		if (savedWiFiCount == 1) {
+			bestSavedWiFiIndex = onlySavedWiFiIndex;
+		} else {
+			int scanResult =
+			    WiFi.scanNetworks(/*async=*/false, /*hidden=*/false, /*passive=*/false, /*max_ms_per_channel=*/150);
 
-				for (int scanIndex = 0; scanIndex < scanResult; scanIndex++) {
-					const String scannedSsid = WiFi.SSID(scanIndex);
-					for (uint8_t savedIndex = 0; savedIndex < MAX_WIFI_NETWORKS; savedIndex++) {
-						if (savedWiFi[savedIndex].ssid[0] != '\0' && (wifiAttemptedMask & (1U << savedIndex)) == 0
-							&& scannedSsid == savedWiFi[savedIndex].ssid && WiFi.RSSI(scanIndex) > bestRssi) {
-							bestSavedNetwork = savedIndex;
-							bestRssi = WiFi.RSSI(scanIndex);
+			if (scanResult >= 0) {
+				for (uint8_t selectionPass = 0; selectionPass < 2 && bestSavedWiFiIndex < 0; selectionPass++) {
+					if (selectionPass == 1) {
+						// All visible saved networks have failed; begin a new retry cycle.
+						wifiAttemptedMask = 0;
+					}
+
+					for (int scanResultIndex = 0; scanResultIndex < scanResult; scanResultIndex++) {
+						const String scannedSsid = WiFi.SSID(scanResultIndex);
+						for (uint8_t savedNetworkIndex = 0; savedNetworkIndex < MAX_WIFI_NETWORKS;
+						     savedNetworkIndex++) {
+							if (savedWiFiNetworks[savedNetworkIndex].ssid[0] != '\0'
+							    && (wifiAttemptedMask & (1U << savedNetworkIndex)) == 0
+							    && scannedSsid == savedWiFiNetworks[savedNetworkIndex].ssid
+							    && WiFi.RSSI(scanResultIndex) > bestSignalStrength) {
+								bestSavedWiFiIndex = savedNetworkIndex;
+								bestSignalStrength = WiFi.RSSI(scanResultIndex);
+							}
 						}
 					}
 				}
 			}
+
+			WiFi.scanDelete();
+
+			if (bestSavedWiFiIndex < 0) {
+				if (scanResult >= 0) {
+					Serial.println("No saved WiFi networks are available");
+				} else {
+					Serial.printf("WiFi scan failed: %i\n", scanResult);
+				}
+			}
 		}
 
-		WiFi.scanDelete();
-
-		if (bestSavedNetwork >= 0) {
-			wifiNetworkIndex = bestSavedNetwork;
+		if (bestSavedWiFiIndex >= 0) {
+			wifiNetworkIndex = bestSavedWiFiIndex;
 			wifiAttemptedMask |= 1U << wifiNetworkIndex;  // Mark this network as attempted in the current retry cycle
-			Serial.printf("Attempting to connect to saved network %i: %s (%ld dBm)\n",
-						  wifiNetworkIndex,
-						  savedWiFi[wifiNetworkIndex].ssid,
-						  bestRssi);
-			WiFi.disconnect();	// Disconnect from any current network
-			WiFi.begin(savedWiFi[wifiNetworkIndex].ssid, savedWiFi[wifiNetworkIndex].password);
-			WiFi.setTxPower(WIFI_POWER_15dBm);	// Set WiFi power to avoid interference
-		} else if (scanResult >= 0) {
-			Serial.println("No saved WiFi networks are available");
-		} else {
-			Serial.printf("WiFi scan failed: %i\n", scanResult);
+			Serial.printf("Attempting to connect to saved network %i: %s",
+			              wifiNetworkIndex,
+			              savedWiFiNetworks[wifiNetworkIndex].ssid);
+			if (bestSignalStrength != INT32_MIN) {
+				Serial.printf("(%ld dBm)\n", bestSignalStrength);
+			} else {
+				Serial.println();
+			}
+			WiFi.disconnect();  // Disconnect from any current network
+			WiFi.begin(savedWiFiNetworks[wifiNetworkIndex].ssid, savedWiFiNetworks[wifiNetworkIndex].password);
+			WiFi.setTxPower(WIFI_POWER_15dBm);  // Set WiFi power to avoid interference
 		}
 	}
 }

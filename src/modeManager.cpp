@@ -4,10 +4,26 @@
 #include "network.h"
 
 #if defined(TIMETABLE_SPEED)
-	#include "timetable.h"
+#include "timetable.h"
 #endif
 
 ModeManager modeManager;
+
+namespace {
+const char* modeName(Mode mode) {
+	switch (mode) {
+		case REALTIME_MODE: return "Live";
+#if defined(TIMETABLE_SPEED)
+		case ONE_X_TIMETABLE_MODE: return "Timetable";
+		case HIGH_SPEED_TIMETABLE_MODE: return "Fast Forward";
+#endif
+#if defined(OUT_OF_SERVICE_TRAINS)
+		case HIDE_OUT_OF_SERVICE_TRAINS_MODE: return "Live without not-in-service";
+#endif
+		default: return "Unknown";
+	}
+}
+}
 
 void ModeManager::begin() {
 	modeStartTime = millis();
@@ -16,9 +32,10 @@ void ModeManager::begin() {
 void ModeManager::nextMode() {
 	currentMode = Mode((currentMode + 1) % NUM_MODES);
 	modeStartTime = millis();
-	lastMapDrawTime = 0;		// Force immediate redraw
-	brightness.setPower(true);	// Ensure brightness is on when changing modes
-	Serial.printf("Mode #%d\n", currentMode);
+	lastMapDrawTime = 0;               // Force immediate redraw
+	brightnessManager.setPower(true);  // Ensure brightnessManager is on when changing modes
+	Serial.printf("Mode #%d: %s\n", currentMode, modeName(currentMode));
+	Serial.flush();
 }
 
 void ModeManager::resetTimer() {
@@ -26,8 +43,8 @@ void ModeManager::resetTimer() {
 	lastMapDrawTime = 0;
 }
 
-void ModeManager::setMode(Mode m) {
-	currentMode = m;
+void ModeManager::setMode(Mode targetMode) {
+	currentMode = targetMode;
 	resetTimer();
 }
 
@@ -48,9 +65,9 @@ NetworkMode ModeManager::getTargetNetworkMode() const {
 	return targetNetMode;
 }
 
-bool ModeManager::shouldDrawFrame(unsigned long now) {
-	if (lastMapDrawTime + MapRedrawIntervalMs < now) {
-		lastMapDrawTime = now;
+bool ModeManager::shouldDrawFrame(unsigned long currentTime) {
+	if (lastMapDrawTime + MapRedrawIntervalMilliseconds < currentTime) {
+		lastMapDrawTime = currentTime;
 		return true;
 	}
 	return false;

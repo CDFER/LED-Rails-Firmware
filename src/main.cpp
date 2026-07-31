@@ -3,38 +3,38 @@
 #include <time.h>
 
 #if defined(FACTORY_TEST)
-	#include "factory.h"
+#include "factory.h"
 #endif
 
 #if defined(TIMETABLE_SPEED)
-	#include "timetable.h"
+#include "timetable.h"
 #endif
 
 #include "brightness.h"
 #include "buttons.h"
-#include "mapLEDs.h"
+#include "mapLeds.h"
 #include "mapRenderer.h"
 #include "modeManager.h"
 #include "network.h"
 #include "statusLeds.h"
 #include "systemInfo.h"
 
-constexpr uint32_t LoopDelayMs = 30;
+constexpr uint32_t LoopDelayMilliseconds = 30;
 
 void onBrightnessDown() {
-	brightness.decrease();
+	brightnessManager.decrease();
 }
 
 void onBrightnessUp() {
-	brightness.increase();
+	brightnessManager.increase();
 }
 
 void onPower() {
-	brightness.toggle();
-	if (brightness.isOn()) {
+	brightnessManager.toggle();
+	if (brightnessManager.isOn()) {
 		modeManager.resetTimer();
 	}
-	Serial.printf("Power %s\n", brightness.isOn() ? "ON" : "OFF");
+	Serial.printf("Power %s\n", brightnessManager.isOn() ? "ON" : "OFF");
 }
 
 void onMode() {
@@ -43,17 +43,17 @@ void onMode() {
 
 void setup() {
 	// Hardware Serial
-	Serial0.begin(115200);
-	Serial0.setDebugOutput(true);
+	// Serial0.begin(115200);
+	// Serial0.setDebugOutput(true);
 
 	// USB Serial
 	Serial.begin();
-	// Serial.setDebugOutput(true);
+	Serial.setDebugOutput(true);
 	Serial.setTxBufferSize(1024);  // Increase TX buffer size to reduce dropped characters
 
-	statusLEDs.begin();
+	statusLeds.begin();
 
-	mapLEDs.begin();
+	mapLeds.begin();
 
 	modeManager.begin();
 
@@ -71,11 +71,11 @@ void setup() {
 	Serial.println(getSystemInfo());
 
 #if defined(FACTORY_TEST)
-	#if defined(TIMETABLE_SPEED)
+#if defined(TIMETABLE_SPEED)
 	if (factoryTestMode()) {
 		modeManager.setMode(HIGH_SPEED_TIMETABLE_MODE);
 	}
-	#endif
+#endif
 	buttons.setCallback(POWER_BUTTON, onPower);
 #endif
 
@@ -88,14 +88,14 @@ void setup() {
 }
 
 void loop() {
-	unsigned long now = millis();
+	unsigned long currentTime = millis();
 	time_t epoch = time(nullptr);  // Get current time
 
-	network.setSystemState(modeManager.getTargetNetworkMode(), brightness.isOn());
+	network.setSystemState(modeManager.getTargetNetworkMode(), brightnessManager.isOn());
 
-	if (modeManager.shouldDrawFrame(now)) {
+	if (modeManager.shouldDrawFrame(currentTime)) {
 		modeManager.drawCurrentMode(epoch);
 	}
 
-	vTaskDelay(pdMS_TO_TICKS(LoopDelayMs));
+	vTaskDelay(pdMS_TO_TICKS(LoopDelayMilliseconds));
 }

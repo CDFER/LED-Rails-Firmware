@@ -5,6 +5,14 @@ String getSystemInfo() {
 	FlashMode_t mode = (FlashMode_t)ESP.getFlashChipMode();
 	String flashMode;
 
+#if defined(BETA_BUILD)
+	String buildVersion = " (Beta)";
+#elif defined(FACTORY_TEST)
+	String buildVersion = " (Factory Test)";
+#else
+	String buildVersion = "";
+#endif
+
 	// Convert flash mode to human-readable string
 	switch (mode) {
 		case FM_QIO: flashMode = "Quad I/O (QIO)"; break;
@@ -19,13 +27,13 @@ String getSystemInfo() {
 	String info = "\n";
 	info += String(ARDUINO_BOARD) + "\n";
 #if defined(FIRMWARE) && defined(FIRMWARE_VERSION)
-	info += String(FIRMWARE) + " V" + FIRMWARE_VERSION + "\n";
+	info += String(FIRMWARE) + " V" + FIRMWARE_VERSION + buildVersion + "\n";
 #endif
 	info += "Built: " + String(__DATE__) + " " + __TIME__ + "\n";
 	info += String(ESP.getChipModel()) + " Rev:" + ESP.getChipRevision() + "\n";
 	info += String(ESP.getChipCores()) + " Core @ " + ESP.getCpuFreqMHz() + "MHz\n";
 	info += String(ESP.getFlashChipSize() / (1024 * 1024)) + "MiB Flash @ " + (ESP.getFlashChipSpeed() / (1000 * 1000))
-			+ "MHz in " + flashMode + " Mode\n";
+	        + "MHz in " + flashMode + " Mode\n";
 	info += "RAM Heap: " + String(ESP.getHeapSize() / 1024) + "kiB\n";
 	info += "IDF SDK: " + String(ESP.getSdkVersion()) + "\n";
 

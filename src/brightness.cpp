@@ -1,65 +1,60 @@
 #include "brightness.h"
-#include "ledStorageSync.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include "ledStorageSync.h"
 
 Preferences preferences;
 SemaphoreHandle_t fastLEDPreferencesMutex = nullptr;
+BrightnessManager brightnessManager;
 
-BrightnessManager brightness;
-
-extern TaskHandle_t fastLEDDitheringTaskHandle;
+extern TaskHandle_t ledTaskHandle;
 
 // --- COMMON THREAD-SAFE FRONTEND METHODS ---
 // These execute extremely fast in any task (like the Button Task) and never touch FastLED or EEPROM.
 // They use lock-free task notifications to tell the backend LED loop what to do.
 
 void BrightnessManager::increase() {
-	if (fastLEDDitheringTaskHandle) {
-		xTaskNotify(fastLEDDitheringTaskHandle, EVT_INCREASE, eSetBits);
+	if (ledTaskHandle) {
+		xTaskNotify(ledTaskHandle, EVT_INCREASE, eSetBits);
 	}
 }
 
 void BrightnessManager::decrease() {
-	if (fastLEDDitheringTaskHandle) {
-		xTaskNotify(fastLEDDitheringTaskHandle, EVT_DECREASE, eSetBits);
+	if (ledTaskHandle) {
+		xTaskNotify(ledTaskHandle, EVT_DECREASE, eSetBits);
 	}
 }
 
 void BrightnessManager::toggle() {
-	powerOn = !powerOn;
-	if (fastLEDDitheringTaskHandle) {
-		xTaskNotify(fastLEDDitheringTaskHandle, EVT_UPDATE_BRIGHTNESS, eSetBits);
+	powerEnabled = !powerEnabled;
+	if (ledTaskHandle) {
+		xTaskNotify(ledTaskHandle, EVT_UPDATE_BRIGHTNESS, eSetBits);
 	}
 }
 
-void BrightnessManager::setPower(bool on) {
-	if (powerOn != on) {
-		powerOn = on;
-		if (fastLEDDitheringTaskHandle) {
-			xTaskNotify(fastLEDDitheringTaskHandle, EVT_UPDATE_BRIGHTNESS, eSetBits);
+void BrightnessManager::setPower(bool powerOnRequested) {
+	if (powerEnabled != powerOnRequested) {
+		powerEnabled = powerOnRequested;
+		if (ledTaskHandle) {
+			xTaskNotify(ledTaskHandle, EVT_UPDATE_BRIGHTNESS, eSetBits);
 		}
 	}
 }
 
 bool BrightnessManager::isOn() {
-	return powerOn;
+	return powerEnabled;
 }
 
 // --- SENSOR-SPECIFIC IMPLEMENTATION ---
 #if defined(LIGHT_SENSOR)
-	#include <Wire.h>
+#include <Wire.h>
 
 LTR303 lightSensor;
 
-BrightnessManager::BrightnessManager() : brightness(0.1f), powerOn(true), ambientLux(0.0f), bucketIndex(0) {
-	buckets[0] = { 0.0f, 0.0f };	 // Min (0 lux)
-	buckets[1] = { 1000.0f, 0.0f };	 // Dark (0-1000 lux)
-	if (String(CITY_CODE) == "mel") {
-		buckets[2] = { 5000.0f, 0.2f };	 // Indoor (1000-2000 lux)
-	} else {
-		buckets[2] = { 5000.0f, 0.1f };	 // Indoor (1000-5000 lux)
-	}
+BrightnessManager::BrightnessManager() : brightnessValue(0.1f), powerEnabled(true), ambientLux(0.0f), bucketIndex(0) {
+	buckets[0] = { 0.0f, 0.0f };     // Min (0 lux)
+	buckets[1] = { 1000.0f, 0.005f };  // Dark (0-1000 lux)
+	buckets[2] = { 5000.0f, 0.25f };  // Indoor (1000-2000 lux)
 	buckets[3] = { 100000.0f, 1.0f };  // Outdoor (5000-100000 lux)
 }
 
@@ -68,17 +63,16 @@ void BrightnessManager::begin() {
 	lightSensor.begin(GAIN_48X, EXPOSURE_100ms, true, Wire);
 	lightSensor.startPeriodicMeasurement();
 	load();
-	FastLED.setBrightness(gammaCorrectedBrightness(
-		brightness));  // Start with LEDs at default brightness until we get a reading from the light sensor
+	FastLED.setBrightness(gammaCorrectedBrightness(brightnessValue));  // Start with LEDs at default brightness
 }
 
 void BrightnessManager::save() {
 	Preferences localPrefs;
 	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	localPrefs.begin("brightness", false);
-	for (int i = 0; i < numBuckets; i++) {
-		localPrefs.putFloat(("lux" + String(i)).c_str(), buckets[i].luxMax);
-		localPrefs.putFloat(("bright" + String(i)).c_str(), buckets[i].brightnessMax);
+	for (int bucketNumber = 0; bucketNumber < numBuckets; bucketNumber++) {
+		localPrefs.putFloat(("lux" + String(bucketNumber)).c_str(), buckets[bucketNumber].luxMax);
+		localPrefs.putFloat(("bright" + String(bucketNumber)).c_str(), buckets[bucketNumber].brightnessMax);
 	}
 	localPrefs.end();
 	xSemaphoreGive(fastLEDPreferencesMutex);
@@ -88,58 +82,61 @@ void BrightnessManager::load() {
 	Preferences localPrefs;
 	localPrefs.begin("brightness", true);
 	if (!localPrefs.isKey("lux3")) {
-		// Legacy format: only 3 buckets stored, need to migrate to 4 buckets
+		// Legacy format: only 3 buckets stored, migrate to 4 buckets
 		buckets[0] = { 0.0f, 0.0f };
-		for (int i = 1; i < numBuckets; i++) {
-			int legacyIndex = i - 1;
-			buckets[i].luxMax = localPrefs.getFloat(("lux" + String(legacyIndex)).c_str(), buckets[i].luxMax);
-			buckets[i].brightnessMax = localPrefs.getFloat(("bright" + String(legacyIndex)).c_str(), buckets[i].brightnessMax);
+		for (int bucketNumber = 1; bucketNumber < numBuckets; bucketNumber++) {
+			int legacyIndex = bucketNumber - 1;
+			buckets[bucketNumber].luxMax =
+			    localPrefs.getFloat(("lux" + String(legacyIndex)).c_str(), buckets[bucketNumber].luxMax);
+			buckets[bucketNumber].brightnessMax =
+			    localPrefs.getFloat(("bright" + String(legacyIndex)).c_str(), buckets[bucketNumber].brightnessMax);
 		}
 		this->save();  // Save the migrated buckets back to Preferences
 		Serial.println("Migrated legacy brightness buckets to new format");
 	} else {
-		for (int i = 0; i < numBuckets; i++) {
-			buckets[i].luxMax = localPrefs.getFloat(("lux" + String(i)).c_str(), buckets[i].luxMax);
-			buckets[i].brightnessMax = localPrefs.getFloat(("bright" + String(i)).c_str(), buckets[i].brightnessMax);
+		for (int bucketNumber = 0; bucketNumber < numBuckets; bucketNumber++) {
+			buckets[bucketNumber].luxMax =
+			    localPrefs.getFloat(("lux" + String(bucketNumber)).c_str(), buckets[bucketNumber].luxMax);
+			buckets[bucketNumber].brightnessMax =
+			    localPrefs.getFloat(("bright" + String(bucketNumber)).c_str(), buckets[bucketNumber].brightnessMax);
 		}
 	}
 	localPrefs.end();
-	// printBuckets();
 }
 
 void BrightnessManager::update() {
 	// 1. Process instant task notifications
-	uint32_t events = 0;
-	if (xTaskNotifyWait(0x00, ULONG_MAX, &events, 0) == pdTRUE) {
-		if (events & EVT_INCREASE) {
+	uint32_t pendingEvents = 0;
+	if (xTaskNotifyWait(0x00, ULONG_MAX, &pendingEvents, 0) == pdTRUE) {
+		if (pendingEvents & EVT_INCREASE) {
 			adjustBuckets(BRIGHTNESS_STEP / 255.0f);
 			savePending = true;
 			buttonPressed = true;
 		}
-		if (events & EVT_DECREASE) {
+		if (pendingEvents & EVT_DECREASE) {
 			adjustBuckets(-BRIGHTNESS_STEP / 255.0f);
 			savePending = true;
 			buttonPressed = true;
 		}
-		if (events & EVT_UPDATE_BRIGHTNESS) {
+		if (pendingEvents & EVT_UPDATE_BRIGHTNESS) {
 			setBrightness();
 		}
 	}
 
 	// 2. Perform background Lux checks at interval
-	if (xTaskGetTickCount() - lastUpdate >= pdMS_TO_TICKS(100)) {
-		double newLux;
-		if (lightSensor.getApproximateLux(newLux)) {
-			if (newLux > ambientLux) {
-				ambientLux = float(newLux) * luxUpSmoothingFactor + ambientLux * (1.0f - luxUpSmoothingFactor);
+	if (xTaskGetTickCount() - lastUpdateTick >= pdMS_TO_TICKS(100)) {
+		double measuredLux;
+		if (lightSensor.getApproximateLux(measuredLux)) {
+			if (measuredLux > ambientLux) {
+				ambientLux = float(measuredLux) * luxUpSmoothingFactor + ambientLux * (1.0f - luxUpSmoothingFactor);
 			} else {
-				ambientLux = float(newLux) * luxDownSmoothingFactor + ambientLux * (1.0f - luxDownSmoothingFactor);
+				ambientLux = float(measuredLux) * luxDownSmoothingFactor + ambientLux * (1.0f - luxDownSmoothingFactor);
 			}
 			bucketIndex = getAmbientBucketIndex(ambientLux);
-			brightness = calculateBrightnessForAmbient(ambientLux, bucketIndex);
+			brightnessValue = calculateBrightnessForAmbient(ambientLux, bucketIndex);
 			setBrightness();
 		}
-		lastUpdate = xTaskGetTickCount();
+		lastUpdateTick = xTaskGetTickCount();
 
 		if (savePending) {
 			save();
@@ -148,78 +145,76 @@ void BrightnessManager::update() {
 	}
 }
 
-uint8_t BrightnessManager::gammaCorrectedBrightness(float _brightness) {
-	float scaledBrightness = mapFloat(_brightness, 0.0f, 1.0f, MIN_BRIGHTNESS / 255.0f, MAX_BRIGHTNESS / 255.0f);
-	float gamma = 2.2f;
-	return static_cast<uint8_t>(pow(scaledBrightness, gamma) * 255.0f);
+uint8_t BrightnessManager::gammaCorrectedBrightness(float inputBrightness) {
+	const float gammaExponent = 2.2f;
+	const float normalizedBrightness = constrain(inputBrightness, 0.0f, 1.0f);
+	const float gammaCorrectedValue = pow(normalizedBrightness, gammaExponent);
+	const float outputBrightness =
+	    MIN_BRIGHTNESS + gammaCorrectedValue * (MAX_BRIGHTNESS - MIN_BRIGHTNESS);
+	return static_cast<uint8_t>(constrain(outputBrightness, float(MIN_BRIGHTNESS), float(MAX_BRIGHTNESS)));
 }
 
 void BrightnessManager::setBrightness() {
-	if (powerOn) {
+	if (powerEnabled) {
 		if (FastLED.getBrightness() == 0) {
-			FastLED.setBrightness(gammaCorrectedBrightness(MIN_BRIGHTNESS / 255.0f));
+			FastLED.setBrightness(MIN_BRIGHTNESS);  // Start from minimum brightness to avoid fade-in issues
 		} else {
-			uint8_t newBrightness = gammaCorrectedBrightness(brightness);
-			uint8_t prevBrightness =
-				constrain(FastLED.getBrightness(), gammaCorrectedBrightness(0.0), gammaCorrectedBrightness(1.0));
+			uint8_t targetBrightness = gammaCorrectedBrightness(brightnessValue);
+			uint8_t previousBrightness = FastLED.getBrightness();
 
 			if (buttonPressed) {  // If the brightness change was triggered by a button press, apply it immediately
-				newBrightness = gammaCorrectedBrightness(brightness);
 				buttonPressed = false;
-				FastLED.setBrightness(newBrightness);
-				Serial.printf("Current Brightness: %d\n", FastLED.getBrightness());
-			} else if (
-				abs(newBrightness - prevBrightness) > BRIGHTNESS_HYSTERESIS || newBrightness == 0.0f || newBrightness == 1.0f) {
-				newBrightness = constrain(newBrightness, prevBrightness - 1, prevBrightness + 2);
-				FastLED.setBrightness(newBrightness);
+				FastLED.setBrightness(targetBrightness);
+				Serial.printf("Button Pressed: Setting Brightness to %.0f%%, brightnessValue = %.2f\n",
+				              targetBrightness / 255.0f * 100.0f,
+				              brightnessValue);
+				Serial.printf("Current Brightness: %i\n", FastLED.getBrightness());
+			} else if (abs(targetBrightness - previousBrightness) > BRIGHTNESS_HYSTERESIS || targetBrightness == 0
+			           || targetBrightness == 255) {
+				targetBrightness = constrain(targetBrightness, previousBrightness - 1, previousBrightness + 2);
+				FastLED.setBrightness(targetBrightness);
+				Serial.printf("Current Brightness: %i\n", FastLED.getBrightness());
 			}
 		}
-	} else {
-		FastLED.setBrightness(0);
 	}
 }
 
 void BrightnessManager::printBuckets() {
-	Serial.println("Current brightness buckets:");
-	for (int i = 0; i < numBuckets; i++) {
-		Serial.printf("%d: {lux: %.0f-%.0f, bright: %.2f-%.2f},\n",
-					  i,
-					  getLuxForBucket(i - 1),
-					  getLuxForBucket(i),
-					  getBrightnessForBucket(i - 1),
-					  getBrightnessForBucket(i));
+	Serial.println("Brightness Curve:");
+	for (int bucketNumber = 0; bucketNumber < numBuckets; bucketNumber++) {
+		Serial.printf(
+		    "%.0f lux =\t %.0f%%,\n", getLuxForBucket(bucketNumber), getBrightnessForBucket(bucketNumber) * 100.0f);
 	}
-	Serial.println();
 }
 
 void BrightnessManager::adjustBuckets(float delta) {
 	float luxMin = getLuxForBucket(bucketIndex - 1);
 	float luxMax = getLuxForBucket(bucketIndex);
 
-	float ratio = 0.0f;
+	float interpolationRatio = 0.0f;
 	if (luxMax > luxMin) {
-		ratio = constrain((ambientLux - luxMin) / (luxMax - luxMin), 0.0f, 1.0f);
+		interpolationRatio = constrain((ambientLux - luxMin) / (luxMax - luxMin), 0.0f, 1.0f);
 	}
 
-	float upperDelta = delta * ratio;
+	float upperDelta = delta * interpolationRatio;
 	buckets[bucketIndex].brightnessMax += upperDelta;
 	buckets[bucketIndex].brightnessMax = constrain(buckets[bucketIndex].brightnessMax, 0.0f, 1.0f);
 
 	if (bucketIndex > 0) {
-		float lowerDelta = delta * (1.0f - ratio);
+		float lowerDelta = delta * (1.0f - interpolationRatio);
 		buckets[bucketIndex - 1].brightnessMax += lowerDelta;
 		buckets[bucketIndex - 1].brightnessMax = constrain(buckets[bucketIndex - 1].brightnessMax, 0.0f, 1.0f);
 	}
 
 	// Ensure brightness limits never decrease as ambient light increases.
 	// If one bucket increases, propagate that minimum through later buckets.
-	for (int i = 1; i < numBuckets; i++) {
-		if (buckets[i].brightnessMax < buckets[i - 1].brightnessMax) {
-			buckets[i].brightnessMax = buckets[i - 1].brightnessMax;
+	for (int bucketNumber = 1; bucketNumber < numBuckets; bucketNumber++) {
+		if (buckets[bucketNumber].brightnessMax < buckets[bucketNumber - 1].brightnessMax) {
+			buckets[bucketNumber].brightnessMax = buckets[bucketNumber - 1].brightnessMax;
 		}
 	}
 
-	brightness = calculateBrightnessForAmbient(ambientLux, bucketIndex);
+	brightnessValue = calculateBrightnessForAmbient(ambientLux, bucketIndex);
 	setBrightness();
 	printBuckets();
 }
@@ -232,35 +227,35 @@ float BrightnessManager::mapFloat(float value, float inMin, float inMax, float o
 	return outMin + normalized * (outMax - outMin);
 }
 
-float BrightnessManager::getLuxForBucket(int index) {
-	if (index < 0)
+float BrightnessManager::getLuxForBucket(int bucketIndex) {
+	if (bucketIndex < 0)
 		return 0.0f;
-	if (index >= numBuckets)
+	if (bucketIndex >= numBuckets)
 		return 1000000.0f;
-	return buckets[index].luxMax;
+	return buckets[bucketIndex].luxMax;
 }
 
-float BrightnessManager::getBrightnessForBucket(int index) {
-	if (index < 0)
+float BrightnessManager::getBrightnessForBucket(int bucketIndex) {
+	if (bucketIndex < 0)
 		return 0.0f;
-	if (index >= numBuckets)
+	if (bucketIndex >= numBuckets)
 		return 1.0f;
-	return buckets[index].brightnessMax;
+	return buckets[bucketIndex].brightnessMax;
 }
 
 int BrightnessManager::getAmbientBucketIndex(float lux) {
-	for (uint8_t i = numBuckets - 1; i >= 0; i--) {
-		if (lux > getLuxForBucket(i - 1))
-			return i;
+	for (int candidateBucketIndex = numBuckets - 1; candidateBucketIndex >= 0; candidateBucketIndex--) {
+		if (lux > getLuxForBucket(candidateBucketIndex - 1))
+			return candidateBucketIndex;
 	}
 	return 0;
 }
 
-float BrightnessManager::calculateBrightnessForAmbient(float lux, int index) {
-	float luxMin = getLuxForBucket(index - 1);
-	float luxMax = getLuxForBucket(index);
-	float brightnessMin = getBrightnessForBucket(index - 1);
-	float brightnessMax = getBrightnessForBucket(index);
+float BrightnessManager::calculateBrightnessForAmbient(float lux, int bucketIndex) {
+	float luxMin = getLuxForBucket(bucketIndex - 1);
+	float luxMax = getLuxForBucket(bucketIndex);
+	float brightnessMin = getBrightnessForBucket(bucketIndex - 1);
+	float brightnessMax = getBrightnessForBucket(bucketIndex);
 
 	lux = constrain(lux, luxMin, luxMax);
 	float newBrightness = mapFloat(lux, luxMin, luxMax, brightnessMin, brightnessMax);
@@ -270,7 +265,7 @@ float BrightnessManager::calculateBrightnessForAmbient(float lux, int index) {
 // --- NO LIGHT SENSOR IMPLEMENTATION ---
 #else
 
-BrightnessManager::BrightnessManager() : brightness(MIN_BRIGHTNESS + BRIGHTNESS_STEP), powerOn(true) {}
+BrightnessManager::BrightnessManager() : brightnessValue(MIN_BRIGHTNESS + BRIGHTNESS_STEP), powerEnabled(true) {}
 
 void BrightnessManager::begin() {
 	load();
@@ -279,32 +274,32 @@ void BrightnessManager::begin() {
 
 void BrightnessManager::update() {
 	// 1. Process instant task notifications
-	uint32_t events = 0;
-	if (xTaskNotifyWait(0x00, ULONG_MAX, &events, 0) == pdTRUE) {
-		if (events & EVT_INCREASE) {
-			brightness += BRIGHTNESS_STEP;
-			brightness = constrain(brightness, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
+	uint32_t pendingEvents = 0;
+	if (xTaskNotifyWait(0x00, ULONG_MAX, &pendingEvents, 0) == pdTRUE) {
+		if (pendingEvents & EVT_INCREASE) {
+			brightnessValue += BRIGHTNESS_STEP;
+			brightnessValue = constrain(brightnessValue, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
 			setBrightness();
 			savePending = true;
 		}
-		if (events & EVT_DECREASE) {
-			brightness -= BRIGHTNESS_STEP;
-			brightness = constrain(brightness, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
+		if (pendingEvents & EVT_DECREASE) {
+			brightnessValue -= BRIGHTNESS_STEP;
+			brightnessValue = constrain(brightnessValue, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
 			setBrightness();
 			savePending = true;
 		}
-		if (events & EVT_UPDATE_BRIGHTNESS) {
+		if (pendingEvents & EVT_UPDATE_BRIGHTNESS) {
 			setBrightness();
 		}
 	}
 
 	// 2. Perform background rate-limited EEPROM saves
-	if (xTaskGetTickCount() - lastUpdate >= pdMS_TO_TICKS(100)) {
+	if (xTaskGetTickCount() - lastUpdateTick >= pdMS_TO_TICKS(100)) {
 		if (savePending) {
 			save();
 			savePending = false;
 		}
-		lastUpdate = xTaskGetTickCount();
+		lastUpdateTick = xTaskGetTickCount();
 	}
 }
 
@@ -312,7 +307,7 @@ void BrightnessManager::save() {
 	Preferences localPrefs;
 	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	localPrefs.begin("brightness");
-	localPrefs.putInt("brightness", int(brightness));
+	localPrefs.putInt("brightness", int(brightnessValue));
 	localPrefs.end();
 	xSemaphoreGive(fastLEDPreferencesMutex);
 }
@@ -320,15 +315,22 @@ void BrightnessManager::save() {
 void BrightnessManager::load() {
 	Preferences localPrefs;
 	localPrefs.begin("brightness");
-	brightness = float(localPrefs.getInt("brightness", int(brightness)));
+	brightnessValue = float(localPrefs.getInt("brightness", int(brightnessValue)));
 	localPrefs.end();
 }
 
 void BrightnessManager::setBrightness() {
-	float gamma = 2.2f;
-	uint8_t gammaBrightness = static_cast<uint8_t>(pow((brightness / 255.0f), gamma) * 255.0f);
-	FastLED.setBrightness(powerOn ? gammaBrightness : 0);
-	Serial.printf("Brightness set to %0.0f/255\n", brightness);
+	if (powerEnabled) {
+		const float gammaExponent = 2.2f;
+		const float normalizedBrightness = constrain(brightnessValue / 255.0f, 0.0f, 1.0f);
+		const float gammaCorrectedValue = pow(normalizedBrightness, gammaExponent);
+		const float outputBrightness =
+		    MIN_BRIGHTNESS + gammaCorrectedValue * (MAX_BRIGHTNESS - MIN_BRIGHTNESS);
+		const uint8_t gammaCorrectedBrightnessValue =
+		    static_cast<uint8_t>(constrain(outputBrightness, float(MIN_BRIGHTNESS), float(MAX_BRIGHTNESS)));
+		FastLED.setBrightness(gammaCorrectedBrightnessValue);
+		Serial.printf("Brightness set to %0.0f/255\n", brightnessValue);
+	}
 }
 
 #endif

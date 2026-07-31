@@ -1,6 +1,6 @@
 /**
  * @file statusLeds.h
- * @brief Background task for managing diagnostic status LEDs
+ * @brief Asynchronous state and blink control for diagnostic status LEDs.
  */
 
 #pragma once
@@ -8,67 +8,70 @@
 #include <Arduino.h>
 
 /**
- * @brief Command enum for the status LEDs
+ * @brief Display commands supported by the diagnostic LEDs.
  */
-enum statusLedCommand {
-	LED_OFF = 0,			   ///< LED is fully off
-	LED_ON_GREEN = 1,		   ///< LED is solid green
-	LED_ON_RED = 2,			   ///< LED is solid red
-	LED_BLINK_GREEN_SLOW = 3,  ///< LED blinks green at 1Hz
-	LED_BLINK_GREEN_FAST = 4,  ///< LED blinks green at 5Hz
-	LED_BLINK_RED_SLOW = 5,	   ///< LED blinks red at 1Hz
-	LED_BLINK_RED_FAST = 6	   ///< LED blinks red at 5Hz
+enum StatusLedCommand {
+	LED_OFF = 0,               ///< LED is disabled.
+	LED_ON_GREEN = 1,          ///< LED is continuously green.
+	LED_ON_RED = 2,            ///< LED is continuously red.
+	LED_BLINK_GREEN_SLOW = 3,  ///< Green blink with a 1 Hz full cycle.
+	LED_BLINK_GREEN_FAST = 4,  ///< Green blink with a 5 Hz full cycle.
+	LED_BLINK_RED_SLOW = 5,    ///< Red blink with a 1 Hz full cycle.
+	LED_BLINK_RED_FAST = 6     ///< Red blink with a 5 Hz full cycle.
 };
 
 /**
- * @brief State structure for a single status LED
+ * @brief Command and runtime state for one diagnostic LED.
  */
-struct statusLed {
-	uint8_t pin;			   ///< GPIO pin number (for dual-color or standard)
-	statusLedCommand command;  ///< Desired display command
-	bool currentState;		   ///< Current physical state (on/off)
-	unsigned long lastToggle;  ///< Timestamp of the last toggle
+struct StatusLed {
+	uint8_t pin;               ///< GPIO pin number; 255 means the pin is unconfigured.
+	StatusLedCommand command;  ///< Desired display command.
+	bool currentState;         ///< Current on/off phase used by blinking.
+	unsigned long lastToggle;  ///< millis() timestamp of the last blink transition.
 };
 
 /**
- * @brief Manager class for handling charlieplexed status LEDs
- * 
- * This class runs a background task to handle blinking and state management
- * of bidirectional LEDs (charlieplexed or standard dual-color).
+ * @brief Manages charlieplexed diagnostic LEDs from a background task.
+ *
+ * State requests are packed into a task notification, so setState() returns
+ * without directly changing GPIOs from the calling task.
  */
-class StatusLEDManager {
+class StatusLedManager {
   public:
 	/**
-	 * @brief Initialize the status LED manager and start its background task
+	 * @brief Start the background task that applies LED commands and blink timing.
 	 */
 	void begin();
 
 	/**
-	 * @brief Set the command state for two status LEDs simultaneously
-	 * @param pin1 First LED GPIO pin
-	 * @param cmd1 First LED command
-	 * @param pin2 Second LED GPIO pin
-	 * @param cmd2 Second LED command
+	 * @brief Queue commands for two status LEDs.
+	 * @param firstPin First LED GPIO pin.
+	 * @param firstCommand First LED command.
+	 * @param secondPin Second LED GPIO pin.
+	 * @param secondCommand Second LED command.
 	 */
-	void setState(uint8_t pin1, statusLedCommand cmd1, uint8_t pin2, statusLedCommand cmd2);
+	void setState(uint8_t firstPin, StatusLedCommand firstCommand, uint8_t secondPin, StatusLedCommand secondCommand);
 
 	/**
-	 * @brief Set the command state for a single status LED
-	 * @param pin LED GPIO pin
-	 * @param command LED command
+	 * @brief Queue a command for one status LED.
+	 * @param pin LED GPIO pin.
+	 * @param command LED command.
 	 */
-	void setState(uint8_t pin, statusLedCommand command);
+	void setState(uint8_t pin, StatusLedCommand command);
 
   private:
-	TaskHandle_t taskHandle = nullptr;	///< Handle for the background task
+	TaskHandle_t taskHandle = nullptr;  ///< Handle for the background task.
 
 	/**
-	 * @brief Hardware-level control for charlieplexed/bidirectional LEDs
+	 * @brief Apply an immediate GPIO state for one charlieplexed LED.
+	 * @param pin GPIO pin to drive.
+	 * @param command Solid LED command to apply; blinking is handled by task().
 	 */
-	static void setCharlieplexedLED(uint8_t pin, statusLedCommand state);
+	static void setCharlieplexedLed(uint8_t pin, StatusLedCommand command);
 
 	/**
-	 * @brief Main task loop for status LED timing and updates
+	 * @brief Consume queued commands and update solid or blinking LED states.
+	 * @param pvParameters Pointer to the StatusLedManager instance.
 	 */
 	static void task(void* pvParameters);
 };
@@ -76,4 +79,4 @@ class StatusLEDManager {
 /**
  * @brief Global status LED manager instance
  */
-extern StatusLEDManager statusLEDs;
+extern StatusLedManager statusLeds;

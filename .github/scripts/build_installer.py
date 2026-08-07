@@ -8,7 +8,7 @@ import subprocess
 import shutil
 import sys
 import json
-from typing import List, Optional
+from typing import List, Optional, Any
 
 # Configuration
 ENVIRONMENTS = [
@@ -42,7 +42,7 @@ def build_environments() -> None:
     for env in ENVIRONMENTS:
         print(f"Building environment: {env['id']}")
         run_command(
-            ["pio", "run", "-e", env["id"], "--target", "mergebin_seperate_bootloader"]
+            ["pio", "run", "--environment", env["id"], "--target", "mergebin_seperate_bootloader"]
         )
 
 
@@ -56,7 +56,7 @@ def build_web_installer() -> None:
 
 def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
     """Create manifest.json for the given environment in the _site/bin/env directory."""
-    manifest: dict[str, object] = {
+    manifest: dict[str, Any] = {
         "name": env["name"],
         "version": "",
         "new_install_prompt_erase": True,
@@ -69,6 +69,10 @@ def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
                         "offset": 0,
                     },
                     {
+                        "path": "partitions.bin",
+                        "offset": 32768,
+                    },
+                    {
                         "path": "firmware-app0.bin",
                         "offset": 65536,
                     },
@@ -76,6 +80,7 @@ def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
             }
         ],
     }
+
     manifest_path = os.path.join(site_bin_dir, "manifest.json")
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
@@ -98,15 +103,20 @@ def prepare_deployment_files() -> None:
 
     # Copy firmware binaries and create manifest.json
     for env in ENVIRONMENTS:
-        #
+        # Copy the firmware binary from the build directory
         src_bin = os.path.join(BUILD_DIR, env["id"], "firmware-app0.bin")
         dst_bin_dir = os.path.join(SITE_DIR, "bin", env["id"])
         dst_bin = os.path.join(dst_bin_dir, "firmware-app0.bin")
         shutil.copy(src_bin, dst_bin)
 
+        # Copy the bootloader binary from the build directory
         src_bin = os.path.join(BUILD_DIR, env["id"], "bootloader.bin")
-        dst_bin_dir = os.path.join(SITE_DIR, "bin", env["id"])
         dst_bin = os.path.join(dst_bin_dir, "bootloader.bin")
+        shutil.copy(src_bin, dst_bin)
+
+        # Copy the partition table from the build directory
+        src_bin = os.path.join(BUILD_DIR, env["id"], "partitions.bin")
+        dst_bin = os.path.join(dst_bin_dir, "partitions.bin")
         shutil.copy(src_bin, dst_bin)
 
         print(f"Copied firmware and bootloader for {env['id']}")

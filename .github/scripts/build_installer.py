@@ -2,6 +2,7 @@
 """
 Build script for ESP32 web installer deployment
 """
+
 import os
 import subprocess
 import shutil
@@ -19,12 +20,17 @@ ENVIRONMENTS = [
 WEB_INSTALLER_SRC = "Web Installer"
 SITE_DIR = "_site"
 BUILD_DIR = ".pio/build"
+WEB_INSTALLER_DIST = os.path.join(WEB_INSTALLER_SRC, "dist")
+NPM_COMMAND = "npm.cmd" if os.name == "nt" else "npm"
 
 
 def run_command(cmd: List[str], cwd: Optional[str] = None) -> None:
     """Run a shell command and exit on failure"""
     try:
         subprocess.run(cmd, check=True, cwd=cwd)
+    except FileNotFoundError:
+        print(f"Command not found: {cmd[0]}")
+        sys.exit(1)
     except subprocess.CalledProcessError as e:
         print(f"Command failed: {' '.join(cmd)}")
         print(f"Error: {e}")
@@ -35,7 +41,17 @@ def build_environments() -> None:
     """Build all configured environments with mergebin target"""
     for env in ENVIRONMENTS:
         print(f"Building environment: {env['id']}")
-        run_command(["pio", "run", "--environment", env["id"], "--target", "mergebin_seperate_bootloader"])
+        run_command(
+            ["pio", "run", "--environment", env["id"], "--target", "mergebin_seperate_bootloader"]
+        )
+
+
+def build_web_installer() -> None:
+    """Install frontend dependencies and build the Svelte installer."""
+    run_command(
+        [NPM_COMMAND, "install", "--no-audit", "--no-fund"], cwd=WEB_INSTALLER_SRC
+    )
+    run_command([NPM_COMMAND, "run", "build"], cwd=WEB_INSTALLER_SRC)
 
 
 def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
@@ -59,7 +75,7 @@ def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
                     {
                         "path": "firmware-app0.bin",
                         "offset": 65536,
-                    }
+                    },
                 ],
             }
         ],
@@ -76,9 +92,14 @@ def prepare_deployment_files() -> None:
     for env in ENVIRONMENTS:
         os.makedirs(os.path.join(SITE_DIR, "bin", env["id"]), exist_ok=True)
 
-    # Copy web installer files (favicon and html)
-    shutil.copy(os.path.join(WEB_INSTALLER_SRC, "led-rails.html"), SITE_DIR)
-    shutil.copy(os.path.join(WEB_INSTALLER_SRC, "favicon.png"), SITE_DIR)
+    # Copy the generated Svelte application and its static assets.
+    for entry in os.listdir(WEB_INSTALLER_DIST):
+        source_path = os.path.join(WEB_INSTALLER_DIST, entry)
+        destination_path = os.path.join(SITE_DIR, entry)
+        if os.path.isdir(source_path):
+            shutil.copytree(source_path, destination_path, dirs_exist_ok=True)
+        else:
+            shutil.copy2(source_path, destination_path)
 
     # Copy firmware binaries and create manifest.json
     for env in ENVIRONMENTS:
@@ -106,6 +127,8 @@ def main() -> None:
     """Main entry point"""
     print("Starting build process...")
     build_environments()
+    print("Building web installer...")
+    build_web_installer()
     print("Preparing deployment files...")
     prepare_deployment_files()
     print("Build process completed successfully!")

@@ -41,10 +41,10 @@
       "-DLED_8_PIN=36",
       "-DLED_8_START=1600",
       "-DLED_8_PIXELS=22",
-      "-DMIN_BRIGHTNESS=34",
+      "-DMIN_BRIGHTNESS=6",
       "-DMAX_BRIGHTNESS=192",
-      "-DBRIGHTNESS_STEP=40",
-      "-DBRIGHTNESS_HYSTERESIS=5",
+      "-DBRIGHTNESS_STEP=50",
+      "-DBRIGHTNESS_HYSTERESIS=3",
       "-DDEBOUNCE_MS=50",
       "-DLIGHT_SENSOR=1",
       "-DSCL_PIN=16",
@@ -52,12 +52,18 @@
       "-DTIMETABLE_SPEED=600.0",
       "-DBACKEND_VERSION=\\\"100\\\"",
       "-DCITY_CODE=\\\"mel\\\"",
-      "-DMEL_V1_0_0"
+      "-DMEL_V1_0_0",
+      "-DTIMEZONE=\\\"AEST-10AEDT,M10.1.0,M4.1.0/3\\\""
     ],
     "f_cpu": "240000000L",
     "f_flash": "80000000L",
     "flash_mode": "qio",
-    "hwids": [["0X303A", "0x1001"]],
+    "hwids": [
+      [
+        "0X303A",
+        "0x1001"
+      ]
+    ],
     "mcu": "esp32s3",
     "variant": "esp32s3"
   },
@@ -72,7 +78,10 @@
     ],
     "openocd_target": "esp32s3.cfg"
   },
-  "frameworks": ["arduino", "espidf"],
+  "frameworks": [
+    "arduino",
+    "espidf"
+  ],
   "name": "Melbourne V1.0.0",
   "upload": {
     "flash_size": "8MB",

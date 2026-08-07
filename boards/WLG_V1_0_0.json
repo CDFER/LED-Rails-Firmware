@@ -17,10 +17,10 @@
       "-DLED_1_PIN=7",
       "-DLED_1_START=100",
       "-DLED_1_PIXELS=235",
-      "-DMIN_BRIGHTNESS=50",
+      "-DMIN_BRIGHTNESS=6",
       "-DMAX_BRIGHTNESS=254",
       "-DBRIGHTNESS_STEP=20",
-      "-DBRIGHTNESS_HYSTERESIS=5",
+      "-DBRIGHTNESS_HYSTERESIS=3",
       "-DDEBOUNCE_MS=50",
       "-DLIGHT_SENSOR=1",
       "-DSCL_PIN=3",
@@ -28,20 +28,31 @@
       "-DTIMETABLE_SPEED=1000.0",
       "-DBACKEND_VERSION=\\\"100\\\"",
       "-DCITY_CODE=\\\"wlg\\\"",
-      "-DWLG_V1_0_0"
+      "-DWLG_V1_0_0",
+      "-DTIMEZONE=\\\"NZST-12NZDT,M9.5.0,M4.1.0/3\\\""
     ],
     "f_cpu": "160000000L",
     "f_flash": "80000000L",
     "flash_mode": "qio",
-    "hwids": [["0X303A", "0x1001"]],
+    "hwids": [
+      [
+        "0X303A",
+        "0x1001"
+      ]
+    ],
     "mcu": "esp32c3",
     "variant": "esp32c3"
   },
-  "connectivity": ["wifi"],
+  "connectivity": [
+    "wifi"
+  ],
   "debug": {
     "openocd_target": "esp32c3.cfg"
   },
-  "frameworks": ["arduino", "espidf"],
+  "frameworks": [
+    "arduino",
+    "espidf"
+  ],
   "name": "Wellington V1.0.0",
   "upload": {
     "flash_size": "4MB",

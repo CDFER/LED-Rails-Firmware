@@ -1,0 +1,414 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+	font-family: 'Manrope', 'Segoe UI', sans-serif;
+	color: #f4eee9;
+	background: #171514;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	min-width: 320px;
+	min-height: 100vh;
+	margin: 0;
+	background:
+		radial-gradient(circle at 80% -10%, rgba(143, 68, 36, 0.28), transparent 38rem),
+		linear-gradient(145deg, #171514 0%, #211e1b 48%, #121111 100%);
+}
+
+a {
+	color: #e6a478;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+}
+
+a:hover {
+	color: #ffd0ad;
+}
+
+button {
+	font: inherit;
+}
+
+esp-web-install-button {
+	--esp-tools-button-color: #d46f45;
+	--esp-tools-button-text-color: #fffaf6;
+	--esp-tools-button-border-radius: 8px;
+}
+
+ewt-install-dialog,
+ewt-improv-dialog,
+ewt-no-port-picked-dialog,
+ewt-dialog {
+	--md-sys-color-primary: #d46f45;
+	--md-sys-color-on-primary: #fffaf6;
+	--md-sys-color-primary-container: #d46f45;
+	--md-sys-color-on-primary-container: #fffaf6;
+	--text-color: rgba(245, 239, 235, 0.92);
+	--md-sys-color-background: #24201e;
+	--md-sys-color-surface: #24201e;
+	--md-sys-color-surface-container: #24201e;
+	--md-sys-color-surface-container-low: #2a2522;
+	--md-sys-color-surface-container-high: #312b28;
+	--md-sys-color-surface-container-highest: #3b332f;
+	--md-sys-color-on-surface: #f0e8e2;
+	--md-sys-color-on-surface-variant: #c8bbb3;
+	--md-sys-color-on-background: #f0e8e2;
+	--md-sys-color-surface-variant: #443b36;
+	--md-sys-color-secondary-container: #514940;
+	--md-sys-color-on-secondary-container: #f7eee8;
+	--md-sys-color-outline: #75675e;
+	--md-sys-color-outline-variant: #594e47;
+	--md-list-item-selected-container-color: #514940;
+	--md-list-item-selected-label-text-color: #f7eee8;
+	--md-menu-item-selected-container-color: #514940;
+	--md-menu-item-selected-label-text-color: #f7eee8;
+	color: #e6dcd5;
+}
+
+ewt-install-dialog,
+ewt-improv-dialog,
+ewt-no-port-picked-dialog {
+	--md-filled-button-container-color: #d46f45;
+	--md-filled-button-label-text-color: #fffaf6;
+	--md-outlined-button-label-text-color: #f0e8e2;
+	--md-outlined-button-outline-color: #75675e;
+	--md-text-button-label-text-color: #f0e8e2;
+}
+
+.content {
+	width: min(100% - 32px, 1040px);
+	margin: 0 auto;
+	padding: 56px 0 28px;
+}
+
+header {
+	max-width: 720px;
+	margin: 0 auto 48px;
+	text-align: center;
+}
+
+.eyebrow,
+.section-label,
+.feature-version {
+	color: #e6a478;
+	font-family: 'DM Mono', monospace;
+	font-size: 0.73rem;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.eyebrow {
+	margin: 0 0 18px;
+}
+
+h1,
+h2,
+h3,
+p {
+	margin-top: 0;
+}
+
+h1 {
+	margin-bottom: 16px;
+	font-size: clamp(2.3rem, 7vw, 4.7rem);
+	font-weight: 800;
+	letter-spacing: -0.04em;
+	line-height: 0.98;
+}
+
+header>p:last-child {
+	margin-bottom: 0;
+	color: #bcb0a8;
+	font-size: 1rem;
+}
+
+main {
+	width: 100%;
+}
+
+.installer-panel {
+	border: 1px solid rgba(234, 188, 154, 0.18);
+	border-radius: 12px;
+	background: rgba(36, 31, 28, 0.82);
+	box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+	overflow: hidden;
+}
+
+.instructions {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	counter-reset: instruction;
+}
+
+.instructions li {
+	position: relative;
+	min-height: 150px;
+	padding: 30px 32px 28px 76px;
+	border-bottom: 1px solid rgba(234, 188, 154, 0.12);
+	counter-increment: instruction;
+}
+
+.instructions li:nth-child(odd) {
+	border-right: 0;
+}
+
+.instructions li::before {
+	position: absolute;
+	left: 32px;
+	top: 30px;
+	color: #d46f45;
+	content: counter(instruction, decimal-leading-zero);
+	font-family: 'DM Mono', monospace;
+	font-size: 0.85rem;
+}
+
+.instructions strong,
+.instructions span,
+.instructions small {
+	display: block;
+}
+
+.instructions strong {
+	margin-bottom: 8px;
+	color: #fbf5f0;
+	font-size: 1rem;
+}
+
+.instructions span {
+	color: #cec2bb;
+	font-size: 0.92rem;
+	line-height: 1.55;
+}
+
+.instructions small {
+	margin-top: 10px;
+	color: #8f8179;
+	font-size: 0.78rem;
+	line-height: 1.5;
+}
+
+.controls {
+	padding: 32px;
+}
+
+.version-heading {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 14px;
+}
+
+.selected-version {
+	color: #a99a91;
+	font-size: 0.86rem;
+}
+
+.version-btn-group {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.version-btn,
+.connect-btn {
+	border: 1px solid rgba(234, 188, 154, 0.24);
+	border-radius: 7px;
+	cursor: pointer;
+	transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.version-btn {
+	min-height: 56px;
+	padding: 10px 12px;
+	background: #332c28;
+	color: #d9cdc5;
+	font-size: 0.86rem;
+	font-weight: 700;
+}
+
+.version-btn:hover {
+	border-color: #d46f45;
+	background: #40342d;
+}
+
+.version-btn.selected {
+	border-color: #9db18d;
+	background: #4d5b48;
+	color: #fbfff7;
+}
+
+.version-btn:focus-visible,
+.connect-btn:focus-visible {
+	outline: 3px solid rgba(230, 164, 120, 0.55);
+	outline-offset: 3px;
+}
+
+.version-btn:active,
+.connect-btn:active {
+	transform: translateY(1px);
+}
+
+esp-web-install-button {
+	display: block;
+	margin: 28px auto 0;
+	text-align: center;
+}
+
+.connect-btn {
+	min-width: 190px;
+	padding: 14px 28px;
+	border-color: #d46f45;
+	background: #d46f45;
+	color: #fffaf6;
+	font-size: 1rem;
+	font-weight: 800;
+}
+
+.connect-btn:hover {
+	border-color: #ea9466;
+	background: #ea9466;
+}
+
+.unsupported-state {
+	padding: 72px 32px;
+	text-align: center;
+}
+
+.status-mark {
+	display: grid;
+	width: 42px;
+	height: 42px;
+	margin: 0 auto 18px;
+	place-items: center;
+	border: 1px solid #d46f45;
+	border-radius: 50%;
+	color: #e6a478;
+	font-family: 'DM Mono', monospace;
+	font-weight: 500;
+}
+
+.unsupported-state h2 {
+	margin-bottom: 10px;
+	font-size: 1.4rem;
+}
+
+.unsupported-state p {
+	margin-bottom: 0;
+	color: #bcb0a8;
+}
+
+.help-copy {
+	margin: 24px 0 68px;
+	color: #91847c;
+	font-size: 0.88rem;
+	text-align: center;
+}
+
+.features {
+	padding: 0 8px;
+}
+
+.section-intro {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 24px;
+	margin-bottom: 24px;
+}
+
+.section-intro h2 {
+	margin-bottom: 0;
+	font-size: clamp(1.45rem, 3vw, 2rem);
+	letter-spacing: -0.03em;
+}
+
+.feature-list {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	border-top: 1px solid rgba(234, 188, 154, 0.2);
+	border-bottom: 1px solid rgba(234, 188, 154, 0.2);
+}
+
+.feature-item {
+	padding: 28px 24px 30px;
+}
+
+.feature-item+.feature-item {
+	border-left: 1px solid rgba(234, 188, 154, 0.2);
+}
+
+.feature-item h3 {
+	margin: 16px 0 10px;
+	font-size: 1rem;
+	line-height: 1.35;
+}
+
+.feature-item p {
+	margin-bottom: 0;
+	color: #a99b92;
+	font-size: 0.88rem;
+	line-height: 1.65;
+}
+
+footer {
+	margin-top: 36px;
+	color: #776b64;
+	font-size: 0.82rem;
+	text-align: center;
+}
+
+@media (max-width: 720px) {
+	.content {
+		width: min(100% - 20px, 600px);
+		padding-top: 32px;
+	}
+
+	header {
+		margin-bottom: 32px;
+	}
+
+	.instructions,
+	.version-btn-group,
+	.feature-list {
+		grid-template-columns: 1fr;
+	}
+
+	.instructions li,
+	.instructions li:nth-child(odd) {
+		min-height: auto;
+		border-right: 0;
+	}
+
+	.instructions li:nth-child(odd) {
+		border-bottom: 1px solid rgba(234, 188, 154, 0.12);
+	}
+
+	.controls {
+		padding: 24px 18px;
+	}
+
+	.section-intro {
+		display: block;
+	}
+
+	.section-intro h2 {
+		margin-top: 10px;
+	}
+
+	.feature-item+.feature-item {
+		border-top: 1px solid rgba(234, 188, 154, 0.2);
+		border-left: 0;
+	}
+}

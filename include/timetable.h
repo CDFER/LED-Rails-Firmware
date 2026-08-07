@@ -1,3 +1,7 @@
+/**
+ * @file timetable.h
+ * @brief Shared route, train, and timetable data types for timetable rendering.
+ */
 
 #pragma once
 
@@ -5,13 +9,15 @@
 #include <FastLED.h>
 
 /**
- * @brief Structure representing a timetable entry
- * 
- * Each entry defines when a train enters a specific block along its route.
+ * @brief One position change in a train's route timetable.
+ *
+ * The offset is measured from the train's scheduled start time. A negative
+ * offset represents a position before that start time, and block -1 is used
+ * as the route-end sentinel by generated timetable data.
  */
 struct TimetableEntry {
-	int16_t offsetSeconds;	// Offset in seconds from route start time (-32768 to 32767)
-	int16_t blockNumber;	// Block number (0-32767, with -1 reserved for "no block")
+	int16_t offsetSeconds;  ///< Offset in seconds from the route start time.
+	int16_t blockNumber;    ///< LED map block number; -1 marks the end of a route.
 
 	/**
 	 * @brief Construct a new TimetableEntry object
@@ -22,59 +28,99 @@ struct TimetableEntry {
 	constexpr TimetableEntry(int16_t seconds, int16_t block) : offsetSeconds(seconds), blockNumber(block) {}
 };
 
-template<typename T>
-struct RouteSpan {
-    const T* _data;
-    size_t _size;
-    constexpr RouteSpan(const T* d, size_t s) : _data(d), _size(s) {}
-    template<size_t N>
-    constexpr RouteSpan(const T (&arr)[N]) : _data(arr), _size(N) {}
+/**
+ * @brief Non-owning, read-only view of a contiguous collection.
+ *
+ * The referenced storage must outlive this view. RouteSpan does not allocate,
+ * copy, or perform bounds checking.
+ * @tparam T Type of elements in the span
+ */
+template<typename T> struct RouteSpan {
+	const T* dataPointer;  ///< Pointer to the first element; may be null when size() is zero.
+	size_t elementCount;   ///< Number of elements in the referenced collection.
 
-    const T* begin() const { return _data; }
-    const T* end() const { return _data + _size; }
-    const T& operator[](size_t index) const { return _data[index]; }
-    size_t size() const { return _size; }
-    bool empty() const { return _size == 0; }
-    const T& front() const { return _data[0]; }
-    const T& back() const { return _data[_size - 1]; }
+	/**
+	 * @brief Construct a view from a pointer and element count.
+	 * @param dataPointer Pointer to the first element.
+	 * @param elementCount Number of elements in the referenced collection.
+	 */
+	constexpr RouteSpan(const T* dataPointer, size_t elementCount)
+	    : dataPointer(dataPointer), elementCount(elementCount) {}
+
+	/**
+	 * @brief Construct a view from a fixed-size array.
+	 * @param routeArray Array whose storage will be referenced without copying.
+	 */
+	template<size_t ElementCount>
+	constexpr RouteSpan(const T (&routeArray)[ElementCount]) : dataPointer(routeArray), elementCount(ElementCount) {}
+
+	/// Return an iterator to the first element.
+	const T* begin() const {
+		return dataPointer;
+	}
+	/// Return an iterator one past the last element.
+	const T* end() const {
+		return dataPointer + elementCount;
+	}
+	/// Access an element without bounds checking.
+	const T& operator[](size_t index) const {
+		return dataPointer[index];
+	}
+	/// Return the number of referenced elements.
+	size_t size() const {
+		return elementCount;
+	}
+	/// Return true when no elements are referenced.
+	bool empty() const {
+		return elementCount == 0;
+	}
+	/// Return the first element; the view must not be empty.
+	const T& front() const {
+		return dataPointer[0];
+	}
+	/// Return the last element; the view must not be empty.
+	const T& back() const {
+		return dataPointer[elementCount - 1];
+	}
 };
 
 /**
- * @brief Abstract base class for train routes
- * 
- * Defines the interface for train route implementations including timetable
- * entries, color coding, and start times.
+ * @brief Abstract interface for a train route and its scheduled departures.
+ *
+ * Concrete generated routes provide static timetable entries, a display color,
+ * and one or more departure times. Returned RouteSpan objects refer to data
+ * owned by the route implementation and remain valid for the route lifetime.
  */
 class TrainRoute {
   public:
 	virtual ~TrainRoute() = default;
 
 	/**
-	 * @brief Get the timetable entries for this route
-	 * 
-	 * @return RouteSpan of timetable entries
+	 * @brief Return the ordered timetable entries for this route.
+	 * @return Non-owning view of route entries.
 	 */
 	virtual RouteSpan<TimetableEntry> getEntries() const = 0;
 
 	/**
-	 * @brief Get the color used to display this route
-	 * 
-	 * @return CRGB color value for LED visualization
+	 * @brief Return the LED color used to display this route.
+	 * @return RGB color value for LED visualization.
 	 */
 	virtual CRGB getColor() const = 0;
 
 	/**
-	 * @brief Get the start times for trains on this route
-	 * 
-	 * @return RouteSpan of start times (seconds since midnight)
+	 * @brief Return scheduled departure times for this route.
+	 * @return Non-owning view of seconds-since-midnight start times.
 	 */
 	virtual RouteSpan<uint32_t> getStartTimes() const = 0;
 
 	/**
-	 * @brief Get the current block number based on elapsed time
-	 * 
-	 * @param elapsedSeconds Seconds elapsed since route start time
-	 * @return uint16_t Current block number
+	 * @brief Resolve the route block at an elapsed time.
+	 *
+	 * The last entry at or before elapsedSeconds is selected. Before the first
+	 * entry, the first route block is returned.
+	 *
+	 * @param elapsedSeconds Seconds elapsed since route start time.
+	 * @return Current block number, or zero when the route has no entries.
 	 */
 	uint16_t getCurrentBlock(int32_t elapsedSeconds) const {
 		const auto& entries = getEntries();
@@ -82,9 +128,9 @@ class TrainRoute {
 			return 0;
 
 		// Find the last entry whose offsetSeconds <= elapsedSeconds
-		for (int i = static_cast<int>(entries.size()) - 1; i >= 0; --i) {
-			if (entries[i].offsetSeconds <= elapsedSeconds) {
-				return entries[i].blockNumber;
+		for (int entryIndex = static_cast<int>(entries.size()) - 1; entryIndex >= 0; --entryIndex) {
+			if (entries[entryIndex].offsetSeconds <= elapsedSeconds) {
+				return entries[entryIndex].blockNumber;
 			}
 		}
 
@@ -93,9 +139,8 @@ class TrainRoute {
 	}
 
 	/**
-	 * @brief Calculate approximate memory usage of this route
-	 * 
-	 * @return uint16_t Total size in bytes
+	 * @brief Estimate the memory used by this route's object and static data.
+	 * @return Approximate size in bytes.
 	 */
 	uint16_t getSize() const {
 		return sizeof(*this) + sizeof(TimetableEntry) * getEntries().size() + sizeof(uint32_t) * getStartTimes().size();
@@ -103,29 +148,28 @@ class TrainRoute {
 };
 
 /**
- * @brief Class representing an individual train instance
- * 
- * Tracks a specific train's position along its route based on current time.
+ * @brief Runtime instance of one scheduled train departure.
+ *
+ * The instance references a route without taking ownership and calculates its
+ * position from seconds since midnight.
  */
 class TrainInstance {
   private:
-	const TrainRoute* route;	// Route this train follows
-	uint32_t startTimeSeconds;	// Start time in seconds since midnight
+	const TrainRoute* route;    ///< Route this train follows; not owned.
+	uint32_t startTimeSeconds;  ///< Scheduled start time in seconds since midnight.
 
   public:
 	/**
-	 * @brief Construct a new TrainInstance object
-	 * 
-	 * @param r Pointer to the route this train follows
-	 * @param startTime Start time in seconds since midnight
+	 * @brief Construct a train instance for one route departure.
+	 * @param route Pointer to the route this train follows; must remain valid.
+	 * @param startTime Start time in seconds since midnight.
 	 */
-	TrainInstance(const TrainRoute* r, uint32_t startTime) : route(r), startTimeSeconds(startTime) {}
+	TrainInstance(const TrainRoute* route, uint32_t startTime) : route(route), startTimeSeconds(startTime) {}
 
 	/**
-	 * @brief Get the current block number for this train
-	 * 
-	 * @param currentSecondsSinceMidnight Current time in seconds since midnight
-	 * @return uint16_t Current block number
+	 * @brief Return this train's current route block.
+	 * @param currentSecondsSinceMidnight Current time in seconds since midnight.
+	 * @return Current block number from the referenced route.
 	 */
 	uint16_t getCurrentBlock(uint32_t currentSecondsSinceMidnight) const {
 		// Calculate elapsed time since train start as signed seconds.
@@ -144,14 +188,12 @@ class TrainInstance {
 	}
 
 	/**
-	 * @brief Check if this train is currently visible
-	 * 
-	 * A train is visible when the current time is between its first and last
-	 * timetable entries (exclusive of endpoints).
-	 * 
-	 * @param currentSecondsSinceMidnight Current time in seconds since midnight
-	 * @return true if train is visible
-	 * @return false if train is not visible
+	 * @brief Check whether the train is between its route endpoints.
+	 *
+	 * Visibility is true strictly between the first and last timetable offsets.
+	 *
+	 * @param currentSecondsSinceMidnight Current time in seconds since midnight.
+	 * @return true when the train should be rendered, otherwise false.
 	 */
 	bool isVisible(uint32_t currentSecondsSinceMidnight) const {
 		// Get the first and last entry offsets
@@ -175,27 +217,24 @@ class TrainInstance {
 	}
 
 	/**
-	 * @brief Get the color used to display this train
-	 * 
-	 * @return CRGB color value for LED visualization
+	 * @brief Return the route color used to display this train.
+	 * @return RGB color value for LED visualization.
 	 */
 	CRGB getColor() const {
 		return route->getColor();
 	}
 
 	/**
-	 * @brief Get the start time for this train
-	 * 
-	 * @return uint32_t Start time in seconds since midnight
+	 * @brief Return this train's scheduled start time.
+	 * @return Start time in seconds since midnight.
 	 */
 	uint32_t getStartTimeSeconds() const {
 		return startTimeSeconds;
 	}
 
 	/**
-	 * @brief Get the route this train follows
-	 * 
-	 * @return const TrainRoute* Pointer to route object
+	 * @brief Return the referenced route without transferring ownership.
+	 * @return Pointer to the route object.
 	 */
 	const TrainRoute* getRoute() const {
 		return route;
@@ -203,9 +242,8 @@ class TrainInstance {
 };
 
 /**
- * @brief Print information about loaded routes and memory usage
- * 
- * @param routes Vector of pointers to loaded routes
+ * @brief Print the number of loaded routes and an approximate memory total.
+ * @param routes Non-owning collection of route pointers.
  */
 inline void printTimetableSize(RouteSpan<const TrainRoute*> routes) {
 	uint32_t bytes = 0;
@@ -217,11 +255,15 @@ inline void printTimetableSize(RouteSpan<const TrainRoute*> routes) {
 }
 
 #if defined(MEL_V1_0_0)
-	#include "MEL_V1_0_0_Timetable.h"
+// Generated route data for the Melbourne V1 board.
+#include "timetables/MEL_V1_0_0_Timetable.h"
 #elif defined(WLG_V1_0_0)
-	#include "WLG_V1_0_0_Timetable.h"
+// Generated route data for the Wellington V1 board.
+#include "timetables/WLG_V1_0_0_Timetable.h"
 #elif defined(AKL_V1_0_0)
-	#include "AKL_V1_0_0_Timetable.h"
+// Generated route data for the Auckland V1 board.
+#include "timetables/AKL_V1_0_0_Timetable.h"
 #elif defined(AKL_V1_1_0)
-	#include "AKL_V1_1_0_Timetable.h"
+// Generated route data for the Auckland V1.1 board.
+#include "timetables/AKL_V1_1_0_Timetable.h"
 #endif

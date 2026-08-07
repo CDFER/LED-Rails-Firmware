@@ -29,7 +29,7 @@ AttributeMacros:
   - __capability
 BasedOnStyle: LLVM
 BinPackArguments: false
-BinPackParameters: true
+BinPackParameters: false
 BitFieldColonSpacing: Both
 BraceWrapping:
   AfterCaseLabel: false
@@ -60,7 +60,7 @@ BreakConstructorInitializers: BeforeColon
 BreakConstructorInitializersBeforeComma: false
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: true
-ColumnLimit: 130
+ColumnLimit: 120
 CommentPragmas: ""
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
@@ -82,26 +82,22 @@ IfMacros:
   - KJ_IF_MAYBE
 IncludeBlocks: Preserve
 IncludeCategories:
-  - Regex: '^"(llvm|llvm-c|clang|clang-c)/'
-    Priority: 2
-    SortPriority: 0
-    CaseSensitive: false
-  - Regex: '^(<|"(gtest|gmock|isl|json)/)'
-    Priority: 3
-    SortPriority: 0
-    CaseSensitive: false
-  - Regex: ".*"
+  - Regex: '^<'
     Priority: 1
     SortPriority: 0
     CaseSensitive: false
-IncludeIsMainRegex: ""
+  - Regex: '^"'
+    Priority: 2
+    SortPriority: 0
+    CaseSensitive: false
+IncludeIsMainRegex: '([-_](test|unittest))?$'
 IncludeIsMainSourceRegex: ""
 IndentAccessModifiers: false
 IndentCaseBlocks: true
 IndentCaseLabels: true
 IndentExternBlock: Indent
 IndentGotoLabels: false
-IndentPPDirectives: BeforeHash # Kept as BeforeHash despite issues reported
+IndentPPDirectives: None
 IndentRequires: true
 IndentWidth: 4
 IndentWrappedFunctionNames: false
@@ -182,7 +178,7 @@ StatementMacros:
   - QT_REQUIRE_VERSION
 TabWidth: 4
 UseCRLF: false
-UseTab: Always
+UseTab: ForIndentation
 WhitespaceSensitiveMacros:
   - STRINGIZE
   - PP_STRINGIZE

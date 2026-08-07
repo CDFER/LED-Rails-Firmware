@@ -60,3 +60,12 @@ PCB/jlcpcb/
 # Unfinished or abandoned
 *AKL CRL*
 *AKL CRL Testing*
+
+# Web Installer Temp Files
+_site
+Web Installer/node_modules/
+Web Installer/dist/
+Device Web/node_modules/
+Device Web/dist/
+*__pycache__*
+*.pyc

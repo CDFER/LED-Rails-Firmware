@@ -13,6 +13,7 @@
 #include <ImprovWiFiLibrary.h>
 #include <Preferences.h>
 #include <WiFi.h>
+#include <atomic>
 #include <esp_sntp.h>
 #include <memory>
 #include <mutex>
@@ -103,11 +104,28 @@ class NetworkManager {
 		return wifiConnected;
 	}
 
+	/**
+	 * @brief Add or update a saved WiFi network without exposing its password.
+	 * @return True when the supplied UTF-8 credential lengths are valid.
+	 */
+	bool saveWiFiNetwork(const String& ssid, const String& password);
+
+	/**
+	 * @brief Remove a saved WiFi network by SSID.
+	 * @return True when a saved network was removed.
+	 */
+	bool forgetWiFiNetwork(const String& ssid);
+
+	/** @brief Return the saved SSIDs without their passwords. */
+	std::vector<String> getSavedWiFiNetworkNames();
+
   private:
 	SavedWiFiNetwork savedWiFiNetworks[MAX_WIFI_NETWORKS];  ///< Saved credentials tried during reconnection.
+	std::mutex wifiNetworksMutex;                           ///< Protects saved WiFi credentials across tasks.
 	uint8_t wifiNetworkIndex = 0;                           ///< Index of the credential currently being attempted.
 	uint16_t wifiAttemptedMask = 0;                         ///< Credentials already tried in the current retry cycle.
 	TickType_t lastWiFiConnectAttempt = 0;                  ///< Tick count of the last connection attempt or scan.
+	std::atomic<bool> wifiReconnectRequested{ false };      ///< Requests a reconnect from a web API update.
 
 	ImprovWiFi improvSerial;  ///< Improv WiFi serial provisioning instance.
 	AsyncWebServer server;    ///< Asynchronous configuration web server on port 80.
@@ -116,7 +134,10 @@ class NetworkManager {
 	uint8_t failedFetchCount = 0;  ///< Consecutive map-fetch failures.
 	uint8_t updateInterval = 30;   ///< Map-fetch interval in seconds from the server response.
 	time_t nextFetchTime = 0;      ///< Unix timestamp at which the next map fetch is due.
-	uint16_t fetchOffset = 0;      ///< Random millisecond offset used to spread server load.
+	time_t lastFetchTime = 0;      ///< Unix timestamp of the last successful map fetch.
+	TickType_t fetchOffset = 0;    ///< Random ticks offset used to spread server load.
+	TickType_t fetchDueTick = 0;   ///< Monotonic deadline for the currently pending map fetch.
+	bool fetchScheduled = false;   ///< True when a fetch deadline has been scheduled.
 
 	NetworkMode currentMode = NetworkMode::REALTIME;  ///< Latest requested network mode.
 	bool statusLedsEnabled = true;                    ///< Whether status LEDs may be displayed.
@@ -143,6 +164,8 @@ class NetworkManager {
 	 * @brief Register HTTP handlers and start the asynchronous web server.
 	 */
 	void setupWebServer();
+	/** @brief Schedule a saved-network reconnect from the network task. */
+	void requestWiFiReconnect();
 
 	/**
 	 * @brief Scan or attempt saved credentials when WiFi is disconnected.

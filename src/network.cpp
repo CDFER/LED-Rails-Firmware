@@ -1,5 +1,11 @@
 #include "network.h"
+#include <cmath>
+#include <cstdlib>
+#include "brightness.h"
+#include "dailySchedule.h"
+#include "deviceWebAssets.h"
 #include "ledStorageSync.h"
+#include "modeManager.h"
 #include "statusLeds.h"
 
 NetworkManager network;
@@ -10,14 +16,14 @@ struct LegacySavedWiFiNetwork {
 	char password[MAX_PASS_LEN];
 };
 
-void copyUtf8(char* destination, size_t destinationSize, const char* source) {
+void copyUtf8(char* destination, size_t destinationSize, const char* source, size_t sourceSize) {
 	if (destinationSize == 0) {
 		return;
 	}
 
-	size_t length = strnlen(source, destinationSize - 1);
-	if (source[length] != '\0') {
-		length = destinationSize - 1;
+	const size_t sourceLength = strnlen(source, sourceSize);
+	size_t length = min(sourceLength, destinationSize - 1);
+	if (length < sourceLength) {
 		while (length > 0 && (static_cast<uint8_t>(source[length]) & 0xC0) == 0x80) {
 			--length;
 		}
@@ -26,68 +32,51 @@ void copyUtf8(char* destination, size_t destinationSize, const char* source) {
 	memcpy(destination, source, length);
 	destination[length] = '\0';
 }
+
+bool serveDeviceWebAsset(AsyncWebServerRequest* request, const String& requestedPath) {
+	const String assetPath = requestedPath == "/index.html" ? "/" : requestedPath;
+	for (size_t assetIndex = 0; assetIndex < deviceWebAssets::assetCount; assetIndex++) {
+		const DeviceWebAsset& asset = deviceWebAssets::assets[assetIndex];
+		if (assetPath != asset.path) {
+			continue;
+		}
+
+		AsyncWebServerResponse* response = request->beginResponse(200, asset.contentType, asset.data, asset.size);
+		response->addHeader("Content-Encoding", "gzip");
+		response->addHeader("Cache-Control", assetPath == "/" ? "no-store" : "public, max-age=31536000, immutable");
+		request->send(response);
+		return true;
+	}
+	return false;
+}
+
+bool parseFloatParameter(AsyncWebServerRequest* request, const String& name, float& value) {
+	const AsyncWebParameter* parameter = request->getParam(name.c_str(), true);
+	if (parameter == nullptr) {
+		return false;
+	}
+
+	const String text = parameter->value();
+	const char* textStart = text.c_str();
+	char* textEnd = nullptr;
+	const float parsedValue = strtof(textStart, &textEnd);
+	if (textEnd == textStart || *textEnd != '\0' || !std::isfinite(parsedValue)) {
+		return false;
+	}
+
+	value = parsedValue;
+	return true;
+}
+
+bool isTickDeadlineReached(TickType_t currentTick, TickType_t deadline) {
+	return static_cast<int32_t>(currentTick - deadline) >= 0;
+}
 }
 
 static void onNtpTimeSyncCallback(struct timeval* timeValue) {
 	(void)timeValue;
 	Serial.println("Time synced via NTP");
 }
-
-const char index_html[] PROGMEM = R"=====(
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LED Rails Device</title>
-  <style>
-    body {
-      background: #222;
-      color: #fff;
-      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      background: #222;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      padding: 32px 24px;
-      max-width: 600px;
-      width: 90%;
-      text-align: center;
-    }
-    h1 {
-      color: #fff;
-      font-family: inherit;
-      margin-bottom: 16px;
-    }
-    h2 {
-      color: #fff;
-      font-family: inherit;
-      font-weight: 400;
-      margin-top: 0;
-    }
-    @media (max-width: 600px) {
-      .container { padding: 18px 4px; }
-      h1 { font-size: 1.6em; }
-      h2 { font-size: 1.1em; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Kea Studios</h1>
-    <h2>This is just an empty page for now, in the future settings will be added here...</h2>
-  </div>
-</body>
-</html>
-)=====";
 
 NetworkManager::NetworkManager() : improvSerial(&Serial), server(80) {
 	// Initialize saved WiFi networks to empty
@@ -111,14 +100,21 @@ NetworkManager::NetworkManager() : improvSerial(&Serial), server(80) {
 }
 
 void NetworkManager::exportWiFi() {
+	SavedWiFiNetwork savedNetworks[MAX_WIFI_NETWORKS] = {};
+	{
+		std::lock_guard<std::mutex> lock(wifiNetworksMutex);
+		memcpy(savedNetworks, savedWiFiNetworks, sizeof(savedNetworks));
+	}
+
 	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	preferences.begin("wifi");
-	preferences.putBytes("wifi", savedWiFiNetworks, sizeof(savedWiFiNetworks));
+	preferences.putBytes("wifi", savedNetworks, sizeof(savedNetworks));
 	preferences.end();
 	xSemaphoreGive(fastLEDPreferencesMutex);
 }
 
 void NetworkManager::importWiFi() {
+	SavedWiFiNetwork loadedNetworks[MAX_WIFI_NETWORKS] = {};
 	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	preferences.begin("wifi", true);
 	const size_t storedSize = preferences.getBytesLength("wifi");
@@ -126,22 +122,89 @@ void NetworkManager::importWiFi() {
 		LegacySavedWiFiNetwork legacyNetworks[MAX_WIFI_NETWORKS] = {};
 		preferences.getBytes("wifi", legacyNetworks, sizeof(legacyNetworks));
 		for (int networkIndex = 0; networkIndex < MAX_WIFI_NETWORKS; networkIndex++) {
-			copyUtf8(savedWiFiNetworks[networkIndex].ssid,
-			         sizeof(savedWiFiNetworks[networkIndex].ssid),
-			         legacyNetworks[networkIndex].ssid);
-			copyUtf8(savedWiFiNetworks[networkIndex].password,
-			         sizeof(savedWiFiNetworks[networkIndex].password),
-			         legacyNetworks[networkIndex].password);
+			copyUtf8(loadedNetworks[networkIndex].ssid,
+			         sizeof(loadedNetworks[networkIndex].ssid),
+			         legacyNetworks[networkIndex].ssid,
+			         sizeof(legacyNetworks[networkIndex].ssid));
+			copyUtf8(loadedNetworks[networkIndex].password,
+			         sizeof(loadedNetworks[networkIndex].password),
+			         legacyNetworks[networkIndex].password,
+			         sizeof(legacyNetworks[networkIndex].password));
 		}
 	} else {
-		preferences.getBytes("wifi", savedWiFiNetworks, sizeof(savedWiFiNetworks));
+		preferences.getBytes("wifi", loadedNetworks, sizeof(loadedNetworks));
 		for (int networkIndex = 0; networkIndex < MAX_WIFI_NETWORKS; networkIndex++) {
-			savedWiFiNetworks[networkIndex].ssid[MAX_SSID_LEN] = '\0';
-			savedWiFiNetworks[networkIndex].password[MAX_PASS_LEN] = '\0';
+			loadedNetworks[networkIndex].ssid[MAX_SSID_LEN] = '\0';
+			loadedNetworks[networkIndex].password[MAX_PASS_LEN] = '\0';
 		}
 	}
 	preferences.end();
 	xSemaphoreGive(fastLEDPreferencesMutex);
+
+	std::lock_guard<std::mutex> lock(wifiNetworksMutex);
+	memcpy(savedWiFiNetworks, loadedNetworks, sizeof(savedWiFiNetworks));
+}
+
+bool NetworkManager::saveWiFiNetwork(const String& ssid, const String& password) {
+	if (ssid.isEmpty() || ssid.length() > MAX_SSID_LEN || password.length() > MAX_PASS_LEN) {
+		return false;
+	}
+
+	{
+		std::lock_guard<std::mutex> lock(wifiNetworksMutex);
+		int existingNetworkIndex = -1;
+		for (int networkIndex = 0; networkIndex < MAX_WIFI_NETWORKS; networkIndex++) {
+			if (ssid == savedWiFiNetworks[networkIndex].ssid) {
+				existingNetworkIndex = networkIndex;
+				break;
+			}
+		}
+
+		const int firstNetworkToShift = existingNetworkIndex >= 0 ? existingNetworkIndex : MAX_WIFI_NETWORKS - 1;
+		for (int networkIndex = firstNetworkToShift; networkIndex > 0; networkIndex--) {
+			savedWiFiNetworks[networkIndex] = savedWiFiNetworks[networkIndex - 1];
+		}
+
+		copyUtf8(savedWiFiNetworks[0].ssid, sizeof(savedWiFiNetworks[0].ssid), ssid.c_str(), ssid.length());
+		copyUtf8(
+		    savedWiFiNetworks[0].password, sizeof(savedWiFiNetworks[0].password), password.c_str(), password.length());
+	}
+
+	exportWiFi();
+	return true;
+}
+
+bool NetworkManager::forgetWiFiNetwork(const String& ssid) {
+	bool networkRemoved = false;
+	{
+		std::lock_guard<std::mutex> lock(wifiNetworksMutex);
+		for (int networkIndex = 0; networkIndex < MAX_WIFI_NETWORKS; networkIndex++) {
+			if (ssid == savedWiFiNetworks[networkIndex].ssid) {
+				for (int followingIndex = networkIndex; followingIndex < MAX_WIFI_NETWORKS - 1; followingIndex++) {
+					savedWiFiNetworks[followingIndex] = savedWiFiNetworks[followingIndex + 1];
+				}
+				memset(&savedWiFiNetworks[MAX_WIFI_NETWORKS - 1], 0, sizeof(SavedWiFiNetwork));
+				networkRemoved = true;
+				break;
+			}
+		}
+	}
+
+	if (networkRemoved) {
+		exportWiFi();
+	}
+	return networkRemoved;
+}
+
+std::vector<String> NetworkManager::getSavedWiFiNetworkNames() {
+	std::vector<String> networkNames;
+	std::lock_guard<std::mutex> lock(wifiNetworksMutex);
+	for (const SavedWiFiNetwork& savedNetwork : savedWiFiNetworks) {
+		if (savedNetwork.ssid[0] != '\0') {
+			networkNames.emplace_back(savedNetwork.ssid);
+		}
+	}
+	return networkNames;
 }
 
 void NetworkManager::onImprovWiFiErrorCallback(ImprovTypes::Error error) {
@@ -152,18 +215,7 @@ void NetworkManager::onImprovWiFiErrorCallback(ImprovTypes::Error error) {
 }
 
 void NetworkManager::onImprovWiFiConnectedCallback(const char* ssid, const char* password) {
-	// Move the networks all down one position
-	for (int networkIndex = MAX_WIFI_NETWORKS - 1; networkIndex > 0; networkIndex--) {
-		strncpy(savedWiFiNetworks[networkIndex].ssid, savedWiFiNetworks[networkIndex - 1].ssid, MAX_SSID_LEN);
-		strncpy(savedWiFiNetworks[networkIndex].password, savedWiFiNetworks[networkIndex - 1].password, MAX_PASS_LEN);
-	}
-
-	// Save the new network at the top
-	copyUtf8(savedWiFiNetworks[0].ssid, sizeof(savedWiFiNetworks[0].ssid), ssid);
-	copyUtf8(savedWiFiNetworks[0].password, sizeof(savedWiFiNetworks[0].password), password);
-
-	// Save the updated WiFi networks to Preferences
-	exportWiFi();
+	saveWiFiNetwork(String(ssid), String(password));
 
 	// Restart the web server
 	server.end();
@@ -171,24 +223,228 @@ void NetworkManager::onImprovWiFiConnectedCallback(const char* ssid, const char*
 }
 
 void NetworkManager::setupWebServer() {
-	server.on("/favicon.ico", [](AsyncWebServerRequest* request) {
-		request->send(404);
+	server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
+		serveDeviceWebAsset(request, "/");
 	});
 
-	// Serve Basic HTML Page
-	server.on("/", HTTP_ANY, [](AsyncWebServerRequest* request) {
-		AsyncWebServerResponse* response = request->beginResponse(200, "text/html", index_html);
-		response->addHeader(
-		    "Cache-Control", "public,max-age=31536000");  // save this file to cache for 1 year (unless you refresh)
+	server.on("/api/status", HTTP_GET, [](AsyncWebServerRequest* request) {
+		JsonDocument document;
+		JsonObject device = document["device"].to<JsonObject>();
+		device["city"] = CITY_CODE;
+		device["firmware"] = FIRMWARE;
+		device["version"] = FIRMWARE_VERSION;
+		device["board"] = ARDUINO_BOARD;
+		device["uptime"] = millis();
+
+		JsonObject wifi = document["wifi"].to<JsonObject>();
+		const bool wifiIsConnected = WiFi.status() == WL_CONNECTED;
+		wifi["connected"] = wifiIsConnected;
+		if (wifiIsConnected) {
+			wifi["ssid"] = WiFi.SSID();
+			wifi["rssi"] = WiFi.RSSI();
+		}
+		JsonArray savedNetworks = wifi["savedNetworks"].to<JsonArray>();
+		for (const String& savedNetwork : network.getSavedWiFiNetworkNames()) {
+			savedNetworks.add(savedNetwork);
+		}
+
+		JsonObject leds = document["leds"].to<JsonObject>();
+		leds["on"] = brightnessManager.isOn();
+		leds["brightness"] = brightnessManager.getBrightness();
+		leds["minimumBrightness"] = MIN_BRIGHTNESS;
+		leds["maximumBrightness"] = MAX_BRIGHTNESS;
+#if defined(LIGHT_SENSOR)
+		leds["automaticBrightness"] = true;
+		leds["ambientLux"] = brightnessManager.getAmbientLux();
+		leds["ambientBrightness"] = brightnessManager.getAmbientBrightness();
+		BrightnessCurve curve;
+		brightnessManager.getBrightnessCurve(curve);
+		JsonArray curveValues = leds["curve"].to<JsonArray>();
+		for (int bucketNumber = 0; bucketNumber < BRIGHTNESS_BUCKET_COUNT; bucketNumber++) {
+			JsonObject curvePoint = curveValues.add<JsonObject>();
+			curvePoint["lux"] = curve.buckets[bucketNumber].luxMax;
+			curvePoint["brightness"] = curve.buckets[bucketNumber].brightnessMax * 100.0f;
+		}
+#else
+		leds["automaticBrightness"] = false;
+#endif
+
+		JsonObject mode = document["mode"].to<JsonObject>();
+		const Mode currentMode = modeManager.getCurrentMode();
+		mode["current"] = currentMode;
+		mode["name"] = ModeManager::getModeName(currentMode);
+		JsonArray availableModes = mode["available"].to<JsonArray>();
+		for (int modeIndex = REALTIME_MODE; modeIndex < NUM_MODES; modeIndex++) {
+			JsonObject availableMode = availableModes.add<JsonObject>();
+			availableMode["id"] = modeIndex;
+			availableMode["name"] = ModeManager::getModeName(static_cast<Mode>(modeIndex));
+		}
+
+		std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT> scheduleEntries;
+		dailyScheduleManager.getSchedule(scheduleEntries);
+		JsonArray schedule = document["schedule"].to<JsonArray>();
+		for (const DailyScheduleEntry& entry : scheduleEntries) {
+			JsonObject scheduleEntry = schedule.add<JsonObject>();
+			scheduleEntry["enabled"] = entry.enabled;
+			scheduleEntry["minute"] = entry.minuteOfDay;
+			scheduleEntry["on"] = entry.turnOn;
+			scheduleEntry["mode"] = entry.mode;
+		}
+
+		AsyncResponseStream* response = request->beginResponseStream("application/json");
+		response->addHeader("Cache-Control", "no-store");
+		serializeJson(document, *response);
 		request->send(response);
-		Serial.println("Served Basic HTML Page");
+	});
+
+	server.on("/api/led/power", HTTP_POST, [](AsyncWebServerRequest* request) {
+		const AsyncWebParameter* powerParameter = request->getParam("on", true);
+		if (powerParameter == nullptr) {
+			request->send(400, "application/json", "{\"error\":\"Missing power state\"}");
+			return;
+		}
+
+		const String requestedState = powerParameter->value();
+		if (requestedState != "0" && requestedState != "1") {
+			request->send(400, "application/json", "{\"error\":\"Invalid power state\"}");
+			return;
+		}
+
+		brightnessManager.setPower(requestedState == "1");
+		request->send(202, "application/json", "{\"ok\":true}");
+	});
+
+	server.on("/api/schedule", HTTP_POST, [](AsyncWebServerRequest* request) {
+		std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT> requestedSchedule;
+		for (uint8_t entryIndex = 0; entryIndex < DAILY_SCHEDULE_ENTRY_COUNT; entryIndex++) {
+			const String prefix = "entry" + String(entryIndex);
+			const AsyncWebParameter* enabledParameter = request->getParam((prefix + "Enabled").c_str(), true);
+			const AsyncWebParameter* minuteParameter = request->getParam((prefix + "Minute").c_str(), true);
+			const AsyncWebParameter* onParameter = request->getParam((prefix + "On").c_str(), true);
+			const AsyncWebParameter* modeParameter = request->getParam((prefix + "Mode").c_str(), true);
+			if (enabledParameter == nullptr || minuteParameter == nullptr || onParameter == nullptr
+			    || modeParameter == nullptr) {
+				request->send(400, "application/json", "{\"error\":\"All daily schedule entries are required\"}");
+				return;
+			}
+
+			char* minuteEnd = nullptr;
+			char* modeEnd = nullptr;
+			const String minuteText = minuteParameter->value();
+			const String modeText = modeParameter->value();
+			const long minute = strtol(minuteText.c_str(), &minuteEnd, 10);
+			const long mode = strtol(modeText.c_str(), &modeEnd, 10);
+			const String enabled = enabledParameter->value();
+			const String turnOn = onParameter->value();
+			if ((enabled != "0" && enabled != "1") || (turnOn != "0" && turnOn != "1")
+			    || minuteEnd == minuteText.c_str() || *minuteEnd != '\0' || modeEnd == modeText.c_str()
+			    || *modeEnd != '\0' || minute < 0 || minute >= 24 * 60 || mode < REALTIME_MODE || mode >= NUM_MODES) {
+				request->send(400, "application/json", "{\"error\":\"Invalid daily schedule entry\"}");
+				return;
+			}
+
+			requestedSchedule[entryIndex] = {
+				enabled == "1", static_cast<uint16_t>(minute), turnOn == "1", static_cast<Mode>(mode)
+			};
+		}
+
+		if (!dailyScheduleManager.requestSchedule(requestedSchedule)) {
+			request->send(400, "application/json", "{\"error\":\"Enabled entries must be in time order\"}");
+			return;
+		}
+		request->send(202, "application/json", "{\"ok\":true}");
+	});
+
+#if defined(LIGHT_SENSOR)
+	server.on("/api/led/curve", HTTP_POST, [](AsyncWebServerRequest* request) {
+		BrightnessCurve requestedCurve;
+		for (int bucketNumber = 0; bucketNumber < BRIGHTNESS_BUCKET_COUNT; bucketNumber++) {
+			const String luxName = "lux" + String(bucketNumber);
+			const String brightnessName = "brightness" + String(bucketNumber);
+			float lux = 0.0f;
+			float brightnessPercent = 0.0f;
+			if (!parseFloatParameter(request, luxName, lux)
+			    || !parseFloatParameter(request, brightnessName, brightnessPercent)) {
+				request->send(400, "application/json", "{\"error\":\"All curve points are required\"}");
+				return;
+			}
+
+			requestedCurve.buckets[bucketNumber] = { lux, brightnessPercent / 100.0f };
+		}
+
+		if (!brightnessManager.requestBrightnessCurve(requestedCurve)) {
+			request->send(400, "application/json", "{\"error\":\"Curve points must increase in lux and brightness\"}");
+			return;
+		}
+
+		request->send(202, "application/json", "{\"ok\":true}");
+	});
+#else
+	server.on("/api/led/brightness", HTTP_POST, [](AsyncWebServerRequest* request) {
+		const AsyncWebParameter* directionParameter = request->getParam("direction", true);
+		if (directionParameter == nullptr) {
+			request->send(400, "application/json", "{\"error\":\"Missing brightness direction\"}");
+			return;
+		}
+
+		const String direction = directionParameter->value();
+		if (direction == "up") {
+			brightnessManager.increase();
+		} else if (direction == "down") {
+			brightnessManager.decrease();
+		} else {
+			request->send(400, "application/json", "{\"error\":\"Invalid brightness direction\"}");
+			return;
+		}
+
+		request->send(202, "application/json", "{\"ok\":true}");
+	});
+#endif
+
+	server.on("/api/mode", HTTP_POST, [](AsyncWebServerRequest* request) {
+		const AsyncWebParameter* modeParameter = request->getParam("mode", true);
+		if (modeParameter == nullptr) {
+			request->send(400, "application/json", "{\"error\":\"Missing mode\"}");
+			return;
+		}
+
+		const String requestedModeValue = modeParameter->value();
+		const char* modeText = requestedModeValue.c_str();
+		char* end = nullptr;
+		const long requestedMode = strtol(modeText, &end, 10);
+		if (end == modeText || *end != '\0' || requestedMode < REALTIME_MODE || requestedMode >= NUM_MODES) {
+			request->send(400, "application/json", "{\"error\":\"Invalid mode\"}");
+			return;
+		}
+
+		modeManager.requestMode(static_cast<Mode>(requestedMode));
+		request->send(202, "application/json", "{\"ok\":true}");
+	});
+
+	server.on("/api/wifi/forget", HTTP_POST, [this](AsyncWebServerRequest* request) {
+		const AsyncWebParameter* ssidParameter = request->getParam("ssid", true);
+		if (ssidParameter == nullptr || !forgetWiFiNetwork(ssidParameter->value())) {
+			request->send(404, "application/json", "{\"error\":\"Saved network not found\"}");
+			return;
+		}
+
+		requestWiFiReconnect();
+		request->send(202, "application/json", "{\"ok\":true}");
 	});
 
 	server.onNotFound([](AsyncWebServerRequest* request) {
+		if (request->method() == HTTP_GET && !request->url().startsWith("/api/")
+		    && serveDeviceWebAsset(request, request->url())) {
+			return;
+		}
 		request->send(404);
 	});
 
 	server.begin();
+}
+
+void NetworkManager::requestWiFiReconnect() {
+	wifiReconnectRequested.store(true);
 }
 
 void NetworkManager::begin() {
@@ -223,13 +479,7 @@ void NetworkManager::begin() {
 
 	setupWebServer();
 
-	bool savedWiFiFound = false;
-	for (int savedNetworkIndex = 0; savedNetworkIndex < MAX_WIFI_NETWORKS; savedNetworkIndex++) {
-		if (strlen(savedWiFiNetworks[savedNetworkIndex].ssid) > 0) {
-			savedWiFiFound = true;
-			break;
-		}
-	}
+	const bool savedWiFiFound = !getSavedWiFiNetworkNames().empty();
 
 	if (savedWiFiFound) {
 		Serial.println("WiFi credentials found...");
@@ -242,12 +492,12 @@ void NetworkManager::begin() {
 #if defined(BETA_BUILD)
 	fetchOffset = 0;  // No need for random offset in beta builds
 #else
-	fetchOffset = random(0, 999);  // Random delay between 0 and 999 ms to reduce server load
+	fetchOffset = static_cast<TickType_t>(random(static_cast<long>(xPortGetTickRateHz())));
 #endif
 
 	// Create tasks
-	xTaskCreatePinnedToCore(improvSerialTask, "Improv Serial Task", 4096, this, 3, nullptr, ARDUINO_RUNNING_CORE);
-	xTaskCreatePinnedToCore(networkTask, "Network Task", 16384, this, 2, nullptr, ARDUINO_RUNNING_CORE);
+	xTaskCreatePinnedToCore(improvSerialTask, "Improv Serial Task", 4096, this, 4, nullptr, ARDUINO_RUNNING_CORE);
+	xTaskCreatePinnedToCore(networkTask, "Network Task", 16384, this, 3, nullptr, ARDUINO_RUNNING_CORE);
 }
 
 void NetworkManager::improvSerialTask(void* pvParameters) {
@@ -264,20 +514,26 @@ String NetworkManager::fetchMapUpdateJson() {
 	HTTPClient httpClient;
 	const String& url = serverUrls[currentServerIndex];
 
+	// Avoid stale keep-alive sockets and bound both connection and response reads.
+	httpClient.setReuse(false);
+	httpClient.setConnectTimeout(5000);
+	httpClient.setTimeout(5000);
 	httpClient.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
-	httpClient.begin(url);
-
-	int httpCode = httpClient.GET();
-	if (httpCode == HTTP_CODE_OK) {
-		String responseBody = httpClient.getString();
-		httpClient.end();
-		if (responseBody.length() > 0) {
-			failedFetchCount = 0;
-			return responseBody;
-		}
-		Serial.printf("Fetch from %s: empty payload\n", url.c_str());
+	if (!httpClient.begin(url)) {
+		Serial.printf("Fetch from %s: unable to begin request\n", url.c_str());
 	} else {
-		Serial.printf("Fetch from %s error: %i\n", url.c_str(), httpCode);
+		int httpCode = httpClient.GET();
+		if (httpCode == HTTP_CODE_OK) {
+			String responseBody = httpClient.getString();
+			httpClient.end();
+			if (responseBody.length() > 0) {
+				failedFetchCount = 0;
+				return responseBody;
+			}
+			Serial.printf("Fetch from %s: empty payload\n", url.c_str());
+		} else {
+			Serial.printf("Fetch from %s error: %i\n", url.c_str(), httpCode);
+		}
 		httpClient.end();
 	}
 
@@ -299,6 +555,7 @@ time_t NetworkManager::parseLedMapUpdateJson(const String& downloadedJson) {
 
 	if (baseTimestamp + updateInterval <= nextFetchTime) {
 		Serial.println("Fetched the same data twice");
+		lastFetchTime = time(nullptr);
 		return baseTimestamp;
 	}
 	nextFetchTime = baseTimestamp + updateInterval;
@@ -339,6 +596,8 @@ time_t NetworkManager::parseLedMapUpdateJson(const String& downloadedJson) {
 		std::lock_guard<std::mutex> lock(mapDataMutex);
 		currentMapData = newMapData;
 	}
+
+	lastFetchTime = time(nullptr);
 
 	return baseTimestamp;
 }
@@ -393,6 +652,12 @@ void NetworkManager::networkTask(void* pvParameters) {
 	NetworkManager* manager = static_cast<NetworkManager*>(pvParameters);
 
 	while (true) {
+		if (manager->wifiReconnectRequested.exchange(false)) {
+			WiFi.disconnect();
+			manager->lastWiFiConnectAttempt = 0;
+			manager->wifiAttemptedMask = 0;
+		}
+
 		manager->updateStatusLeds();
 
 		if (WiFi.status() == WL_CONNECTED) {
@@ -412,59 +677,93 @@ void NetworkManager::updateStatusLeds() {
 
 	if (!statusLedsEnabled || currentMode == NetworkMode::OFF) {
 		statusLeds.setState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
-		return;
-	}
 
-	if (currentMode == NetworkMode::TIME_ONLY) {
+	} else if (currentMode == NetworkMode::TIME_ONLY) {
+		statusLeds.setState(SERVER_LED_PIN, LED_OFF);
 		if (wifiConnected) {
-			statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_OFF);
+			statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN);
 		} else if (millis() > 60 * 1000) {
-			statusLeds.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+			statusLeds.setState(WIFI_LED_PIN, LED_ON_RED);
+		} else {
+			statusLeds.setState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
 		}
+
 	} else if (currentMode == NetworkMode::REALTIME) {
 		if (wifiConnected) {
+			statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN);
 			if (failedFetchCount > 3 + serverUrls.size()) {
-				statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_RED);
-			} else if (epoch > nextFetchTime + updateInterval) {
-				statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
+				statusLeds.setState(SERVER_LED_PIN, LED_ON_RED);
+			} else if (lastFetchTime == 0 || failedFetchCount > 3) {
+				statusLeds.setState(SERVER_LED_PIN, LED_BLINK_GREEN_FAST);
 			} else {
-				statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN, SERVER_LED_PIN, LED_ON_GREEN);
+				statusLeds.setState(SERVER_LED_PIN, LED_ON_GREEN);
 			}
 		} else {
+			statusLeds.setState(SERVER_LED_PIN, LED_OFF);
 			if (millis() > 60 * 1000) {
-				statusLeds.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_OFF);
+				statusLeds.setState(WIFI_LED_PIN, LED_ON_RED);
+			} else {
+				statusLeds.setState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
 			}
 		}
 	}
 }
 
 void NetworkManager::manageLedMapApi() {
-	time_t epoch = time(nullptr);  // Get current time
-
-	// Update nextFetchTime to account for time drift
-	nextFetchTime = constrain(nextFetchTime, epoch - 1, epoch + updateInterval);
-
-	if (epoch > nextFetchTime && millis() % 1000 > fetchOffset) {
-		time_t timeOffset = 0;
-		String downloadedJson = fetchMapUpdateJson();
-		if (downloadedJson.length() > 0) {
-			timeOffset = epoch - parseLedMapUpdateJson(downloadedJson);
-			nextFetchTime = constrain(nextFetchTime, epoch + 2, epoch + updateInterval);
-		} else {
-			if (failedFetchCount > 3 + serverUrls.size()) {
-				Serial.println("All servers failed to provide data.");
-			}
-		}
-
-		// Get current time incl ms HH:MM:SS.mmm
-		Serial.printf("%s fetchDelay:%2is size:%1.1fkiB MCU:%2.0f°C WiFi:%2idBm\n",
-		              getFormattedTimeWithMs(),
-		              timeOffset,
-		              downloadedJson.length() / 1024.0,
-		              temperatureRead(),
-		              WiFi.RSSI());
-		Serial.flush();
+	const time_t epoch = time(nullptr);
+	const TickType_t currentTick = xTaskGetTickCount();
+	const time_t minimumFetchInterval = 2;
+	const time_t maximumFetchTime = epoch + max<time_t>(updateInterval, minimumFetchInterval);
+	if (nextFetchTime > maximumFetchTime) {
+		nextFetchTime = maximumFetchTime;
 	}
+	const bool fetchRequired = fetchScheduled || epoch > nextFetchTime;
+
+	if (!fetchRequired) {
+		fetchScheduled = false;
+		return;
+	}
+
+	if (!fetchScheduled) {
+		fetchDueTick = currentTick + fetchOffset;
+		fetchScheduled = true;
+	}
+
+	if (!isTickDeadlineReached(currentTick, fetchDueTick)) {
+		return;
+	}
+
+	time_t timeOffset = 0;
+	String downloadedJson = fetchMapUpdateJson();
+	const time_t mapTimestamp = downloadedJson.length() > 0 ? parseLedMapUpdateJson(downloadedJson) : 0;
+	if (mapTimestamp != 0) {
+		timeOffset = epoch - mapTimestamp;
+		const time_t earliestNextFetch = time(nullptr) + 2;
+		if (nextFetchTime < earliestNextFetch) {
+			nextFetchTime = earliestNextFetch;
+		}
+		fetchScheduled = false;
+	} else {
+		if (downloadedJson.length() > 0) {
+			++failedFetchCount;
+		}
+		if (failedFetchCount > 3 + serverUrls.size()) {
+			Serial.println("All servers failed to provide data.");
+		}
+		nextFetchTime = time(nullptr);
+		const TickType_t retryDelay = static_cast<TickType_t>(xPortGetTickRateHz()) + fetchOffset;
+		fetchDueTick = xTaskGetTickCount() + retryDelay;
+		fetchScheduled = true;
+	}
+
+	// Get current time incl ms HH:MM:SS.mmm
+	Serial.printf("%s fetchDelay:%2is size:%1.1fkiB MCU:%2.0f°C WiFi:%2idBm\n",
+	              getFormattedTimeWithMs(),
+	              timeOffset,
+	              downloadedJson.length() / 1024.0,
+	              temperatureRead(),
+	              WiFi.RSSI());
+	Serial.flush();
 }
 
 void NetworkManager::manageWiFiConnection() {
@@ -472,10 +771,16 @@ void NetworkManager::manageWiFiConnection() {
 
 	if (xTaskGetTickCount() - lastWiFiConnectAttempt > attemptTimeout || lastWiFiConnectAttempt == 0) {
 		lastWiFiConnectAttempt = xTaskGetTickCount();
+		SavedWiFiNetwork savedNetworks[MAX_WIFI_NETWORKS] = {};
+		{
+			std::lock_guard<std::mutex> lock(wifiNetworksMutex);
+			memcpy(savedNetworks, savedWiFiNetworks, sizeof(savedNetworks));
+		}
+
 		uint8_t savedWiFiCount = 0;
 		int8_t onlySavedWiFiIndex = -1;
 		for (uint8_t savedNetworkIndex = 0; savedNetworkIndex < MAX_WIFI_NETWORKS; savedNetworkIndex++) {
-			if (savedWiFiNetworks[savedNetworkIndex].ssid[0] != '\0') {
+			if (savedNetworks[savedNetworkIndex].ssid[0] != '\0') {
 				savedWiFiCount++;
 				onlySavedWiFiIndex = savedNetworkIndex;
 			}
@@ -505,9 +810,9 @@ void NetworkManager::manageWiFiConnection() {
 						const String scannedSsid = WiFi.SSID(scanResultIndex);
 						for (uint8_t savedNetworkIndex = 0; savedNetworkIndex < MAX_WIFI_NETWORKS;
 						     savedNetworkIndex++) {
-							if (savedWiFiNetworks[savedNetworkIndex].ssid[0] != '\0'
+							if (savedNetworks[savedNetworkIndex].ssid[0] != '\0'
 							    && (wifiAttemptedMask & (1U << savedNetworkIndex)) == 0
-							    && scannedSsid == savedWiFiNetworks[savedNetworkIndex].ssid
+							    && scannedSsid == savedNetworks[savedNetworkIndex].ssid
 							    && WiFi.RSSI(scanResultIndex) > bestSignalStrength) {
 								bestSavedWiFiIndex = savedNetworkIndex;
 								bestSignalStrength = WiFi.RSSI(scanResultIndex);
@@ -533,14 +838,14 @@ void NetworkManager::manageWiFiConnection() {
 			wifiAttemptedMask |= 1U << wifiNetworkIndex;  // Mark this network as attempted in the current retry cycle
 			Serial.printf("Attempting to connect to saved network %i: %s",
 			              wifiNetworkIndex,
-			              savedWiFiNetworks[wifiNetworkIndex].ssid);
+			              savedNetworks[wifiNetworkIndex].ssid);
 			if (bestSignalStrength != INT32_MIN) {
 				Serial.printf("(%ld dBm)\n", bestSignalStrength);
 			} else {
 				Serial.println();
 			}
 			WiFi.disconnect();  // Disconnect from any current network
-			WiFi.begin(savedWiFiNetworks[wifiNetworkIndex].ssid, savedWiFiNetworks[wifiNetworkIndex].password);
+			WiFi.begin(savedNetworks[wifiNetworkIndex].ssid, savedNetworks[wifiNetworkIndex].password);
 			WiFi.setTxPower(WIFI_POWER_15dBm);  // Set WiFi power to avoid interference
 		}
 	}

@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include <atomic>
+#include "brightness.h"
 #include "buttons.h"
 #include "ledStorageSync.h"
 #include "mapLeds.h"
@@ -24,6 +25,14 @@ extern LedManager mapLeds;
 
 /** @brief True once the factory test has been completed successfully. */
 inline std::atomic<bool> factoryTestPassed{ false };
+inline std::atomic<bool> factoryTestSensorFailed{ false };
+
+inline void showFactorySensorFailure() {
+	statusLeds.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_ON_RED);
+	mapLeds.beginFrame();
+	mapLeds.setAllLedsColor(CRGB(255, 0, 0));
+	mapLeds.show();
+}
 
 /**
  * @brief Mark the factory test as passed when the power button is pressed.
@@ -31,6 +40,10 @@ inline std::atomic<bool> factoryTestPassed{ false };
  * The result is stored in NVS so subsequent boots can skip the test.
  */
 inline void onPowerFactory() {
+	if (factoryTestSensorFailed.load()) {
+		Serial.println("Factory test cannot pass: LTR303 is not connected");
+		return;
+	}
 	factoryTestPassed.store(true);
 	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	Preferences localPrefs;
@@ -46,6 +59,10 @@ inline void onPowerFactory() {
  * @param color RGB color to display.
  */
 inline void factorySetColor(CRGB color) {
+	if (factoryTestSensorFailed.load()) {
+		color = CRGB(255, 0, 0);
+	}
+
 	if (color == CRGB(255, 0, 0)) {
 		statusLeds.setState(WIFI_LED_PIN, LED_ON_RED, SERVER_LED_PIN, LED_ON_RED);
 	} else if (color == CRGB(0, 255, 0)) {
@@ -73,8 +90,19 @@ inline void factorySetColor(CRGB color) {
  * @param timeout Maximum wait time in milliseconds.
  */
 inline void waitForPowerButton(int timeout) {
-	unsigned long startTime = millis();
+	const unsigned long startTime = millis();
+	unsigned long lastSensorCheck = startTime;
 	while (!factoryTestPassed.load() && (millis() - startTime < timeout)) {
+		if (!factoryTestSensorFailed.load() && millis() - lastSensorCheck >= 250) {
+			lastSensorCheck = millis();
+#if defined(LIGHT_SENSOR)
+			if (!brightnessManager.isLightSensorConnected()) {
+				factoryTestSensorFailed.store(true);
+				Serial.println("Factory test: LTR303 disconnected during test");
+				showFactorySensorFailure();
+			}
+#endif
+		}
 		vTaskDelay(pdMS_TO_TICKS(10));
 	}
 }
@@ -89,6 +117,7 @@ inline void waitForPowerButton(int timeout) {
  * @return false if a previous pass was loaded from NVS.
  */
 inline bool factoryTestMode() {
+	factoryTestSensorFailed.store(false);
 	{
 		xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 		Preferences localPrefs;
@@ -109,6 +138,14 @@ inline bool factoryTestMode() {
 			CRGB(128, 128, 128),
 		};
 
+#if defined(LIGHT_SENSOR)
+		if (!brightnessManager.isLightSensorConnected()) {
+			factoryTestSensorFailed.store(true);
+			Serial.println("Factory test: LTR303 is not connected");
+			showFactorySensorFailure();
+		}
+#endif
+
 		while (!factoryTestPassed.load()) {
 			// Ramp up to full brightnessManager for the current test color
 			factorySetColor(testColors[colorIndex]);
@@ -121,8 +158,11 @@ inline bool factoryTestMode() {
 		}
 
 		mapLeds.beginFrame();
-		mapLeds.setAllLedsColor(CRGB::Black);
+		mapLeds.setAllLedsColor(factoryTestSensorFailed.load() ? CRGB(255, 0, 0) : CRGB::Black);
 		mapLeds.show();
+		if (factoryTestSensorFailed.load()) {
+			showFactorySensorFailure();
+		}
 
 		return true;
 

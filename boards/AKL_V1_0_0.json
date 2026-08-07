@@ -20,8 +20,8 @@
       "-DLED_2_PIN=1",
       "-DLED_2_START=300",
       "-DLED_2_PIXELS=44",
-      "-DMIN_BRIGHTNESS=34",
-      "-DMAX_BRIGHTNESS=254",
+      "-DMIN_BRIGHTNESS=39",
+      "-DMAX_BRIGHTNESS=239",
       "-DBRIGHTNESS_STEP=20",
       "-DDEBOUNCE_MS=50",
       "-DTIMETABLE_SPEED=600.0",
@@ -34,15 +34,25 @@
     "f_cpu": "160000000L",
     "f_flash": "80000000L",
     "flash_mode": "qio",
-    "hwids": [["0X303A", "0x1001"]],
+    "hwids": [
+      [
+        "0X303A",
+        "0x1001"
+      ]
+    ],
     "mcu": "esp32c3",
     "variant": "esp32c3"
   },
-  "connectivity": ["wifi"],
+  "connectivity": [
+    "wifi"
+  ],
   "debug": {
     "openocd_target": "esp32c3.cfg"
   },
-  "frameworks": ["arduino", "espidf"],
+  "frameworks": [
+    "arduino",
+    "espidf"
+  ],
   "name": "Auckland V1.0.0",
   "upload": {
     "flash_size": "4MB",

@@ -124,7 +124,7 @@ bool anyLedsOn() {
 }
 
 uint8_t fadeChannel(uint8_t current, uint8_t target) {
-	const uint8_t minFadeThreshold = 16;  // Threshold for faster fade when brightness is low
+	const uint8_t minFadeThreshold = 6;  // Threshold for faster fade when brightness is low
 	if (current == target) {
 		return current;
 	} else if (current < minFadeThreshold) {
@@ -201,7 +201,7 @@ void LedManager::processFrames() {
 }
 
 void LedManager::task() {
-	const TickType_t frameDelay = pdMS_TO_TICKS(20);  // 50fps = 20ms interval
+	const TickType_t frameInterval = pdMS_TO_TICKS(1000 / 60);  // ~60fps
 	enum class ledState { OFF, TURNING_ON, ON, TURNING_OFF };
 	ledState currentState = ledState::OFF;
 
@@ -231,8 +231,7 @@ void LedManager::task() {
 					uint8_t frameCounter = 0;
 					TickType_t lastFrameTime = xTaskGetTickCount();
 
-					while (frameCounter
-					       < int(1000 / frameDelay)) {  // Do about 1 second of frames before checking anyLedsOn()
+					while (frameCounter < int(1000 / frameInterval)) {  // Do about 1s before checking anyLedsOn()
 						// Process updates between dither frames to keep rendering responsive
 						processFrames();
 						updateFade();
@@ -246,7 +245,7 @@ void LedManager::task() {
 
 						TickType_t currentTime = xTaskGetTickCount();
 						uint32_t elapsedTimeMs = pdTICKS_TO_MS(currentTime - lastFrameTime);
-						if (elapsedTimeMs > pdTICKS_TO_MS(frameDelay) + 10) {
+						if (elapsedTimeMs > pdTICKS_TO_MS(frameInterval) + 10) {
 							ESP_LOGW("FastLED",
 							         "Frame took %u ms, which is longer than expected. FastLED.show() took %u ms.",
 							         elapsedTimeMs,
@@ -256,7 +255,7 @@ void LedManager::task() {
 
 						frameCounter++;
 
-						vTaskDelayUntil(&lastFrameTime, frameDelay);
+						vTaskDelayUntil(&lastFrameTime, frameInterval);
 					}
 
 					if (!brightnessManager.isOn() || FastLED.getBrightness() == 0 || !anyLedsOn()) {

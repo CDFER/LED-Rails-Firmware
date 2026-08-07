@@ -73,7 +73,9 @@ def _collect_flash_images(
         )
 
     if len(extra_images) % 2 != 0:
-        print("Warning: FLASH_EXTRA_IMAGES had an odd number of entries; last item ignored")
+        print(
+            "Warning: FLASH_EXTRA_IMAGES had an odd number of entries; last item ignored"
+        )
 
     # Add the main firmware image
     flash_images.append(app_image)
@@ -142,7 +144,9 @@ def _merge_bin_action(
     )
 
 
-def _copy_app_image(source: List[FileLike], output_path: str, env: EnvironmentLike) -> None:
+def _copy_app_image(
+    source: List[FileLike], output_path: str, env: EnvironmentLike
+) -> None:
     app_image = _collect_flash_images(source, env, include_bootloader=False)[0]
     source_path = env.subst(app_image["file"])
     output_path_resolved = env.subst(output_path)
@@ -201,4 +205,3 @@ env.AddCustomTarget(
     description="Build app-only image for flashing at 0x10000",
     always_build=True,
 )
-

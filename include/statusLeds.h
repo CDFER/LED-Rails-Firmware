@@ -33,7 +33,7 @@ struct StatusLed {
 /**
  * @brief Manages charlieplexed diagnostic LEDs from a background task.
  *
- * State requests are packed into a task notification, so setState() returns
+ * State requests are packed into a task queue, so setState() returns
  * without directly changing GPIOs from the calling task.
  */
 class StatusLedManager {
@@ -60,7 +60,8 @@ class StatusLedManager {
 	void setState(uint8_t pin, StatusLedCommand command);
 
   private:
-	TaskHandle_t taskHandle = nullptr;  ///< Handle for the background task.
+	TaskHandle_t taskHandle = nullptr;     ///< Handle for the background task.
+	QueueHandle_t commandQueue = nullptr;  ///< Queue of packed LED state requests.
 
 	/**
 	 * @brief Apply an immediate GPIO state for one charlieplexed LED.

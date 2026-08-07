@@ -3,14 +3,15 @@
 StatusLedManager statusLeds;
 
 void StatusLedManager::begin() {
+	commandQueue = xQueueCreate(10, sizeof(uint32_t));
 	xTaskCreate(task, "Status LED Manager", 2048, this, 5, &taskHandle);
 }
 
 void StatusLedManager::setState(
     uint8_t firstPin, StatusLedCommand firstCommand, uint8_t secondPin, StatusLedCommand secondCommand) {
-	if (taskHandle != nullptr) {
+	if (commandQueue != nullptr) {
 		uint32_t notification = (firstPin << 24) | (firstCommand << 16) | (secondPin << 8) | secondCommand;
-		xTaskNotify(taskHandle, notification, eSetValueWithOverwrite);
+		xQueueSend(commandQueue, &notification, 0);
 	}
 }
 
@@ -40,6 +41,8 @@ void StatusLedManager::setCharlieplexedLed(uint8_t pin, StatusLedCommand command
 }
 
 void StatusLedManager::task(void* pvParameters) {
+	StatusLedManager* manager = static_cast<StatusLedManager*>(pvParameters);
+
 // Default LEDs as originally configured
 // Using conditionally defined pins since they come from build_flags
 #ifndef WIFI_LED_PIN
@@ -53,9 +56,9 @@ void StatusLedManager::task(void* pvParameters) {
 	const int ledCount = sizeof(ledStates) / sizeof(ledStates[0]);
 
 	while (true) {
-		// Check for notifications
+		// Check for queued commands
 		uint32_t notification;
-		if (xTaskNotifyWait(0, ULONG_MAX, &notification, 0) == pdTRUE) {
+		if (xQueueReceive(manager->commandQueue, &notification, 0) == pdTRUE) {
 			// Process up to two commands
 			for (int commandIndex = 0; commandIndex < 2; commandIndex++) {
 				uint8_t commandPin = (notification >> (24 - (commandIndex * 16))) & 0xFF;

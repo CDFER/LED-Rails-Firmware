@@ -10,7 +10,11 @@
 ModeManager modeManager;
 
 namespace {
-const char* modeName(Mode mode) {
+constexpr int NoModeRequest = -1;
+constexpr int NextModeRequest = -2;
+}
+
+const char* ModeManager::getModeName(Mode mode) {
 	switch (mode) {
 		case REALTIME_MODE: return "Live";
 #if defined(TIMETABLE_SPEED)
@@ -18,11 +22,10 @@ const char* modeName(Mode mode) {
 		case HIGH_SPEED_TIMETABLE_MODE: return "Fast Forward";
 #endif
 #if defined(OUT_OF_SERVICE_TRAINS)
-		case HIDE_OUT_OF_SERVICE_TRAINS_MODE: return "Live without not-in-service";
+		case HIDE_OUT_OF_SERVICE_TRAINS_MODE: return "In Service Live";
 #endif
 		default: return "Unknown";
 	}
-}
 }
 
 void ModeManager::begin() {
@@ -30,11 +33,9 @@ void ModeManager::begin() {
 }
 
 void ModeManager::nextMode() {
-	currentMode = Mode((currentMode + 1) % NUM_MODES);
-	modeStartTime = millis();
-	lastMapDrawTime = 0;               // Force immediate redraw
+	setMode(Mode((currentMode + 1) % NUM_MODES));
 	brightnessManager.setPower(true);  // Ensure brightnessManager is on when changing modes
-	Serial.printf("Mode #%d: %s\n", currentMode, modeName(currentMode));
+	Serial.printf("Mode #%d: %s\n", currentMode, getModeName(currentMode));
 	Serial.flush();
 }
 
@@ -45,7 +46,35 @@ void ModeManager::resetTimer() {
 
 void ModeManager::setMode(Mode targetMode) {
 	currentMode = targetMode;
+	reportedMode.store(targetMode);
 	resetTimer();
+}
+
+void ModeManager::requestMode(Mode targetMode) {
+	if (targetMode >= REALTIME_MODE && targetMode < NUM_MODES) {
+		pendingModeRequest.store(targetMode);
+	}
+}
+
+void ModeManager::requestNextMode() {
+	pendingModeRequest.store(NextModeRequest);
+}
+
+void ModeManager::requestTimerReset() {
+	timerResetRequested.store(true);
+}
+
+void ModeManager::processPendingModeRequest() {
+	const int requestedMode = pendingModeRequest.exchange(NoModeRequest);
+	if (requestedMode == NextModeRequest) {
+		nextMode();
+	} else if (requestedMode >= REALTIME_MODE && requestedMode < NUM_MODES) {
+		setMode(static_cast<Mode>(requestedMode));
+	}
+
+	if (timerResetRequested.exchange(false)) {
+		resetTimer();
+	}
 }
 
 NetworkMode ModeManager::getTargetNetworkMode() const {

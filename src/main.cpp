@@ -1,5 +1,8 @@
 #include <Arduino.h>
 #include <FastLED.h>
+#include <esp_freertos_hooks.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include <time.h>
 
 #if defined(FACTORY_TEST)
@@ -12,6 +15,7 @@
 
 #include "brightness.h"
 #include "buttons.h"
+#include "dailySchedule.h"
 #include "mapLeds.h"
 #include "mapRenderer.h"
 #include "modeManager.h"
@@ -32,13 +36,13 @@ void onBrightnessUp() {
 void onPower() {
 	brightnessManager.toggle();
 	if (brightnessManager.isOn()) {
-		modeManager.resetTimer();
+		modeManager.requestTimerReset();
 	}
 	Serial.printf("Power %s\n", brightnessManager.isOn() ? "ON" : "OFF");
 }
 
 void onMode() {
-	modeManager.nextMode();
+	modeManager.requestNextMode();
 }
 
 void setup() {
@@ -54,6 +58,7 @@ void setup() {
 	statusLeds.begin();
 
 	mapLeds.begin();
+	dailyScheduleManager.begin();
 
 	modeManager.begin();
 
@@ -91,6 +96,8 @@ void loop() {
 	unsigned long currentTime = millis();
 	time_t epoch = time(nullptr);  // Get current time
 
+	dailyScheduleManager.update(epoch);
+	modeManager.processPendingModeRequest();
 	network.setSystemState(modeManager.getTargetNetworkMode(), brightnessManager.isOn());
 
 	if (modeManager.shouldDrawFrame(currentTime)) {

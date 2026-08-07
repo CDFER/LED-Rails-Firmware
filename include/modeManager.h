@@ -6,6 +6,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <atomic>
 #include <time.h>
 #include "network.h"
 
@@ -43,6 +44,17 @@ class ModeManager {
 	 * @param targetMode Mode to select.
 	 */
 	void setMode(Mode targetMode);
+	/**
+	 * @brief Request a mode change from another task.
+	 * @param targetMode Mode to apply from the main application loop.
+	 */
+	void requestMode(Mode targetMode);
+	/** @brief Request that the main application loop advances to the next mode. */
+	void requestNextMode();
+	/** @brief Request that the main application loop resets the active mode timer. */
+	void requestTimerReset();
+	/** @brief Apply one pending mode request from the main application loop. */
+	void processPendingModeRequest();
 
 	/**
 	 * @brief Return the network behavior required by the current display mode.
@@ -61,13 +73,18 @@ class ModeManager {
 
 	/** @brief Return the currently selected display mode. */
 	Mode getCurrentMode() const {
-		return currentMode;
+		return static_cast<Mode>(reportedMode.load());
 	}
+	/** @brief Return the display label for a compiled-in mode. */
+	static const char* getModeName(Mode mode);
 
   private:
-	Mode currentMode = REALTIME_MODE;   ///< Mode selected for the next render.
-	unsigned long lastMapDrawTime = 0;  ///< Timestamp of the last accepted render request.
-	uint32_t modeStartTime = 0;         ///< millis() timestamp when the current mode started.
+	Mode currentMode = REALTIME_MODE;                ///< Mode selected for the next render.
+	std::atomic<int> reportedMode{ REALTIME_MODE };  ///< Latest mode available to other tasks.
+	std::atomic<int> pendingModeRequest{ -1 };       ///< Requested mode or a next-mode command.
+	std::atomic<bool> timerResetRequested{ false };  ///< Requests a main-loop mode timer reset.
+	unsigned long lastMapDrawTime = 0;               ///< Timestamp of the last accepted render request.
+	uint32_t modeStartTime = 0;                      ///< millis() timestamp when the current mode started.
 	static constexpr unsigned long MapRedrawIntervalMilliseconds = 25;  ///< Minimum interval between map redraws.
 };
 

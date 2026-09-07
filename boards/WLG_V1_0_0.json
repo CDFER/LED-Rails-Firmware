@@ -53,7 +53,7 @@
     "arduino",
     "espidf"
   ],
-  "name": "Wellington V1.0.0",
+  "name": "Wellington",
   "upload": {
     "flash_size": "4MB",
     "maximum_ram_size": 327680,

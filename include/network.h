@@ -142,6 +142,7 @@ class NetworkManager {
 	NetworkMode currentMode = NetworkMode::REALTIME;  ///< Latest requested network mode.
 	bool statusLedsEnabled = true;                    ///< Whether status LEDs may be displayed.
 	bool wifiConnected = false;                       ///< Latest value observed from WiFi.status().
+	bool wifiSaved = false;                           ///< True when at least one saved network is available.
 
 	std::shared_ptr<MapData> currentMapData;  ///< Published immutable map snapshot.
 	std::mutex mapDataMutex;                  ///< Protects replacement of currentMapData.

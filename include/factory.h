@@ -71,18 +71,9 @@ inline void factorySetColor(CRGB color) {
 		statusLeds.setState(WIFI_LED_PIN, LED_OFF, SERVER_LED_PIN, LED_OFF);
 	}
 
-	for (int brightnessLevel = 0; brightnessLevel <= 255; brightnessLevel += 64) {
-		if (factoryTestPassed.load())
-			break;  // Exit early if button is pressed during fade
-		CRGB fadedColor = color;
-		fadedColor.nscale8_video(brightnessLevel);
-
-		mapLeds.beginFrame();
-		mapLeds.setAllLedsColor(fadedColor);
-		mapLeds.show();
-		// Serial.printf("Factory test color: R=%d, G=%d, B=%d, Brightness=%d\n", fadedColor.r, fadedColor.g, fadedColor.b, b);
-		vTaskDelay(pdMS_TO_TICKS(100));  // Delay to allow the LEDs to update
-	}
+	mapLeds.beginFrame();
+	mapLeds.setAllLedsColor(color);
+	mapLeds.show();
 }
 
 /**
@@ -130,13 +121,17 @@ inline bool factoryTestMode() {
 	if (!factoryTestPassed.load()) {
 		buttons.setCallback(POWER_BUTTON, onPowerFactory);
 		Serial.println("Factory test mode enabled");
-		uint8_t colorIndex = 0;
 		const CRGB testColors[] = {
 			CRGB(255, 0, 0),
 			CRGB(0, 255, 0),
 			CRGB(0, 0, 255),
-			CRGB(128, 128, 128),
+			CRGB(8, 8, 8),  // Black without turning off the LED Rails
 		};
+
+		// Wait a moment for the light sensor to initialize
+		factorySetColor(testColors[0]);
+		waitForPowerButton(1500);
+		uint8_t colorIndex = 1;
 
 #if defined(LIGHT_SENSOR)
 		if (!brightnessManager.isLightSensorConnected()) {

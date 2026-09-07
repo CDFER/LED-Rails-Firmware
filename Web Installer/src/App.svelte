@@ -12,8 +12,8 @@
   const versions: VersionOption[] = [
     { id: "AKL_V1_0_0", label: "Auckland V1.0" },
     { id: "AKL_V1_1_0", label: "Auckland V1.1" },
-    { id: "WLG_V1_0_0", label: "Wellington V1.0" },
-    { id: "MEL_V1_0_0", label: "Melbourne V1.0" },
+    { id: "WLG_V1_0_0", label: "Wellington" },
+    { id: "MEL_V1_0_0", label: "Melbourne" },
   ];
 
   let selectedVersion: VersionId = "AKL_V1_1_0";
@@ -106,7 +106,7 @@
 
         <div class="controls">
           <div class="version-heading">
-            <span class="section-label">Select your city and version</span>
+            <span class="section-label">Select your city</span>
             <span class="selected-version"
               >{versions.find((version) => version.id === selectedVersion)
                 ?.label}</span
@@ -178,6 +178,15 @@
       </div>
       <div class="feature-list">
         <article class="feature-item">
+          <span class="feature-version">V1.4.1 September 2026</span>
+          <h3>Updated Timetables</h3>
+          <p>
+            All citties get an update to the timetables used for the offline
+            modes. That means the new CRL timetable for Auckland, the pink Bayside
+            line for Melbourne and the shorterned Melling line for Wellington
+          </p>
+        </article>
+        <article class="feature-item">
           <span class="feature-version">V1.4.0 August 2026</span>
           <h3>Smooth and configurable</h3>
           <p>
@@ -191,8 +200,8 @@
           <span class="feature-version">V1.3.0</span>
           <h3>Melbourne maps are here</h3>
           <p>
-            Realtime train tracking across the Metro network, with support for
-            the ESP32-S3 chip.
+            Realtime train tracking across the Metro network, with the ESP32-S3
+            chip.
           </p>
         </article>
         <article class="feature-item">
@@ -201,14 +210,6 @@
           <p>
             Show realtime trains while hiding purple out-of-service trains. Long
             press the power button to cycle modes.
-          </p>
-        </article>
-        <article class="feature-item">
-          <span class="feature-version">V1.2.1</span>
-          <h3>Offline timetable mode</h3>
-          <p>
-            Use the October 2025 weekday timetable when Wi-Fi is unavailable, or
-            run it at 600x speed.
           </p>
         </article>
       </div>

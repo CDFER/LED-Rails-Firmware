@@ -171,6 +171,7 @@ bool NetworkManager::saveWiFiNetwork(const String& ssid, const String& password)
 	}
 
 	exportWiFi();
+	wifiSaved = true;
 	return true;
 }
 
@@ -483,9 +484,11 @@ void NetworkManager::begin() {
 
 	if (savedWiFiFound) {
 		Serial.println("WiFi credentials found...");
+		wifiSaved = true;
 		statusLeds.setState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
 	} else {
 		Serial.println("No WiFi credentials found...");
+		wifiSaved = false;
 		statusLeds.setState(WIFI_LED_PIN, LED_ON_RED);
 	}
 
@@ -682,10 +685,10 @@ void NetworkManager::updateStatusLeds() {
 		statusLeds.setState(SERVER_LED_PIN, LED_OFF);
 		if (wifiConnected) {
 			statusLeds.setState(WIFI_LED_PIN, LED_ON_GREEN);
-		} else if (millis() > 60 * 1000) {
-			statusLeds.setState(WIFI_LED_PIN, LED_ON_RED);
-		} else {
+		} else if (wifiSaved && millis() < 60 * 1000) {
 			statusLeds.setState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
+		} else {
+			statusLeds.setState(WIFI_LED_PIN, LED_ON_RED);
 		}
 
 	} else if (currentMode == NetworkMode::REALTIME) {
@@ -700,10 +703,10 @@ void NetworkManager::updateStatusLeds() {
 			}
 		} else {
 			statusLeds.setState(SERVER_LED_PIN, LED_OFF);
-			if (millis() > 60 * 1000) {
-				statusLeds.setState(WIFI_LED_PIN, LED_ON_RED);
-			} else {
+			if (wifiSaved && millis() < 60 * 1000) {
 				statusLeds.setState(WIFI_LED_PIN, LED_BLINK_GREEN_FAST);
+			} else {
+				statusLeds.setState(WIFI_LED_PIN, LED_ON_RED);
 			}
 		}
 	}

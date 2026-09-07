@@ -82,7 +82,7 @@
     "arduino",
     "espidf"
   ],
-  "name": "Melbourne V1.0.0",
+  "name": "Melbourne",
   "upload": {
     "flash_size": "8MB",
     "maximum_ram_size": 327680,

@@ -17,6 +17,8 @@ ENVIRONMENTS = [
     {"id": "WLG_V1_0_0", "name": "Wellington V1.0", "chipFamily": "ESP32-C3"},
     {"id": "MEL_V1_0_0", "name": "Melbourne V1.0", "chipFamily": "ESP32-S3"},
 ]
+NAME = "LED-Rails"
+VERSION = "1.4.1"
 WEB_INSTALLER_SRC = "Web Installer"
 SITE_DIR = "_site"
 BUILD_DIR = ".pio/build"
@@ -57,8 +59,8 @@ def build_web_installer() -> None:
 def create_manifest(env: dict[str, str], site_bin_dir: str) -> None:
     """Create manifest.json for the given environment in the _site/bin/env directory."""
     manifest: dict[str, Any] = {
-        "name": env["name"],
-        "version": "",
+        "name": NAME,
+        "version": VERSION,
         "new_install_prompt_erase": True,
         "builds": [
             {

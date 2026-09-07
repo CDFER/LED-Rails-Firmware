@@ -97,8 +97,6 @@ bool initializeLightSensor() {
 
 bool BrightnessManager::isLightSensorConnected() {
 	std::lock_guard<std::mutex> lock(lightSensorMutex);
-	lightSensorInitialized = lightSensor.isConnected(Wire, &Serial);
-	lightSensorLastValidReadTick = xTaskGetTickCount();
 	return lightSensorInitialized;
 }
 

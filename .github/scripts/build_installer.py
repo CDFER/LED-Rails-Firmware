@@ -18,7 +18,7 @@ ENVIRONMENTS = [
     {"id": "MEL_V1_0_0", "name": "Melbourne V1.0", "chipFamily": "ESP32-S3"},
 ]
 NAME = "LED-Rails"
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 WEB_INSTALLER_SRC = "Web Installer"
 SITE_DIR = "_site"
 BUILD_DIR = ".pio/build"

@@ -128,12 +128,19 @@ inline bool factoryTestMode() {
 			CRGB(8, 8, 8),  // Black without turning off the LED Rails
 		};
 
-		// Wait a moment for the light sensor to initialize
-		factorySetColor(testColors[0]);
-		waitForPowerButton(1500);
-		uint8_t colorIndex = 1;
+		uint8_t colorIndex = 0;
+#if defined(LED_8_PIXELS)                   // If there are >=8 LED channels, show each color for longer
+		const uint32_t colorTimeMs = 2000;  // Duration to display each test color in milliseconds
+#else
+		const uint32_t colorTimeMs = 1000;  // Duration to display each test color in milliseconds
+#endif
 
 #if defined(LIGHT_SENSOR)
+		// Wait a moment for the light sensor to initialize
+		factorySetColor(testColors[colorIndex]);
+		waitForPowerButton(colorTimeMs);
+		colorIndex = 1;
+
 		if (!brightnessManager.isLightSensorConnected()) {
 			factoryTestSensorFailed.store(true);
 			Serial.println("Factory test: LTR303 is not connected");
@@ -144,11 +151,7 @@ inline bool factoryTestMode() {
 		while (!factoryTestPassed.load()) {
 			// Ramp up to full brightnessManager for the current test color
 			factorySetColor(testColors[colorIndex]);
-#if defined(LED_8_PIXELS)  // If there are >=8 LED channels, show each color for longer
-			waitForPowerButton(1500);
-#else
-			waitForPowerButton(500);
-#endif
+			waitForPowerButton(colorTimeMs);
 			colorIndex = (colorIndex + 1) % (sizeof(testColors) / sizeof(testColors[0]));
 		}
 

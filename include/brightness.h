@@ -166,7 +166,6 @@ class BrightnessManager {
 #if defined(LIGHT_SENSOR)
 	float ambientLux;                     ///< Smoothed ambient light level in lux.
 	int bucketIndex;                      ///< Index of the bucket containing the current ambient lux value.
-	mutable std::mutex lightSensorMutex;  ///< Protects LTR303 I2C access across tasks.
 	BrightnessBucket buckets[BRIGHTNESS_BUCKET_COUNT];  ///< Ordered light-to-brightness curve used for interpolation.
 	static constexpr int numBuckets = BRIGHTNESS_BUCKET_COUNT;
 	mutable std::mutex curveMutex;               ///< Protects current and pending curve snapshots.

@@ -1,79 +1,132 @@
 #include "buttons.h"
 
-// Define the global instances
-QueueHandle_t buttonQueue;
+#include "ioPins.h"
+
+#if defined(GPIO_EXPANDER)
+#include "gpioExpander.h"
+#endif
+
 ButtonManager buttons;
+
+namespace {
+TaskHandle_t buttonTaskHandle = nullptr;
+constexpr uint32_t ButtonPollIntervalMs = 10;
+
+/** @brief Wakes the button task on any button edge. Does no debouncing itself. */
+void IRAM_ATTR buttonInterruptHandler() {
+	if (buttonTaskHandle == nullptr) {
+		return;
+	}
+	BaseType_t higherPriorityTaskWoken = pdFALSE;
+	vTaskNotifyGiveFromISR(buttonTaskHandle, &higherPriorityTaskWoken);
+	if (higherPriorityTaskWoken) {
+		portYIELD_FROM_ISR();
+	}
+}
+}
 
 void ButtonManager::add(
     uint8_t pin, ButtonCallback callback, ButtonCallback longPressCallback, uint16_t longPressDuration) {
-	buttons.push_back({ pin, callback, longPressCallback, longPressDuration, HIGH, 0, 0 });
+	if (started) {
+		Serial.printf("Button on pin %d added after begin(); ignored\n", pin);
+		return;
+	}
+	buttons.push_back({ pin, std::move(callback), std::move(longPressCallback), longPressDuration });
+}
+
+ButtonManager::Button* ButtonManager::findButton(uint8_t pin) {
+	for (auto& button : buttons) {
+		if (button.pin == pin) {
+			return &button;
+		}
+	}
+	return nullptr;
+}
+
+ButtonManager::ButtonCallback ButtonManager::snapshot(const ButtonCallback& callback) {
+	std::lock_guard<std::mutex> lock(callbackMutex);
+	return callback;
 }
 
 void ButtonManager::setCallback(uint8_t pin, ButtonCallback callback) {
-	for (auto& button : buttons) {
-		if (button.pin == pin) {
-			button.callback = callback;
-			return;
-		}
+	std::lock_guard<std::mutex> lock(callbackMutex);
+	if (Button* button = findButton(pin)) {
+		button->callback = std::move(callback);
+		return;
 	}
 	Serial.printf("Button on pin %d not found!\n", pin);
 }
 
 void ButtonManager::setLongPressCallback(uint8_t pin, ButtonCallback longPressCallback) {
-	for (auto& button : buttons) {
-		if (button.pin == pin) {
-			button.longPressCallback = longPressCallback;
-			return;
-		}
+	std::lock_guard<std::mutex> lock(callbackMutex);
+	if (Button* button = findButton(pin)) {
+		button->longPressCallback = std::move(longPressCallback);
+		return;
 	}
 	Serial.printf("Button on pin %d not found!\n", pin);
 }
 
 void ButtonManager::begin() {
-	buttonQueue = xQueueCreate(20, sizeof(ButtonEvent));
-	if (buttonQueue == NULL) {
-		Serial.println("Failed to create button queue!");
-		return;
+	const TickType_t now = xTaskGetTickCount();
+
+	for (auto& button : buttons) {
+		if (isExpanderPin(button.pin)) {
+			hasExpanderButtons = true;
+			ioPinMode(button.pin, INPUT);
+		} else {
+			ioPinMode(button.pin, INPUT_PULLUP);
+		}
+	}
+
+	if (hasExpanderButtons) {
+		ioRefreshInputs();
 	}
 
 	for (auto& button : buttons) {
-		pinMode(button.pin, INPUT_PULLUP);
-		attachInterruptArg(digitalPinToInterrupt(button.pin),
-		                   isrWrapper,
-		                   &button,
-		                   CHANGE  // Trigger on both rising and falling edges
-		);
+		button.rawPressed = ioDigitalRead(button.pin) == LOW;
+		button.pressed = button.rawPressed;
+		button.rawChangeTick = now;
+		button.pressStartTick = now;
+		// A button held during boot is ignored until it is released, as before.
+		button.longPressTriggered = button.pressed;
 	}
 
-	xTaskCreate(buttonTask, "ButtonTask", 4096, this, 2, NULL);
+	started = true;
+	xTaskCreate(buttonTask, "ButtonTask", 4096, this, 2, &buttonTaskHandle);
+
+	for (auto& button : buttons) {
+		// Expander pins without an INT line are handled by polling alone.
+		ioAttachInterrupt(button.pin, buttonInterruptHandler, CHANGE);
+	}
 }
 
-void IRAM_ATTR ButtonManager::isrWrapper(void* buttonArgument) {
-	Button* button = static_cast<Button*>(buttonArgument);
-	TickType_t currentTick = xTaskGetTickCountFromISR();
+void ButtonManager::scan(TickType_t now) {
+	const TickType_t debounceTicks = pdMS_TO_TICKS(DEBOUNCE_MS);
 
-	bool newState = digitalRead(button->pin);
+	for (auto& button : buttons) {
+		const bool sampledPressed = ioDigitalRead(button.pin) == LOW;
+		if (sampledPressed != button.rawPressed) {
+			button.rawPressed = sampledPressed;
+			button.rawChangeTick = now;
+		}
 
-	if (newState != button->state) {
-		button->state = newState;
-
-		if (newState == LOW) {
-			// Button pressed
-			button->fallingTick = currentTick;
-			button->pressStartTick = currentTick;
-			button->longPressTriggered = false;  // Reset long press flag
-		} else {
-			// Button released
-			button->risingTick = currentTick;
-			// Only send short press if it's debounced and not already handled as long press
-			if ((button->risingTick - button->fallingTick) > pdMS_TO_TICKS(DEBOUNCE_MS)
-			    && !button->longPressTriggered) {
-				ButtonEvent event = { button->pin, false };
-				BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-				xQueueSendFromISR(buttonQueue, &event, &xHigherPriorityTaskWoken);
-				if (xHigherPriorityTaskWoken) {
-					portYIELD_FROM_ISR();
+		if (button.rawPressed != button.pressed && (now - button.rawChangeTick) >= debounceTicks) {
+			button.pressed = button.rawPressed;
+			if (button.pressed) {
+				button.pressStartTick = now;
+				button.longPressTriggered = false;
+			} else if (!button.longPressTriggered) {
+				if (ButtonCallback callback = snapshot(button.callback)) {
+					callback();
 				}
+			}
+		}
+
+		if (button.pressed && !button.longPressTriggered
+		    && (now - button.pressStartTick) >= pdMS_TO_TICKS(button.longPressDuration)) {
+			if (ButtonCallback longPressCallback = snapshot(button.longPressCallback)) {
+				button.longPressTriggered = true;
+				longPressCallback();
 			}
 		}
 	}
@@ -81,40 +134,12 @@ void IRAM_ATTR ButtonManager::isrWrapper(void* buttonArgument) {
 
 void ButtonManager::buttonTask(void* pvParameters) {
 	ButtonManager* manager = static_cast<ButtonManager*>(pvParameters);
-	ButtonEvent event;
 
 	while (true) {
-		// Check for long press events
-		TickType_t currentTime = xTaskGetTickCount();
-
-		for (auto& button : manager->buttons) {
-			// If button is currently pressed, has long press callback, and long press not yet triggered
-			if (button.state == LOW && button.longPressCallback != nullptr && !button.longPressTriggered) {
-				// Check if enough time has passed for a long press
-				TickType_t pressDuration = currentTime - button.pressStartTick;
-				if (pressDuration >= pdMS_TO_TICKS(button.longPressDuration)) {
-					// Send long press event
-					ButtonEvent longPressEvent = { button.pin, true };
-					xQueueSend(buttonQueue, &longPressEvent, 0);
-					button.longPressTriggered = true;  // Mark long press as triggered
-				}
-			}
+		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(ButtonPollIntervalMs));
+		if (manager->hasExpanderButtons) {
+			ioRefreshInputs();
 		}
-
-		// Process button events from queue
-		if (xQueueReceive(buttonQueue, &event, pdMS_TO_TICKS(buttonTaskPollingInterval))) {
-			for (auto& button : manager->buttons) {
-				if (button.pin == event.pin) {
-					if (event.isLongPress) {
-						if (button.longPressCallback) {
-							button.longPressCallback();
-						}
-					} else {
-						button.callback();
-					}
-					break;
-				}
-			}
-		}
+		manager->scan(xTaskGetTickCount());
 	}
 }

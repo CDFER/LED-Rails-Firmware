@@ -16,6 +16,10 @@
 #include "brightness.h"
 #include "buttons.h"
 #include "dailySchedule.h"
+#include "i2cBus.h"
+#if defined(GPIO_EXPANDER)
+#include "gpioExpander.h"
+#endif
 #include "mapLeds.h"
 #include "mapRenderer.h"
 #include "modeManager.h"
@@ -54,6 +58,12 @@ void setup() {
 	Serial.begin();
 	Serial.setDebugOutput(true);
 	Serial.setTxBufferSize(1024);  // Increase TX buffer size to reduce dropped characters
+
+	// The I2C bus must be up before the light sensor, expander, or any other I2C user.
+	i2cBus.begin();
+#if defined(GPIO_EXPANDER)
+	gpioExpander.begin();
+#endif
 
 	statusLeds.begin();
 

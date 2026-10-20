@@ -64,6 +64,8 @@ uint8_t BrightnessManager::getBrightness() const {
 #if defined(LIGHT_SENSOR)
 #include <Wire.h>
 
+#include "i2cBus.h"
+
 LTR303 lightSensor;
 
 namespace {
@@ -72,6 +74,7 @@ std::atomic<TickType_t> lightSensorLastValidReadTick{ 0 };
 std::atomic<bool> lightSensorInitialized{ false };
 
 bool initializeLightSensor() {
+	I2cBusLock lock(i2cBus);
 	lightSensor.endPeriodicMeasurement();  // Ensure sensor is in idle state before re-initializing
 	const uint8_t error = lightSensor.begin(GAIN_48X, EXPOSURE_400ms, true, Wire);
 	if (error != 0) {
@@ -96,7 +99,6 @@ bool initializeLightSensor() {
 }
 
 bool BrightnessManager::isLightSensorConnected() {
-	std::lock_guard<std::mutex> lock(lightSensorMutex);
 	return lightSensorInitialized;
 }
 
@@ -166,8 +168,6 @@ bool BrightnessManager::requestBrightnessCurve(const BrightnessCurve& curve) {
 }
 
 void BrightnessManager::begin() {
-	Wire.begin(SDA_PIN, SCL_PIN, 50000);
-	Wire.setTimeOut(50);
 	load();
 	FastLED.setBrightness(gammaCorrectedBrightness(brightnessValue));  // Start with LEDs at default brightness
 	initializeLightSensor();
@@ -286,11 +286,20 @@ void BrightnessManager::update() {
 		}
 
 		const TickType_t currentTick = xTaskGetTickCount();
-		double measuredLux;
+		double measuredLux = 0.0;
+		bool newData = false;
+		bool luxValid = false;
+		{
+			I2cBusLock lock(i2cBus);
+			newData = lightSensor.newDataAvailable();
+			if (newData) {
+				luxValid = lightSensor.getApproximateLux(measuredLux);
+			}
+		}
 
-		if (lightSensor.newDataAvailable()) {
+		if (newData) {
 			lightSensorLastValidReadTick = currentTick;
-			if (lightSensor.getApproximateLux(measuredLux)) {
+			if (luxValid) {
 				// Serial.printf("Measured Lux: %.2f\n", measuredLux);
 				if (measuredLux > ambientLux) {
 					ambientLux = float(measuredLux) * luxUpSmoothingFactor + ambientLux * (1.0f - luxUpSmoothingFactor);
@@ -486,6 +495,7 @@ void BrightnessManager::load() {
 	Preferences localPrefs;
 	localPrefs.begin("brightness");
 	brightnessValue = float(localPrefs.getInt("brightness", int(brightnessValue)));
+	brightnessValue = constrain(brightnessValue, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
 	localPrefs.end();
 }
 

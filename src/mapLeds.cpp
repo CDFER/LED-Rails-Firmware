@@ -1,4 +1,5 @@
 #include "mapLeds.h"
+#include "ioPins.h"
 #include "ledStorageSync.h"
 
 // Define the LED arrays
@@ -58,11 +59,11 @@ void setupPowerPins() {
 #endif
 
 #if defined(LED_POWER_CH1_EN)
-	pinMode(LED_POWER_CH1_EN, OUTPUT);
+	ioPinMode(LED_POWER_CH1_EN, OUTPUT);
 #endif
 
 #if defined(LED_POWER_CH2_EN)
-	pinMode(LED_POWER_CH2_EN, OUTPUT);
+	ioPinMode(LED_POWER_CH2_EN, OUTPUT);
 #endif
 
 #if defined(LVL_Shifter_EN)
@@ -80,12 +81,12 @@ void enablePower() {
 #endif
 
 #if defined(LED_POWER_CH1_EN)
-	digitalWrite(LED_POWER_CH1_EN, HIGH);  //Enable Power to LED Channel 1
+	ioDigitalWrite(LED_POWER_CH1_EN, HIGH);  //Enable Power to LED Channel 1
 #endif
 
 #if defined(LED_POWER_CH2_EN)
-	vTaskDelay(pdMS_TO_TICKS(25));         // Short delay to ensure stable power before enabling the second channel
-	digitalWrite(LED_POWER_CH2_EN, HIGH);  //Enable Power to LED Channel 2
+	vTaskDelay(pdMS_TO_TICKS(25));           // Short delay to ensure stable power before enabling the second channel
+	ioDigitalWrite(LED_POWER_CH2_EN, HIGH);  //Enable Power to LED Channel 2
 #endif
 	FastLED.clear(true);
 	Serial.println("LED power rail/s turned on.");
@@ -99,11 +100,11 @@ void disablePower() {
 #endif
 
 #if defined(LED_POWER_CH1_EN)
-	digitalWrite(LED_POWER_CH1_EN, LOW);  // Disable Power to LED Channel 1
+	ioDigitalWrite(LED_POWER_CH1_EN, LOW);  // Disable Power to LED Channel 1
 #endif
 
 #if defined(LED_POWER_CH2_EN)
-	digitalWrite(LED_POWER_CH2_EN, LOW);  // Disable Power to LED Channel 2
+	ioDigitalWrite(LED_POWER_CH2_EN, LOW);  // Disable Power to LED Channel 2
 #endif
 
 #if defined(LVL_Shifter_EN)

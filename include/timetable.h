@@ -254,16 +254,14 @@ inline void printTimetableSize(RouteSpan<const TrainRoute*> routes) {
 	Serial.printf("Loaded %d routes, ~%0.2f KiB\n", routes.size(), bytes / 1024.0);
 }
 
-#if defined(MEL_V1_0_0)
-// Generated route data for the Melbourne V1 board.
+#if defined(SYD_V1_0_0)
+#include "timetables/SYD_V1_0_0_Timetable.h"
+#elif defined(MEL_V1_0_0)
 #include "timetables/MEL_V1_0_0_Timetable.h"
 #elif defined(WLG_V1_0_0)
-// Generated route data for the Wellington V1 board.
 #include "timetables/WLG_V1_0_0_Timetable.h"
 #elif defined(AKL_V1_0_0)
-// Generated route data for the Auckland V1 board.
 #include "timetables/AKL_V1_0_0_Timetable.h"
 #elif defined(AKL_V1_1_0)
-// Generated route data for the Auckland V1.1 board.
 #include "timetables/AKL_V1_1_0_Timetable.h"
 #endif

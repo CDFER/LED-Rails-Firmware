@@ -283,6 +283,7 @@ void NetworkManager::setupWebServer() {
 
 		std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT> scheduleEntries;
 		dailyScheduleManager.getSchedule(scheduleEntries);
+		document["scheduleTimezone"] = dailyScheduleManager.getTimezone();
 		JsonArray schedule = document["schedule"].to<JsonArray>();
 		for (const DailyScheduleEntry& entry : scheduleEntries) {
 			JsonObject scheduleEntry = schedule.add<JsonObject>();
@@ -349,7 +350,9 @@ void NetworkManager::setupWebServer() {
 			};
 		}
 
-		if (!dailyScheduleManager.requestSchedule(requestedSchedule)) {
+		const AsyncWebParameter* timezoneParameter = request->getParam("timezone", true);
+		if (timezoneParameter == nullptr
+		    || !dailyScheduleManager.requestSchedule(requestedSchedule, timezoneParameter->value())) {
 			request->send(400, "application/json", "{\"error\":\"Enabled entries must be in time order\"}");
 			return;
 		}

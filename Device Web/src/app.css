@@ -88,6 +88,30 @@ body:has(.app-shell.city-wellington) {
 	background-size: 100% 100%;
 }
 
+.app-shell.city-sydney {
+	--theme-background: #df4c1d;
+	--theme-background-deep: #8e2a10;
+	--theme-foreground: #ffffff;
+	--theme-text: #fbba00;
+	--theme-accent: #fbba00;
+	--theme-warning: #ec6606;
+	--theme-green: #009681;
+	--theme-red: #df4c1d;
+	--theme-dark: #3b1206;
+	--theme-action-text: #ffffff;
+}
+
+body:has(.app-shell.city-sydney) {
+	--theme-background: #df4c1d;
+	--theme-background-deep: #8e2a10;
+	--theme-text: #fbba00;
+	--theme-dark: #3b1206;
+	background-color: var(--theme-background);
+	background-image: linear-gradient(145deg, var(--theme-background) 0%, var(--theme-background-deep) 100%);
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+}
+
 body:has(.app-shell.city-melbourne) {
 	--theme-background: #0073cf;
 	--theme-background-deep: #004490;

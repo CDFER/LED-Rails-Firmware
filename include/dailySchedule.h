@@ -45,10 +45,17 @@ class DailyScheduleManager {
 	 * @param entries New schedule entries, including disabled slots.
 	 * @return False when the entry count, times, modes, or ordering is invalid.
 	 */
-	bool requestSchedule(const std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT>& entries);
+	bool
+	requestSchedule(const std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT>& entries, const String& timezone);
 
 	/** @brief Copy the current schedule into a caller-owned snapshot. */
 	void getSchedule(std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT>& entries) const;
+
+	/** @brief POSIX TZ string the schedule times are in; empty for legacy schedules using the map timezone. */
+	String getTimezone() const;
+
+	/** @brief True when the string only contains characters valid in a short POSIX TZ string. */
+	static bool isValidTimezone(const String& timezone);
 
 	/**
 	 * @brief Apply actions matching the current local minute.
@@ -61,6 +68,7 @@ class DailyScheduleManager {
 
   private:
 	std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT> entries{};
+	String timezone;
 	mutable std::mutex scheduleMutex;
 	time_t lastProcessedMinute = -1;
 

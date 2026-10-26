@@ -62,6 +62,7 @@
       available: ModeOption[];
     };
     schedule: DailyScheduleEntry[];
+    scheduleTimezone?: string;
   };
 
   let status: DeviceStatus | null = null;
@@ -81,6 +82,7 @@
       akl: "Auckland",
       wlg: "Wellington",
       mel: "Melbourne",
+      syd: "Sydney",
     };
     return names[city.toLowerCase()] ?? city.toUpperCase();
   }
@@ -90,6 +92,7 @@
       akl: "city-auckland",
       wlg: "city-wellington",
       mel: "city-melbourne",
+      syd: "city-sydney",
     };
     return themes[city.toLowerCase()] ?? "city-default";
   }
@@ -99,6 +102,7 @@
       akl: { background: "#001231", accent: "#0073bd" },
       wlg: { background: "#001d34", accent: "#d9ed4c" },
       mel: { background: "#0073cf", accent: "#ffffff" },
+      syd: { background: "#3b1206", accent: "#fbba00" },
     };
     return (
       themes[city.toLowerCase()] ?? {
@@ -159,14 +163,29 @@
   function copySchedule(
     schedule: DailyScheduleEntry[] | undefined,
   ): DailyScheduleEntry[] {
-    return schedule?.map((entry) => ({ ...entry })) ?? [];
+    // Schedules saved before timezone support are in the map's timezone.
+    const legacy = status !== null && !status.scheduleTimezone;
+    return (
+      schedule?.map((entry) => ({
+        ...entry,
+        minute: legacy
+          ? convertScheduleMinute(
+              entry.minute,
+              scheduleMapTimezone(),
+              Intl.DateTimeFormat().resolvedOptions().timeZone,
+            )
+          : entry.minute,
+      })) ?? []
+    );
   }
 
   function scheduleMapTimezone(): string {
     const city = status?.device.city.toLowerCase();
     return city === "mel"
       ? "Australia/Melbourne"
-      : city === "akl" || city === "wlg"
+      : city === "syd"
+        ? "Australia/Sydney"
+        : city === "akl" || city === "wlg"
         ? "Pacific/Auckland"
         : "UTC";
   }
@@ -211,12 +230,62 @@
     return ((convertedMinute % 1440) + 1440) % 1440;
   }
 
+  function posixOffset(minutesEast: number): string {
+    const minutes = Math.abs(minutesEast);
+    const text = `${Math.floor(minutes / 60)}${minutes % 60 ? ":" + String(minutes % 60).padStart(2, "0") : ""}`;
+    return `${minutesEast > 0 ? "-" : ""}${text}`;
+  }
+
+  function localOffsetMinutes(utcMs: number): number {
+    return -new Date(utcMs).getTimezoneOffset();
+  }
+
+  // Builds a POSIX TZ string (e.g. "STD-12DST-13,M9.5.0/2,M4.1.0/3") for the browser's timezone.
+  function browserPosixTimezone(): string {
+    const year = new Date().getFullYear();
+    const hour = 3600000;
+    const transitions: { utcMs: number; before: number; after: number }[] = [];
+    let previousMs = Date.UTC(year, 0, 1);
+    let previousOffset = localOffsetMinutes(previousMs);
+    for (let ms = previousMs + hour; ms <= Date.UTC(year + 1, 0, 1); ms += hour) {
+      const offset = localOffsetMinutes(ms);
+      if (offset !== previousOffset) {
+        let low = ms - hour;
+        let high = ms;
+        while (high - low > 60000) {
+          const middle = Math.floor((low + high) / 120000) * 60000;
+          if (localOffsetMinutes(middle) === previousOffset) low = middle;
+          else high = middle;
+        }
+        transitions.push({ utcMs: high, before: previousOffset, after: offset });
+        previousOffset = offset;
+      }
+    }
+
+    if (transitions.length !== 2) {
+      return `STD${posixOffset(localOffsetMinutes(Date.now()))}`;
+    }
+
+    const standard = Math.min(transitions[0].before, transitions[0].after);
+    const daylight = Math.max(transitions[0].before, transitions[0].after);
+    const rule = (transition: (typeof transitions)[number]): string => {
+      const wall = new Date(transition.utcMs + transition.before * 60000);
+      const day = wall.getUTCDate();
+      const daysInMonth = new Date(
+        Date.UTC(wall.getUTCFullYear(), wall.getUTCMonth() + 1, 0),
+      ).getUTCDate();
+      const week = day + 7 > daysInMonth ? 5 : Math.ceil(day / 7);
+      const minutes = wall.getUTCMinutes();
+      const time = `${wall.getUTCHours()}${minutes ? ":" + String(minutes).padStart(2, "0") : ""}`;
+      return `M${wall.getUTCMonth() + 1}.${week}.${wall.getUTCDay()}/${time}`;
+    };
+    const toDaylight = transitions.find((t) => t.after === daylight)!;
+    const toStandard = transitions.find((t) => t.after === standard)!;
+    return `STD${posixOffset(standard)}DST${posixOffset(daylight)},${rule(toDaylight)},${rule(toStandard)}`;
+  }
+
   function formatScheduleTime(minute: number): string {
-    const userMinute = convertScheduleMinute(
-      minute,
-      scheduleMapTimezone(),
-      Intl.DateTimeFormat().resolvedOptions().timeZone,
-    );
+    const userMinute = minute;
     const hours = Math.floor(userMinute / 60)
       .toString()
       .padStart(2, "0");
@@ -267,13 +336,7 @@
   function updateScheduleTime(index: number, value: string): void {
     const [hours, minutes] = value.split(":").map(Number);
     if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return;
-    const userMinute = hours * 60 + minutes;
-    const mapMinute = convertScheduleMinute(
-      userMinute,
-      Intl.DateTimeFormat().resolvedOptions().timeZone,
-      scheduleMapTimezone(),
-    );
-    updateScheduleEntry(index, "minute", String(mapMinute));
+    updateScheduleEntry(index, "minute", String(hours * 60 + minutes));
   }
 
   function addScheduleAction(): void {
@@ -556,7 +619,9 @@
 
   async function saveDailySchedule(): Promise<void> {
     sortScheduleDraft();
-    const values: Record<string, string> = {};
+    const values: Record<string, string> = {
+      timezone: browserPosixTimezone(),
+    };
     scheduleDraft.forEach((entry, index) => {
       values[`entry${index}Enabled`] = entry.enabled ? "1" : "0";
       values[`entry${index}Minute`] = String(entry.minute);

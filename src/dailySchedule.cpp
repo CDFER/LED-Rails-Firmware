@@ -17,9 +17,13 @@ void DailyScheduleManager::begin() {
 		const uint8_t modeValue = localPreferences.getUChar((prefix + "Mode").c_str(), REALTIME_MODE);
 		entries[entryIndex].mode = modeValue < NUM_MODES ? static_cast<Mode>(modeValue) : REALTIME_MODE;
 	}
+	timezone = localPreferences.getString("timezone", "");
 	localPreferences.end();
 	xSemaphoreGive(fastLEDPreferencesMutex);
 
+	if (!isValidTimezone(timezone)) {
+		timezone = "";
+	}
 	if (!isValidSchedule(entries)) {
 		Serial.println("Invalid daily schedule in Preferences; using an empty schedule");
 		entries = {};
@@ -27,14 +31,34 @@ void DailyScheduleManager::begin() {
 }
 
 bool DailyScheduleManager::requestSchedule(
-    const std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT>& requestedEntries) {
-	if (!isValidSchedule(requestedEntries)) {
+    const std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT>& requestedEntries,
+    const String& requestedTimezone) {
+	if (!isValidSchedule(requestedEntries) || !isValidTimezone(requestedTimezone)) {
 		return false;
 	}
 
 	std::lock_guard<std::mutex> lock(scheduleMutex);
 	entries = requestedEntries;
+	timezone = requestedTimezone;
 	saveLocked();
+	return true;
+}
+
+String DailyScheduleManager::getTimezone() const {
+	std::lock_guard<std::mutex> lock(scheduleMutex);
+	return timezone;
+}
+
+bool DailyScheduleManager::isValidTimezone(const String& timezone) {
+	if (timezone.length() > 63) {
+		return false;
+	}
+	for (size_t index = 0; index < timezone.length(); index++) {
+		const char character = timezone[index];
+		if (!isalnum(static_cast<unsigned char>(character)) && strchr("+-:,./<>", character) == nullptr) {
+			return false;
+		}
+	}
 	return true;
 }
 
@@ -50,13 +74,9 @@ void DailyScheduleManager::update(time_t epoch) {
 		return;
 	}
 
-	struct tm localTime;
-	if (localtime_r(&epoch, &localTime) == nullptr) {
-		return;
-	}
-
 	const time_t currentMinute = epoch / 60;
 	std::array<DailyScheduleEntry, DAILY_SCHEDULE_ENTRY_COUNT> currentEntries;
+	String scheduleTimezone;
 	{
 		std::lock_guard<std::mutex> lock(scheduleMutex);
 		if (currentMinute == lastProcessedMinute) {
@@ -64,6 +84,24 @@ void DailyScheduleManager::update(time_t epoch) {
 		}
 		lastProcessedMinute = currentMinute;
 		currentEntries = entries;
+		scheduleTimezone = timezone;
+	}
+
+	// Schedule times follow the browser's timezone (with its own DST rules), not the map's.
+	// This runs on the main loop, the only other localtime user, so swapping TZ briefly is safe.
+	struct tm localTime;
+	bool converted;
+	if (scheduleTimezone.isEmpty()) {
+		converted = localtime_r(&epoch, &localTime) != nullptr;
+	} else {
+		setenv("TZ", scheduleTimezone.c_str(), 1);
+		tzset();
+		converted = localtime_r(&epoch, &localTime) != nullptr;
+		setenv("TZ", TIMEZONE, 1);
+		tzset();
+	}
+	if (!converted) {
+		return;
 	}
 
 	const uint16_t minuteOfDay = localTime.tm_hour * 60 + localTime.tm_min;
@@ -108,6 +146,7 @@ void DailyScheduleManager::saveLocked() {
 	Preferences localPreferences;
 	xSemaphoreTake(fastLEDPreferencesMutex, portMAX_DELAY);
 	localPreferences.begin("dailySchedule", false);
+	localPreferences.putString("timezone", timezone);
 	for (uint8_t entryIndex = 0; entryIndex < DAILY_SCHEDULE_ENTRY_COUNT; entryIndex++) {
 		const String prefix = "entry" + String(entryIndex);
 		const DailyScheduleEntry& entry = entries[entryIndex];

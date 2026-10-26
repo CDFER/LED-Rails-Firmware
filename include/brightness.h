@@ -164,8 +164,8 @@ class BrightnessManager {
 	bool savePending = false;        ///< True when a changed setting still needs to be written to NVS.
 	bool buttonPressed = false;      ///< True when a manual change should bypass ambient-brightness smoothing.
 #if defined(LIGHT_SENSOR)
-	float ambientLux;                     ///< Smoothed ambient light level in lux.
-	int bucketIndex;                      ///< Index of the bucket containing the current ambient lux value.
+	float ambientLux;  ///< Smoothed ambient light level in lux.
+	int bucketIndex;   ///< Index of the bucket containing the current ambient lux value.
 	BrightnessBucket buckets[BRIGHTNESS_BUCKET_COUNT];  ///< Ordered light-to-brightness curve used for interpolation.
 	static constexpr int numBuckets = BRIGHTNESS_BUCKET_COUNT;
 	mutable std::mutex curveMutex;               ///< Protects current and pending curve snapshots.

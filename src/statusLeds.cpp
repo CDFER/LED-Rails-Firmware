@@ -40,7 +40,7 @@ void CharlieplexedLedOutput::apply(StatusLedCommand command) {
 }
 
 DualColourLedOutput::DualColourLedOutput(uint8_t redPin, uint8_t greenPin, uint8_t redDim, uint8_t greenDim)
-	: redPin(redPin), greenPin(greenPin), redDim(redDim), greenDim(greenDim) {
+    : redPin(redPin), greenPin(greenPin), redDim(redDim), greenDim(greenDim) {
 	// LED mode uses the expander's constant-current sink, so no series resistor is needed.
 	ioPinModeLedCurrent(redPin);
 	ioPinModeLedCurrent(greenPin);
@@ -81,12 +81,14 @@ void StatusLedManager::begin() {
 	leds[0].id = WIFI_LED_PIN;
 	leds[1].id = SERVER_LED_PIN;
 #if defined(WIFI_LED_R_PIN)
-	leds[0].output.reset(new DualColourLedOutput(WIFI_LED_R_PIN, WIFI_LED_G_PIN, STATUS_LED_RED_DIM, STATUS_LED_GREEN_DIM));
+	leds[0].output.reset(
+	    new DualColourLedOutput(WIFI_LED_R_PIN, WIFI_LED_G_PIN, STATUS_LED_RED_DIM, STATUS_LED_GREEN_DIM));
 #else
 	leds[0].output = createCharlieplexedOutput(WIFI_LED_PIN);
 #endif
 #if defined(SERVER_LED_R_PIN)
-	leds[1].output.reset(new DualColourLedOutput(SERVER_LED_R_PIN, SERVER_LED_G_PIN, STATUS_LED_RED_DIM, STATUS_LED_GREEN_DIM));
+	leds[1].output.reset(
+	    new DualColourLedOutput(SERVER_LED_R_PIN, SERVER_LED_G_PIN, STATUS_LED_RED_DIM, STATUS_LED_GREEN_DIM));
 #else
 	leds[1].output = createCharlieplexedOutput(SERVER_LED_PIN);
 #endif
@@ -126,8 +128,7 @@ void StatusLedManager::task(void* pvParameters) {
 				for (auto& led : manager->leds) {
 					if (led.id == commandPin) {
 						led.command = command;
-						if (led.output
-						    && (command == LED_ON_GREEN || command == LED_ON_RED || command == LED_OFF)) {
+						if (led.output && (command == LED_ON_GREEN || command == LED_ON_RED || command == LED_OFF)) {
 							led.output->apply(command);
 						}
 						break;

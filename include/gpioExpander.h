@@ -53,7 +53,9 @@ class GpioExpander {
 	 */
 	void setLedCurrent(uint8_t pin, uint8_t dim);
 
-	bool hasInterrupt() const { return interruptAvailable; }
+	bool hasInterrupt() const {
+		return interruptAvailable;
+	}
 
   private:
 	/** @brief Print the key AW9523 registers on a failure. Caller must hold the bus lock. */

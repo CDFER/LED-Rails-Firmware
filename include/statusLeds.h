@@ -96,11 +96,11 @@ class DualColourLedOutput : public StatusLedOutput {
  * @brief Command and runtime state for one diagnostic LED.
  */
 struct StatusLed {
-	uint8_t id = 255;                             ///< Caller-facing LED ID; 255 means unconfigured.
-	StatusLedCommand command = LED_OFF;           ///< Desired display command.
-	bool currentState = false;                    ///< Current on/off phase used by blinking.
-	unsigned long lastToggle = 0;                 ///< millis() timestamp of the last blink transition.
-	std::unique_ptr<StatusLedOutput> output;      ///< Driver; null when the LED is not configured.
+	uint8_t id = 255;                         ///< Caller-facing LED ID; 255 means unconfigured.
+	StatusLedCommand command = LED_OFF;       ///< Desired display command.
+	bool currentState = false;                ///< Current on/off phase used by blinking.
+	unsigned long lastToggle = 0;             ///< millis() timestamp of the last blink transition.
+	std::unique_ptr<StatusLedOutput> output;  ///< Driver; null when the LED is not configured.
 };
 
 /**

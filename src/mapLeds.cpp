@@ -125,7 +125,7 @@ bool anyLedsOn() {
 }
 
 uint8_t fadeChannel(uint8_t current, uint8_t target) {
-	const uint8_t minFadeThreshold = 6;  // Threshold for faster fade when brightness is low
+	const uint8_t minFadeThreshold = 10;  // Threshold for faster fade when brightness is low
 	if (current == target) {
 		return current;
 	} else if (current < minFadeThreshold) {
@@ -202,7 +202,7 @@ void LedManager::processFrames() {
 }
 
 void LedManager::task() {
-	const TickType_t frameInterval = pdMS_TO_TICKS(1000 / 60);  // ~60fps
+	const TickType_t frameInterval = pdMS_TO_TICKS(1000 / 30);  // ~60fps
 	enum class ledState { OFF, TURNING_ON, ON, TURNING_OFF };
 	ledState currentState = ledState::OFF;
 

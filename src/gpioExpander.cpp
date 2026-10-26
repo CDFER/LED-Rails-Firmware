@@ -20,9 +20,8 @@ int readRegister(uint8_t reg) {
 }
 
 GpioExpander::GpioExpander()
-	: expander(GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_INT_PIN, &Wire),
-	  interruptAvailable(GPIO_EXPANDER_INT_PIN != IO_PIN_NOT_DEFINED) {
-}
+    : expander(GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_INT_PIN, &Wire),
+      interruptAvailable(GPIO_EXPANDER_INT_PIN != IO_PIN_NOT_DEFINED) {}
 
 void GpioExpander::begin() {
 	bool responding;
@@ -49,8 +48,9 @@ void GpioExpander::begin() {
 	expander.writeGlobalControl(true, AW9523IoAbstraction::CURRENT_QUARTER);
 	const uint8_t deviceId = expander.deviceId();
 	if (deviceId != 0x23) {
-		Serial.printf("AW9523 device ID: 0x%02X (expect 0x23), INT %s\n", deviceId,
-					  interruptAvailable ? "enabled" : "not configured");
+		Serial.printf("AW9523 device ID: 0x%02X (expect 0x23), INT %s\n",
+		              deviceId,
+		              interruptAvailable ? "enabled" : "not configured");
 	}
 }
 
@@ -92,8 +92,8 @@ void GpioExpander::dumpRegisters(const char* stage) {
 		uint8_t reg;
 		const char* name;
 	} registers[] = {
-		{0x00, "IN0"}, {0x01, "IN1"}, {0x02, "OUT0"}, {0x03, "OUT1"}, {0x04, "CFG0"}, {0x05, "CFG1"},
-		{0x06, "INT0"}, {0x07, "INT1"}, {0x10, "ID"}, {0x11, "GCR"}, {0x12, "LED0"}, {0x13, "LED1"},
+		{ 0x00, "IN0" },  { 0x01, "IN1" },  { 0x02, "OUT0" }, { 0x03, "OUT1" }, { 0x04, "CFG0" }, { 0x05, "CFG1" },
+		{ 0x06, "INT0" }, { 0x07, "INT1" }, { 0x10, "ID" },   { 0x11, "GCR" },  { 0x12, "LED0" }, { 0x13, "LED1" },
 	};
 	Serial.printf("[AW9523] registers (%s):\n", stage);
 	for (const auto& r : registers) {
